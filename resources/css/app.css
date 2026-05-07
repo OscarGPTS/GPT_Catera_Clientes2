@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    --color-gpt-50: #FFF7ED;
+    --color-gpt-100: #FFEDD5;
+    --color-gpt-200: #FED7AA;
+    --color-gpt-300: #FDBA74;
+    --color-gpt-400: #FB923C;
+    --color-gpt-500: #F97316;
+    --color-gpt-600: #EA580C;
+    --color-gpt-700: #C2410C;
+    --color-gpt-800: #9A3412;
+    --color-gpt-900: #7C2D12;
+    --color-gpt-950: #431407;
+
+    --color-gpt-red-50: #FEF2F2;
+    --color-gpt-red-100: #FEE2E2;
+    --color-gpt-red-200: #FECACA;
+    --color-gpt-red-300: #FCA5A5;
+    --color-gpt-red-400: #F87171;
+    --color-gpt-red-500: #EF4444;
+    --color-gpt-red-600: #DC2626;
+    --color-gpt-red-700: #B91C1C;
+    --color-gpt-red-800: #991B1B;
+    --color-gpt-red-900: #7F1D1D;
+    --color-gpt-red-950: #450A0A;
+}
