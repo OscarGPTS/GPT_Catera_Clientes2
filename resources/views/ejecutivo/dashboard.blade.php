@@ -88,14 +88,13 @@
             <span class="text-sm text-slate-700 whitespace-nowrap">Incluir SEDENA</span>
         </label>
 
-        {{-- Descargar reporte mensual PDF --}}
-        <a href="{{ route('ejecutivo.reporte-mensual', request()->query()) }}"
-           class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm hover:bg-slate-50 transition-colors ml-auto">
+        {{-- Descargar reporte mensual PDF (placeholder) --}}
+        <button type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm hover:bg-slate-50 transition-colors ml-auto cursor-not-allowed opacity-60" disabled title="Próximamente">
             <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
             </svg>
-            Descargar reporte mensual PDF
-        </a>
+            Reporte PDF — Próximamente
+        </button>
     </div>
 
     {{-- SEDENA Alert --}}
@@ -135,44 +134,42 @@
 
     {{-- Section 1: 4 KPI cards --}}
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        @php
-            $pipeline = $pipeline_activo ?? 54700000;
-            $pipelineTrend = $pipeline_trend ?? 12;
-            $adjudicado = $adjudicado_ytd ?? 8300000;
-            $metaAdjudicacion = $meta_adjudicacion ?? 12400000;
-            $metaPct = $metaAdjudicacion > 0 ? round(($adjudicado / $metaAdjudicacion) * 100) : 0;
-        @endphp
         <x-stat-card
             title="Pipeline total"
-            :value="'$ ' . number_format($pipeline, 2, '.', ',')"
-            subtitle="{{ $pipelineTrend >= 0 ? '+' : '' }}{{ $pipelineTrend }}% vs Q4 · {{ number_format($pipeline_count ?? 42) }} oport."
+            :value="'$ ' . number_format($pipeline->sum(fn($p) => $p->cotizaciones->max('precio_venta_final') ?? 0), 2, '.', ',')"
+            subtitle="{{ $pipelineTotal }} oportunidades"
             color="blue"
         />
         <x-stat-card
             title="Adjudicado"
-            :value="'$ ' . number_format($adjudicado, 2, '.', ',')"
-            subtitle="{{ number_format($adjudicado_count ?? 11) }} proyectos"
+            :value="$adjudicadosCount . ' proyectos'"
+            subtitle="En estados adjudicado+"
             color="green"
         />
         <x-stat-card
             title="Hit rate"
-            value="{{ $hit_rate_conteo ?? 22 }}% / {{ $hit_rate_monto ?? 15 }}%"
-            subtitle="Conteo / Monto · +3% vs Q4"
+            value="{{ $hitRateConteo }}%"
+            subtitle="Conteo · {{ $pipelineTotal }} total"
             color="amber"
         />
         <x-stat-card
             title="Concentración SEDENA"
-            value="{{ number_format($sedena, 1) }}%"
+            value="{{ number_format($concentracionSedena, 1) }}%"
             subtitle="Del pipeline total"
-            color="red"
+            :color="$concentracionSedena > 50 ? 'red' : 'amber'"
         />
     </div>
 
-    {{-- Adjudicado meta progress --}}
+    {{-- Adjudicado progress --}}
+    @php
+        $metaAdjudicacion = 12400000;
+        $adjudicadoMonto = $pipeline->whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion', 'en_cierre'])->sum(fn($p) => $p->cotizaciones->max('precio_venta_final') ?? 0);
+        $metaPct = $metaAdjudicacion > 0 ? round(($adjudicadoMonto / $metaAdjudicacion) * 100) : 0;
+    @endphp
     <div class="mt-4 rounded-lg border border-slate-200 bg-white p-4">
         <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-slate-700">Progreso hacia meta de adjudicación</span>
-            <span class="text-sm text-slate-500">{{ number_format($metaPct) }}% — $ {{ number_format($adjudicado, 0, '.', ',') }} de $ {{ number_format($metaAdjudicacion, 0, '.', ',') }}</span>
+            <span class="text-sm text-slate-500">{{ min($metaPct, 100) }}% — $ {{ number_format($adjudicadoMonto, 0, '.', ',') }} de $ {{ number_format($metaAdjudicacion, 0, '.', ',') }}</span>
         </div>
         <div class="h-2.5 w-full rounded-full bg-slate-100">
             <div class="h-2.5 rounded-full bg-green-500 transition-all" style="width: {{ min($metaPct, 100) }}%"></div>
@@ -223,46 +220,101 @@
             </div>
         </div>
 
-        {{-- Chart 2: Pipeline por sublínea (donut chart) --}}
+{{-- Chart 2: Pipeline por sublínea (donut chart) --}}
         <div class="rounded-lg border border-slate-200 bg-white p-6">
             <h3 class="text-base font-medium text-slate-900">Pipeline por sublínea</h3>
-            <p class="mt-1 text-sm text-slate-500">Distribución del monto estimado por línea de negocio</p>
+            <p class="mt-1 text-sm text-slate-500">Distribución por línea de negocio</p>
             <div class="mt-4">
-                <div class="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center text-slate-400">
-                    <svg class="mx-auto h-10 w-10 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"/>
-                    </svg>
-                    <p class="mt-2 text-sm font-medium">Pipeline por sublínea</p>
-                    <p class="mt-1 text-xs">Gráfica de dona — Anillos HTP/LSP/VLV/SOL/SG con leyenda, total al centro</p>
-                    <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
-                        <span class="inline-flex items-center gap-1 text-xs"><span class="h-2.5 w-2.5 rounded-full bg-gpt-600"></span> HTP 38%</span>
-                        <span class="inline-flex items-center gap-1 text-xs"><span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span> LSP 24%</span>
-                        <span class="inline-flex items-center gap-1 text-xs"><span class="h-2.5 w-2.5 rounded-full bg-green-500"></span> VLV 18%</span>
-                        <span class="inline-flex items-center gap-1 text-xs"><span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span> SOL 13%</span>
-                        <span class="inline-flex items-center gap-1 text-xs"><span class="h-2.5 w-2.5 rounded-full bg-slate-400"></span> SG 7%</span>
+                @php
+                    $sublineaColors = ['bg-gpt-500', 'bg-blue-500', 'bg-green-500', 'bg-amber-500', 'bg-slate-400'];
+                    $sublineaBgColors = ['bg-gpt-100', 'bg-blue-100', 'bg-green-100', 'bg-amber-100', 'bg-slate-100'];
+                    $sublineaTextColors = ['text-gpt-700', 'text-blue-700', 'text-green-700', 'text-amber-700', 'text-slate-600'];
+                    $totalProyectos = max($porSublinea->sum(), 1);
+                @endphp
+                @foreach($porSublinea as $nombre => $count)
+                    @php $idx = $loop->index % 5; @endphp
+                    <div class="flex items-center gap-2 py-1.5">
+                        <span class="w-20 text-xs text-slate-500 text-right">{{ $nombre }}</span>
+                        <div class="flex-1 h-4 rounded bg-slate-100 relative overflow-hidden">
+                            <div class="absolute inset-y-0 left-0 {{ $sublineaColors[$idx] }} rounded" style="width: {{ min(round(($count / $totalProyectos) * 100), 100) }}%"></div>
+                        </div>
+                        <span class="w-12 text-xs font-medium {{ $sublineaTextColors[$idx] }} text-right">{{ round(($count / $totalProyectos) * 100) }}%</span>
                     </div>
+                @endforeach
+                @if($porSublinea->isEmpty())
+                    <p class="text-sm text-slate-400 text-center py-4">Sin datos de sublínea</p>
+                @endif
+            </div>
+        </div>
                     <p class="mt-2 text-2xl font-semibold text-slate-700">$54.7M</p>
                     <p class="text-xs text-slate-400">Total pipeline</p>
                 </div>
             </div>
         </div>
 
-        {{-- Chart 3: Adjudicaciones mensuales (line chart) --}}
+{{-- Chart 3: Pipeline por estado --}}
         <div class="rounded-lg border border-slate-200 bg-white p-6">
-            <h3 class="text-base font-medium text-slate-900">Adjudicaciones mensuales</h3>
-            <p class="mt-1 text-sm text-slate-500">Monto adjudicado mensualmente — últimos 5 meses</p>
-            <div class="mt-4">
-                <div class="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center text-slate-400">
-                    <svg class="mx-auto h-10 w-10 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
-                    </svg>
-                    <p class="mt-2 text-sm font-medium">Adjudicaciones mensuales</p>
-                    <p class="mt-1 text-xs">Gráfica de línea — 5 puntos de datos (ene - may 2026)</p>
-                    <div class="mt-4 flex items-end justify-center gap-3 h-16">
-                        <div class="flex flex-col items-center">
-                            <div class="w-10 rounded-t bg-green-400" style="height: 28px"></div>
-                            <span class="mt-1 text-[10px]">Ene</span>
+            <h3 class="text-base font-medium text-slate-900">Pipeline por estado</h3>
+            <p class="mt-1 text-sm text-slate-500">Distribución de oportunidades por estado actual</p>
+            <div class="mt-4 space-y-2">
+                @php
+                    $estadoLabels = [
+                        'en_revision' => 'En revisión', 'cotizando' => 'Cotizando', 'cotizado' => 'Cotizado',
+                        'presentado' => 'Presentado', 'adjudicado_pendiente' => 'Adj. pend.', 'adjudicado_firmado' => 'Adjudicado',
+                        'en_ejecucion' => 'En ejecución', 'en_cierre' => 'En cierre', 'cerrado' => 'Cerrado',
+                        'cancelado' => 'Cancelado', 'perdido' => 'Perdido', 'archivado' => 'Archivado',
+                    ];
+                    $estadoColors = [
+                        'en_revision' => 'bg-amber-400', 'cotizando' => 'bg-blue-400', 'cotizado' => 'bg-gpt-400',
+                        'presentado' => 'bg-gpt-500', 'adjudicado_pendiente' => 'bg-amber-500', 'adjudicado_firmado' => 'bg-green-500',
+                        'en_ejecucion' => 'bg-green-600', 'en_cierre' => 'bg-gpt-500', 'cerrado' => 'bg-slate-400',
+                        'cancelado' => 'bg-slate-300', 'perdido' => 'bg-red-400', 'archivado' => 'bg-slate-300',
+                    ];
+                    $maxEstado = max($porEstado->max() ?? 1, 1);
+                @endphp
+                @foreach($estadoLabels as $key => $label)
+                    @php $count = $porEstado->get($key, 0); @endphp
+                    @if($count > 0 || in_array($key, ['en_revision', 'cotizando', 'presentado', 'adjudicado_firmado', 'en_ejecucion']))
+                        <div class="flex items-center gap-2">
+                            <span class="w-24 text-xs text-slate-500 text-right">{{ $label }}</span>
+                            <div class="flex-1 h-3 rounded bg-slate-100 relative overflow-hidden">
+                                <div class="absolute inset-y-0 left-0 {{ $estadoColors[$key] ?? 'bg-slate-400' }} rounded" style="width: {{ min(round(($count / $maxEstado) * 100), 100) }}%"></div>
+                            </div>
+                            <span class="w-8 text-xs font-medium text-slate-700 text-right">{{ $count }}</span>
                         </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Chart 4: Top clientes --}}
+        <div class="rounded-lg border border-slate-200 bg-white p-6">
+            <h3 class="text-base font-medium text-slate-900">Top clientes</h3>
+            <p class="mt-1 text-sm text-slate-500">Distribución del pipeline por cliente</p>
+            <div class="mt-4 space-y-2">
+                @php $maxCliente = max($porCliente->max() ?? 1, 1); @endphp
+                @foreach($porCliente->take(6) as $nombre => $count)
+                    <div class="flex items-center gap-2">
+                        <span class="w-24 text-xs text-slate-500 text-right truncate">{{ $nombre }}</span>
+                        <div class="flex-1 h-3 rounded bg-slate-100 relative overflow-hidden">
+                            @php $pct = round(($count / $pipelineTotal) * 100); @endphp
+                            <div class="absolute inset-y-0 left-0 {{ $pct > 50 ? 'bg-gpt-red-400' : 'bg-gpt-500' }} rounded" style="width: {{ min($pct, 100) }}%"></div>
+                        </div>
+                        <span class="w-12 text-xs font-medium {{ $pct > 50 ? 'text-gpt-red-600' : 'text-slate-700' }} text-right">{{ $count }} ({{ $pct }}%)</span>
+                    </div>
+                @endforeach
+                @if($porCliente->isEmpty())
+                    <p class="text-sm text-slate-400 text-center py-4">Sin datos de clientes</p>
+                @endif
+                @if($concentracionSedena > 50)
+                    <div class="mt-3 relative">
+                        <div class="absolute left-0 right-0 border-t-2 border-dashed border-gpt-red-300" style="top: 0">
+                            <span class="absolute -top-3.5 right-0 text-[10px] text-gpt-red-400">Límite 50%</span>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
                         <div class="flex flex-col items-center">
                             <div class="w-10 rounded-t bg-green-400" style="height: 20px"></div>
                             <span class="mt-1 text-[10px]">Feb</span>
@@ -317,7 +369,7 @@
     <div class="mt-6 rounded-lg border border-slate-200 bg-white overflow-hidden">
         <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
             <h3 class="text-base font-medium text-slate-900">Top 5 — Requieren atención urgente</h3>
-            <p class="mt-0.5 text-sm text-slate-500">Oportunidades ordenadas por puntuación de urgencia — sin actividad reciente o próximas a vencer</p>
+            <p class="mt-0.5 text-sm text-slate-500">Oportunidades sin actividad reciente o próximas a vencer</p>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
@@ -326,52 +378,49 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">CP</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Tech Ref</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Cliente</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Monto</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Probabilidad</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Estado</th>
                         <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Días sin act.</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Líder</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Acción sugerida</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
-                    @forelse($urgentes ?? [] as $item)
+                    @forelse($oportunidadesAtencion as $item)
                         @php
-                            $liderInitials = collect(explode(' ', $item->lider->name ?? 'N A'))->map(fn($n) => mb_strtoupper(mb_substr($n, 0, 1)))->take(2)->implode('');
+                            $lider = $item->lider ?? $item->gerenteProyectos;
+                            $liderInitials = $lider ? collect(explode(' ', $lider->name ?? 'N A'))->map(fn($n) => mb_strtoupper(mb_substr($n, 0, 1)))->take(2)->implode('') : '—';
                         @endphp
-                        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" @click="window.location='{{ route('proyectos.show', $item) }}'">
+                        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" @click="window.location='{{ route('oportunidades.show', $item->id) }}'">
                             <td class="whitespace-nowrap px-4 py-3 text-sm font-mono font-medium text-slate-900">{{ $item->cp }}</td>
                             <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-600 max-w-[140px] truncate" title="{{ $item->ref_tecnica ?? '' }}">{{ $item->ref_tecnica ?? '—' }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-900">{{ $item->cliente->nombre ?? '—' }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-slate-900">$ {{ number_format($item->monto_estimado ?? $item->monto ?? 0, 0, '.', ',') }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-right">
-                                @php $prob = $item->probabilidad ?? 0; @endphp
-                                <div class="inline-flex items-center gap-2">
-                                    <div class="h-1.5 w-12 rounded-full bg-slate-100">
-                                        <div class="h-1.5 rounded-full {{ $prob >= 70 ? 'bg-green-500' : ($prob >= 40 ? 'bg-amber-400' : 'bg-gpt-red-400') }}" style="width: {{ $prob }}%"></div>
-                                    </div>
-                                    <span class="text-sm font-medium text-slate-700">{{ $prob }}%</span>
-                                </div>
+                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-900">{{ $item->cliente->razon_social ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-4 py-3">
+                                <x-badge :status="$item->estado" />
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-right">
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ ($item->dias_sin_actividad ?? 0) > 15 ? 'bg-gpt-red-100 text-gpt-red-800' : (($item->dias_sin_actividad ?? 0) > 7 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600') }}">
-                                    {{ $item->dias_sin_actividad ?? 0 }}d
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $item->dias_sin_actividad > 15 ? 'bg-gpt-red-100 text-gpt-red-800' : ($item->dias_sin_actividad > 7 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600') }}">
+                                    {{ $item->dias_sin_actividad }}d
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-4 py-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gpt-100 text-xs font-semibold text-gpt-700">{{ $liderInitials }}</span>
-                                    <span class="text-sm text-slate-700">{{ $item->lider->name ?? '—' }}</span>
-                                </div>
+                                @if($lider)
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gpt-100 text-xs font-semibold text-gpt-700">{{ $liderInitials }}</span>
+                                        <span class="text-sm text-slate-700">{{ $lider->name }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-sm text-slate-400">Sin asignar</span>
+                                @endif
                             </td>
                             <td class="whitespace-nowrap px-4 py-3">
-                                <span class="text-sm {{ ($item->accion_sugerida ?? '') === 'Cotizar' ? 'text-gpt-600' : (($item->accion_sugerida ?? '') === 'Presentar' ? 'text-amber-600' : 'text-slate-600') }}">
-                                    {{ $item->accion_sugerida ?? 'Dar seguimiento' }}
+                                <span class="text-sm {{ $item->accion_sugerida === 'Cotizar' ? 'text-gpt-600' : ($item->accion_sugerida === 'Presentar' ? 'text-amber-600' : 'text-slate-600') }}">
+                                    {{ $item->accion_sugerida }}
                                 </span>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-10 text-center">
+                            <td colspan="7" class="px-4 py-10 text-center">
                                 <p class="text-sm text-slate-500">No hay oportunidades urgentes en este momento.</p>
                                 <p class="mt-1 text-xs text-slate-400">Todas las oportunidades tienen seguimiento reciente.</p>
                             </td>
@@ -385,33 +434,33 @@
     {{-- Section 4: 3 Health cards --}}
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         @php
-            $cargaEquipo = $carga_equipo ?? ['avg' => 4.9, 'sobrecarga' => 1, 'total' => 8];
-            $dossiersRiesgo = $dossiers_riesgo ?? 2;
-            $postMortems = $post_mortems_pendientes ?? 3;
+            $cargaEquipoArr = $cargaEquipo ?? ['avg' => 0, 'sobrecarga' => 0, 'total' => 0];
+            $dossiersRiesgo = $dossiersRiesgo ?? 0;
+            $postMortems = $postMortems ?? 0;
         @endphp
-        <a href="{{ route('equipo.carga') }}" class="block rounded-lg border border-slate-200 bg-white p-4 hover:border-gpt-300 hover:shadow-sm transition-all">
+        <a href="{{ route('proyectos.asignaciones') }}" class="block rounded-lg border border-slate-200 bg-white p-4 hover:border-gpt-300 hover:shadow-sm transition-all">
             <div class="flex items-center justify-between">
                 <h4 class="text-sm font-medium text-slate-700">Carga del equipo</h4>
                 <svg class="h-5 w-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
             </div>
             <div class="mt-3 flex items-end justify-between">
                 <div>
-                    <p class="text-3xl font-semibold {{ $cargaEquipo['avg'] > 6 ? 'text-gpt-red-600' : ($cargaEquipo['avg'] > 4 ? 'text-amber-600' : 'text-green-600') }}">{{ number_format($cargaEquipo['avg'], 1) }}</p>
+                    <p class="text-3xl font-semibold {{ $cargaEquipoArr['avg'] > 6 ? 'text-gpt-red-600' : ($cargaEquipoArr['avg'] > 4 ? 'text-amber-600' : 'text-green-600') }}">{{ number_format($cargaEquipoArr['avg'], 1) }}</p>
                     <p class="text-xs text-slate-500">Oport. por líder</p>
                 </div>
                 <div class="text-right">
-                    @if($cargaEquipo['sobrecarga'] > 0)
+                    @if($cargaEquipoArr['sobrecarga'] > 0)
                         <span class="inline-flex items-center gap-1 rounded-full bg-gpt-red-100 px-2 py-0.5 text-xs font-medium text-gpt-red-700">
                             <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01"/></svg>
-                            {{ $cargaEquipo['sobrecarga'] }} con sobrecarga
+                            {{ $cargaEquipoArr['sobrecarga'] }} con sobrecarga
                         </span>
                     @endif
                 </div>
             </div>
-            <p class="mt-1 text-xs text-slate-400">{{ $cargaEquipo['total'] }} líderes activos</p>
+            <p class="mt-1 text-xs text-slate-400">{{ $cargaEquipoArr['total'] }} líderes activos</p>
         </a>
 
-        <a href="{{ route('dossiers.riesgo') }}" class="block rounded-lg border border-slate-200 bg-white p-4 hover:border-gpt-300 hover:shadow-sm transition-all">
+        <a href="{{ route('oportunidades.index') }}" class="block rounded-lg border border-slate-200 bg-white p-4 hover:border-gpt-300 hover:shadow-sm transition-all">
             <div class="flex items-center justify-between">
                 <h4 class="text-sm font-medium text-slate-700">Dossiers en riesgo</h4>
                 <svg class="h-5 w-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
@@ -427,7 +476,7 @@
             @endif
         </a>
 
-        <a href="{{ route('postmortems.pendientes') }}" class="block rounded-lg border border-slate-200 bg-white p-4 hover:border-gpt-300 hover:shadow-sm transition-all">
+        <a href="{{ route('proyectos.index') }}" class="block rounded-lg border border-slate-200 bg-white p-4 hover:border-gpt-300 hover:shadow-sm transition-all">
             <div class="flex items-center justify-between">
                 <h4 class="text-sm font-medium text-slate-700">Post-Mortems pendientes</h4>
                 <svg class="h-5 w-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
@@ -446,48 +495,47 @@
 
     {{-- Section 5: Cierre Gerencial Snapshot --}}
     <div class="mt-6">
-        <a href="{{ url('/finanzas/cierres') }}" class="block rounded-lg border border-slate-200 bg-white p-6 hover:border-gpt-300 hover:shadow-sm transition-all">
+        <a href="{{ route('finanzas.cierres') }}" class="block rounded-lg border border-slate-200 bg-white p-6 hover:border-gpt-300 hover:shadow-sm transition-all">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="text-base font-medium text-slate-900">Cierre Gerencial</h3>
-                    <p class="mt-0.5 text-sm text-slate-500">Snapshot financiero acumulado — SAT + Devengado + Pipeline</p>
+                    <p class="mt-0.5 text-sm text-slate-500">Snapshot financiero — Pipeline activo vs Adjudicado</p>
                 </div>
                 <svg class="h-5 w-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
             </div>
             @php
-                $sat = $cierre_sat ?? 12500000;
-                $devengado = $cierre_devengado ?? 22300000;
-                $pipelineCierre = $cierre_pipeline ?? 54700000;
-                $totalCierre = $sat + $devengado + $pipelineCierre;
-                $satPct = $totalCierre > 0 ? ($sat / $totalCierre) * 100 : 0;
-                $devPct = $totalCierre > 0 ? ($devengado / $totalCierre) * 100 : 0;
-                $pipePct = $totalCierre > 0 ? ($pipelineCierre / $totalCierre) * 100 : 0;
+                $pipelineMonto = $pipeline->sum(fn($p) => $p->cotizaciones->max('precio_venta_final') ?? 0);
+                $adjudicadoMonto = $pipeline->whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion', 'en_cierre'])->sum(fn($p) => $p->cotizaciones->max('precio_venta_final') ?? 0);
+                $enRevisionMonto = $pipeline->whereNotIn('estado', ['cerrado', 'cancelado', 'perdido', 'archivado'])->sum(fn($p) => $p->cotizaciones->max('precio_venta_final') ?? 0);
+                $totalCierre = max($pipelineMonto + $enRevisionMonto, 1);
+                $pipePct = $totalCierre > 0 ? ($pipelineMonto / $totalCierre) * 100 : 0;
+                $adjPct = $totalCierre > 0 ? ($adjudicadoMonto / $totalCierre) * 100 : 0;
+                $revPct = $totalCierre > 0 ? (100 - $pipePct - $adjPct) : 0;
             @endphp
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <p class="text-xs font-medium text-slate-500">SAT</p>
-                    <p class="mt-1 text-xl font-semibold text-blue-600">$ {{ number_format($sat, 0, '.', ',') }}</p>
-                    <p class="text-[11px] text-slate-400">{{ number_format($satPct, 1) }}% del total</p>
+                    <p class="text-xs font-medium text-slate-500">Pipeline activo</p>
+                    <p class="mt-1 text-xl font-semibold text-gpt-600">$ {{ number_format($pipelineMonto, 0, '.', ',') }}</p>
+                    <p class="text-[11px] text-slate-400">{{ number_format($pipelineTotal) }} oportunidades</p>
                 </div>
                 <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <p class="text-xs font-medium text-slate-500">Devengado</p>
-                    <p class="mt-1 text-xl font-semibold text-indigo-600">$ {{ number_format($devengado, 0, '.', ',') }}</p>
-                    <p class="text-[11px] text-slate-400">{{ number_format($devPct, 1) }}% del total</p>
+                    <p class="text-xs font-medium text-slate-500">Adjudicado</p>
+                    <p class="mt-1 text-xl font-semibold text-green-600">$ {{ number_format($adjudicadoMonto, 0, '.', ',') }}</p>
+                    <p class="text-[11px] text-slate-400">{{ $adjudicadosCount }} proyectos</p>
                 </div>
                 <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <p class="text-xs font-medium text-slate-500">Pipeline</p>
-                    <p class="mt-1 text-xl font-semibold text-gpt-600">$ {{ number_format($pipelineCierre, 0, '.', ',') }}</p>
-                    <p class="text-[11px] text-slate-400">{{ number_format($pipePct, 1) }}% del total</p>
+                    <p class="text-xs font-medium text-slate-500">En revisión/cotización</p>
+                    <p class="mt-1 text-xl font-semibold text-blue-600">$ {{ number_format($enRevisionMonto, 0, '.', ',') }}</p>
+                    <p class="text-[11px] text-slate-400">{{ number_format($pipePct, 1) }}% del pipeline</p>
                 </div>
             </div>
-            {{-- Waterfall mini-bars --}}
             <div class="mt-4 flex items-end gap-1 h-10">
-                <div class="bg-blue-400 rounded-t flex-1" style="height: {{ 10 + ($satPct * 0.7) }}%"></div>
-                <div class="bg-indigo-400 rounded-t flex-1" style="height: {{ 10 + ($devPct * 0.7) }}%"></div>
-                <div class="bg-gpt-400 rounded-t flex-1" style="height: {{ 10 + ($pipePct * 0.7) }}%"></div>
+                <div class="bg-gpt-400 rounded-t flex-1" style="height: {{ 10 + min($pipePct, 90) }}%"></div>
+                <div class="bg-green-400 rounded-t flex-1" style="height: {{ 10 + min($adjPct, 90) }}%"></div>
+                <div class="bg-blue-400 rounded-t flex-1" style="height: {{ 10 + min(abs($revPct), 90) }}%"></div>
             </div>
             <div class="mt-3 flex items-center justify-between">
-                <p class="text-sm text-slate-600">Total cartera + pipeline</p>
+                <p class="text-sm text-slate-600">Cartera total</p>
                 <p class="text-lg font-semibold text-slate-900">$ {{ number_format($totalCierre, 0, '.', ',') }}</p>
             </div>
         </a>

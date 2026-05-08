@@ -35,4 +35,29 @@ return [
         ],
     ],
 
+    'auth0' => [
+        'client_id' => env('AUTH0_CLIENT_ID'),
+        'client_secret' => env('AUTH0_CLIENT_SECRET'),
+        'domain' => env('AUTH0_DOMAIN'),
+        'cookie_secret' => env('AUTH0_COOKIE_SECRET'),
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('APP_URL') . '/auth/google/callback',
+    ],
+
+    'microsoft' => [
+        'client_id' => env('MICROSOFT_CLIENT_ID'),
+        'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
+        'redirect' => env('APP_URL') . '/auth/microsoft/callback',
+    ],
+
+    'apple' => [
+        'client_id' => env('APPLE_CLIENT_ID'),
+        'client_secret' => env('APPLE_CLIENT_SECRET'),
+        'redirect' => env('APP_URL') . '/auth/apple/callback',
+    ],
+
 ];

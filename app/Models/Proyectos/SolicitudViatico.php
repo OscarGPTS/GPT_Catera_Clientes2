@@ -25,6 +25,7 @@ class SolicitudViatico extends Model
         'aprobado_por_id',
         'aprobado_at',
         'observaciones',
+        'motivo_rechazo',
         'monto_total',
     ];
 

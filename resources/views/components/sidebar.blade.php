@@ -35,6 +35,7 @@
         <x-sidebar-section label="Principal">
             <x-sidebar-item href="/" icon="home" label="Dashboard" />
             <x-sidebar-item href="/oportunidades" icon="briefcase" label="Oportunidades" />
+            <x-sidebar-item href="/clientes" icon="building-office" label="Clientes" />
         </x-sidebar-section>
 
         {{-- Proyectos --}}

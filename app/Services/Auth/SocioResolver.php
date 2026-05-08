@@ -2,9 +2,9 @@
 
 namespace App\Services\Auth;
 
+use App\Models\SocioAllowlist;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class SocioResolver
 {
@@ -19,9 +19,21 @@ class SocioResolver
         }
 
         return Cache::remember("socio_resolver:{$user->email}", 30 * 60, function () use ($user) {
-            return DB::table('socios_allowlist')
-                ->where('email', $user->email)
-                ->exists();
+            return SocioAllowlist::where('email', $user->email)->exists();
         });
+    }
+
+    public function refreshSocioStatus(User $user): bool
+    {
+        $isSocio = $this->isSocio($user);
+        $user->update(['es_socio' => $isSocio]);
+
+        if ($isSocio && ! $user->hasRole('socio')) {
+            $user->assignRole('socio');
+        } elseif (! $isSocio && $user->hasRole('socio')) {
+            $user->removeRole('socio');
+        }
+
+        return $isSocio;
     }
 }

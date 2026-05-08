@@ -16,14 +16,11 @@ class CierreMensual extends Model
     protected $fillable = [
         'año',
         'mes',
-        'fecha_inicio',
-        'fecha_fin',
+        'tipo',
+        'fecha_corte',
         'status',
-        'cerrado_por_id',
-        'cerrado_at',
-        'total_ingresos',
-        'total_egresos',
-        'diferencia',
+        'generado_por_id',
+        'aprobado_por_id',
         'observaciones',
     ];
 
@@ -32,22 +29,22 @@ class CierreMensual extends Model
         return [
             'año' => 'integer',
             'mes' => 'integer',
-            'fecha_inicio' => 'datetime',
-            'fecha_fin' => 'datetime',
-            'cerrado_at' => 'datetime',
-            'total_ingresos' => 'decimal:2',
-            'total_egresos' => 'decimal:2',
-            'diferencia' => 'decimal:2',
+            'fecha_corte' => 'date',
         ];
     }
 
-    public function cerradoPor(): BelongsTo
+    public function generadoPor(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'cerrado_por_id');
+        return $this->belongsTo(\App\Models\User::class, 'generado_por_id');
+    }
+
+    public function aprobadoPor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'aprobado_por_id');
     }
 
     public function secciones(): HasMany
     {
-        return $this->hasMany(CierreMensualSeccion::class, 'cierre_mensual_id');
+        return $this->hasMany(CierreSeccion::class, 'cierre_id');
     }
 }

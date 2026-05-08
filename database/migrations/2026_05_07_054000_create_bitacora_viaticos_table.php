@@ -41,21 +41,24 @@ return new class extends Migration
         Schema::create('solicitudes_viaticos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('proyecto_id')->constrained('proyectos')->cascadeOnDelete();
-            $table->date('periodo_inicio');
-            $table->date('periodo_fin');
-            $table->text('justificacion')->nullable();
+            $table->date('fecha_inicio');
+            $table->date('fecha_fin');
+            $table->string('destino')->nullable();
+            $table->text('motivo')->nullable();
             $table->enum('status', ['borrador', 'pendiente_serv_grales', 'pendiente_direccion', 'aprobado', 'rechazado'])->default('borrador');
             $table->foreignId('solicitante_id')->constrained('users');
-            $table->foreignId('aprobador_serv_grales_id')->nullable()->constrained('users');
-            $table->foreignId('aprobador_direccion_id')->nullable()->constrained('users');
+            $table->foreignId('aprobado_por_id')->nullable()->constrained('users');
             $table->timestamp('aprobado_at')->nullable();
+            $table->string('motivo_rechazo')->nullable();
+            $table->decimal('monto_total', 15, 2)->default(0);
+            $table->text('observaciones')->nullable();
             $table->string('pdf_path')->nullable();
             $table->timestamps();
         });
 
         Schema::create('viaticos_personal', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('solicitud_id')->constrained('solicitudes_viaticos')->cascadeOnDelete();
+            $table->foreignId('solicitud_viatico_id')->constrained('solicitudes_viaticos')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users');
             $table->integer('dias')->default(1);
             $table->timestamps();
@@ -63,7 +66,7 @@ return new class extends Migration
 
         Schema::create('viaticos_partidas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('solicitud_id')->constrained('solicitudes_viaticos')->cascadeOnDelete();
+            $table->foreignId('solicitud_viatico_id')->constrained('solicitudes_viaticos')->cascadeOnDelete();
             $table->enum('concepto', ['hospedaje', 'alimentos', 'transporte']);
             $table->decimal('monto_estimado', 15, 2)->default(0);
             $table->decimal('monto_real', 15, 2)->nullable();

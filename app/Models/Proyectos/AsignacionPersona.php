@@ -10,7 +10,7 @@ class AsignacionPersona extends Model
 {
     use HasFactory;
 
-    protected $table = 'asignaciones_personas';
+    protected $table = 'proyecto_asignaciones';
 
     protected $fillable = [
         'user_id',

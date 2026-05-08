@@ -4,16 +4,19 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuthProvider;
-use App\Models\User;
-use App\Services\Auth\RoleMapper;
-use App\Services\Auth\SocioResolver;
-use App\Services\Rh\RhClientInterface;
+use App\Services\Auth\AuthOrchestrator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
+    public function __construct(
+        private AuthOrchestrator $orchestrator,
+    ) {}
+
     public function show()
     {
         if (Auth::check()) {
@@ -25,24 +28,53 @@ class LoginController extends Controller
 
     public function authenticate(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $credentials['email'])->first();
+        $email = strtolower($request->input('email'));
+        $password = $request->input('password');
+
+        $throttleKey = strtolower($email) . '|' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            throw ValidationException::withMessages([
+                'email' => ["Demasiados intentos. Intenta de nuevo en {$seconds} segundos."],
+            ]);
+        }
+
+        $user = \App\Models\User::where('email', $email)->first();
 
         if (! $user) {
-            return back()->withErrors(['email' => 'Cuenta no autorizada. Contacta al administrador.']);
+            RateLimiter::hit($throttleKey);
+
+            throw ValidationException::withMessages([
+                'email' => 'Cuenta no autorizada. Contacta al administrador.',
+            ]);
+        }
+
+        if ($user->status === 'suspended') {
+            throw ValidationException::withMessages([
+                'email' => 'Esta cuenta está suspendida. Contacta al administrador.',
+            ]);
         }
 
         $provider = AuthProvider::where('user_id', $user->id)
             ->where('provider', 'email_password')
             ->first();
 
-        if (! $provider || ! Hash::check($credentials['password'], $provider->password_hash)) {
-            return back()->withErrors(['email' => 'Credenciales inválidas.']);
+        if (! $provider || ! Hash::check($password, $provider->password_hash)) {
+            RateLimiter::hit($throttleKey);
+
+            throw ValidationException::withMessages([
+                'email' => 'Credenciales inválidas.',
+            ]);
         }
+
+        RateLimiter::clear($throttleKey);
 
         Auth::login($user);
         $user->update(['last_login_at' => now()]);
@@ -51,5 +83,14 @@ class LoginController extends Controller
         $request->session()->regenerate();
 
         return redirect()->intended('/');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
     }
 }

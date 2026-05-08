@@ -2,12 +2,15 @@
 
 namespace App\Models\Proyectos;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cotizacion extends Model
 {
+    use HasFactory;
+
     protected $table = 'cotizaciones';
 
     protected $fillable = [
@@ -40,19 +43,9 @@ class Cotizacion extends Model
     {
         return $this->hasMany(CotizacionPartida::class, 'cotizacion_id');
     }
-}
 
-class CotizacionPartida extends Model
-{
-    protected $table = 'cotizacion_partidas';
-
-    protected $fillable = [
-        'cotizacion_id', 'numero_partida', 'descripcion', 'cantidad',
-        'unidad', 'costo_unitario', 'costo_total', 'observaciones',
-    ];
-
-    public function cotizacion(): BelongsTo
+    public function generadoPor(): BelongsTo
     {
-        return $this->belongsTo(Cotizacion::class, 'cotizacion_id');
+        return $this->belongsTo(\App\Models\User::class, 'generado_por');
     }
 }
