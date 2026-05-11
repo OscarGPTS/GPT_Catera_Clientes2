@@ -78,6 +78,11 @@
         </x-sidebar-section>
         @endcanany
 
+        {{-- Chat --}}
+        <x-sidebar-section label="Chat">
+            <x-sidebar-item href="/chat" icon="chat-bubble-left-right" label="Chat" />
+        </x-sidebar-section>
+
         {{-- Ejecutivo --}}
         @canany(['ver vista ejecutiva'])
         <x-sidebar-section label="Ejecutivo">

@@ -25,6 +25,7 @@
     </div>
 
     @livewireScripts
+    <livewire:chat.chat-drawer />
     <script>
         document.addEventListener('livewire:navigated', function() {
             if (window.innerWidth < 1024) {

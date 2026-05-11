@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Chat\ChatCanal;
+use App\Models\Chat\ChatCanalMiembro;
+use App\Models\Chat\ChatLectura;
+use App\Models\Chat\ChatMencion;
+use App\Models\Chat\ChatMensaje;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -53,5 +58,42 @@ class User extends Authenticatable
     public function proyectosComoIngeniero()
     {
         return $this->hasMany(\App\Models\Proyectos\Proyecto::class, 'ingeniero_proyectos_id');
+    }
+
+    public function chatCanales()
+    {
+        return $this->belongsToMany(ChatCanal::class, 'chat_canal_miembros', 'user_id', 'canal_id')
+            ->withPivot('rol_en_canal', 'joined_at')
+            ->withTimestamps();
+    }
+
+    public function chatMembresias()
+    {
+        return $this->hasMany(ChatCanalMiembro::class, 'user_id');
+    }
+
+    public function chatMensajes()
+    {
+        return $this->hasMany(ChatMensaje::class, 'user_id');
+    }
+
+    public function chatMenciones()
+    {
+        return $this->hasMany(ChatMencion::class, 'user_id');
+    }
+
+    public function chatMencionesNoLeidas()
+    {
+        return $this->hasMany(ChatMencion::class, 'user_id')->whereNull('leido_at');
+    }
+
+    public function chatLecturas()
+    {
+        return $this->hasMany(ChatLectura::class, 'user_id');
+    }
+
+    public function esAdmin(): bool
+    {
+        return $this->hasRole(['super_admin', 'direccion_general']);
     }
 }

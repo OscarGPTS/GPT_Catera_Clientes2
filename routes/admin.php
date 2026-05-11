@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\RhMappingController;
 use App\Http\Controllers\Admin\RolesPermisosController;
 use App\Http\Controllers\Admin\SocioController;
 use App\Http\Controllers\Admin\UsuarioController;
+use App\Livewire\Chat\AdminChat;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'can:ver admin usuarios'])->prefix('admin')->name('admin.')->group(function () {
@@ -34,4 +35,6 @@ Route::middleware(['auth', 'can:ver admin usuarios'])->prefix('admin')->name('ad
     Route::middleware('can:ver roles permisos')->group(function () {
         Route::get('/roles-permisos', [RolesPermisosController::class, 'index'])->name('roles-permisos.index');
     });
+
+    Route::get('/chat', AdminChat::class)->name('chat.index');
 });

@@ -6,6 +6,7 @@ use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\Proyectos\AdjudicacionController;
 use App\Http\Controllers\Proyectos\MinutaController;
 use App\Http\Controllers\Proyectos\OportunidadController;
+use App\Livewire\Chat\ChatDrawer;
 use App\Livewire\Comercial\ClientesIndex;
 use App\Livewire\Comercial\ClienteDetalle;
 use App\Livewire\Configuracion\ConfiguracionIndex;
@@ -13,6 +14,7 @@ use App\Livewire\Ejecutivo\DashboardIndex;
 use App\Livewire\Finanzas\CierresIndex;
 use App\Livewire\NuevaOportunidad;
 use App\Livewire\Proyectos\AdjudicacionForm;
+use App\Livewire\Notificaciones\NotificationsIndex;
 use App\Livewire\Proyectos\AsignacionesIndex;
 use App\Livewire\Proyectos\BitacoraForm;
 use App\Livewire\Proyectos\BomBoeIndex;
@@ -98,6 +100,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Configuración
     Route::get('/configuracion', ConfiguracionIndex::class)->name('configuracion.index');
+
+    // Notificaciones
+    Route::get('/notificaciones', NotificationsIndex::class)->name('notificaciones.index');
+
+    // Chat
+    Route::get('/chat', ChatDrawer::class)->middleware('auth')->name('chat.index');
 
     
 });
