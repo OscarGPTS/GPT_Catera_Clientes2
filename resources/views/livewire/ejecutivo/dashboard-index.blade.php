@@ -1,3 +1,4 @@
+<script>window._dashData = @json($chartData);</script>
 <div>
     <x-slot name="header">
         @php
@@ -90,6 +91,131 @@
             </svg>
             Reporte PDF — Próximamente
         </button>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- SECCIÓN PRINCIPAL: Cartera por mes y probabilidad (Chart.js) --}}
+    {{-- ============================================================ --}}
+    <div class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div class="grid grid-cols-1 xl:grid-cols-5 divide-y xl:divide-y-0 xl:divide-x divide-slate-100">
+
+            {{-- Chart A (3/5): Stacked bar — cartera por mes × probabilidad --}}
+            <div class="xl:col-span-3 p-6">
+                <div class="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                        <h3 class="text-base font-semibold text-slate-900">Cartera por mes y probabilidad de adjudicación</h3>
+                        <p class="mt-0.5 text-sm text-slate-500">Monto USD (millones) apilado por nivel · Nov 2025 – Dic 2026 · todos los proyectos</p>
+                    </div>
+                    <div class="flex flex-wrap gap-x-3 gap-y-1 justify-end text-[11px] text-slate-500 shrink-0">
+                        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-emerald-500"></span>Contratada</span>
+                        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-cyan-500"></span>75%</span>
+                        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-blue-500"></span>50%</span>
+                        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-amber-500"></span>25%</span>
+                        <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-slate-400"></span>Remoto</span>
+                    </div>
+                </div>
+                <div class="relative h-64 w-full"
+                     x-data
+                     x-init="
+                        const d = window._dashData;
+                        const ctx = $el.querySelector('canvas').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: d.monthLabels,
+                                datasets: [
+                                    { label: 'Contratada (100%)', data: d.byMonth.p100, backgroundColor: 'rgba(16,185,129,0.8)', stack: 's', borderRadius: 3 },
+                                    { label: 'Casi Probable (75%)', data: d.byMonth.p75, backgroundColor: 'rgba(6,182,212,0.8)', stack: 's', borderRadius: 3 },
+                                    { label: 'Probable (50%)', data: d.byMonth.p50, backgroundColor: 'rgba(59,130,246,0.8)', stack: 's', borderRadius: 3 },
+                                    { label: 'Posible (25%)', data: d.byMonth.p25, backgroundColor: 'rgba(245,158,11,0.8)', stack: 's', borderRadius: 3 },
+                                    { label: 'Remoto (10%)', data: d.byMonth.p10, backgroundColor: 'rgba(148,163,184,0.6)', stack: 's', borderRadius: 3 },
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                interaction: { mode: 'index', intersect: false },
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        callbacks: { label: function(c) { return ' ' + c.dataset.label + ': $' + c.parsed.y.toFixed(2) + 'M'; } }
+                                    }
+                                },
+                                scales: {
+                                    x: { stacked: true, grid: { color: 'rgba(148,163,184,0.15)' }, ticks: { font: { size: 11 }, color: '#94a3b8' } },
+                                    y: { stacked: true, grid: { color: 'rgba(148,163,184,0.15)' }, ticks: { font: { size: 11 }, color: '#94a3b8', callback: function(v) { return '$' + v + 'M'; } } }
+                                }
+                            }
+                        });
+                     ">
+                    <canvas></canvas>
+                </div>
+            </div>
+
+            {{-- Chart B (2/5): Horizontal — sublínea + cliente --}}
+            <div class="xl:col-span-2 grid grid-rows-2 divide-y divide-slate-100">
+
+                {{-- B1: Por sublínea --}}
+                <div class="p-6">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-0.5">Pipeline por sublínea</h3>
+                    <p class="text-xs text-slate-500 mb-3">Monto total USD por línea de negocio</p>
+                    <div class="relative h-28 w-full"
+                         x-data
+                         x-init="
+                            const d = window._dashData;
+                            const labels = Object.keys(d.bySublinea);
+                            const values = Object.values(d.bySublinea);
+                            const colors = ['rgba(99,102,241,0.7)','rgba(59,130,246,0.7)','rgba(16,185,129,0.7)','rgba(245,158,11,0.7)','rgba(239,68,68,0.7)','rgba(6,182,212,0.7)','rgba(251,113,133,0.7)','rgba(100,116,139,0.7)','rgba(234,179,8,0.7)','rgba(20,184,166,0.7)'];
+                            const ctx = $el.querySelector('canvas').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'bar',
+                                data: { labels, datasets: [{ label: 'USD M', data: values, backgroundColor: colors.slice(0, labels.length), borderRadius: 3 }] },
+                                options: {
+                                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return ' $' + c.parsed.x.toFixed(2) + 'M USD'; } } } },
+                                    scales: {
+                                        x: { grid: { color: 'rgba(148,163,184,0.15)' }, ticks: { font: { size: 10 }, color: '#94a3b8', callback: function(v){ return '$' + v + 'M'; } } },
+                                        y: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#374151' } }
+                                    }
+                                }
+                            });
+                         ">
+                        <canvas></canvas>
+                    </div>
+                </div>
+
+                {{-- B2: Por cliente --}}
+                <div class="p-6">
+                    <h3 class="text-sm font-semibold text-slate-900 mb-0.5">Top clientes por monto</h3>
+                    <p class="text-xs text-slate-500 mb-3">Concentración de cartera por cliente</p>
+                    <div class="relative h-28 w-full"
+                         x-data
+                         x-init="
+                            const d = window._dashData;
+                            const labels = Object.keys(d.byCliente);
+                            const values = Object.values(d.byCliente);
+                            const total = values.reduce(function(a,b){ return a+b; }, 0);
+                            const colors = ['rgba(239,68,68,0.7)','rgba(59,130,246,0.7)','rgba(16,185,129,0.7)','rgba(245,158,11,0.7)','rgba(139,92,246,0.7)','rgba(6,182,212,0.7)','rgba(251,113,133,0.7)','rgba(100,116,139,0.7)'];
+                            const ctx = $el.querySelector('canvas').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'bar',
+                                data: { labels, datasets: [{ label: 'USD M', data: values, backgroundColor: colors.slice(0, labels.length), borderRadius: 3 }] },
+                                options: {
+                                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return ' $' + c.parsed.x.toFixed(2) + 'M (' + ((c.parsed.x / total) * 100).toFixed(0) + '%)'; } } } },
+                                    scales: {
+                                        x: { grid: { color: 'rgba(148,163,184,0.15)' }, ticks: { font: { size: 10 }, color: '#94a3b8', callback: function(v){ return '$' + v + 'M'; } } },
+                                        y: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#374151' } }
+                                    }
+                                }
+                            });
+                         ">
+                        <canvas></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     {{-- Section 1: KPI cards --}}

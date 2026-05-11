@@ -54,11 +54,81 @@ class PipelineGlobal extends Component
         ];
     }
 
+    /** Data prepared for Chart.js */
+    public function getChartDataProperty(): array
+    {
+        $pipeline = $this->pipeline;
+
+        $monthDefs = [
+            ['year' => 2025, 'num' => 11, 'label' => 'Nov 25'],
+            ['year' => 2025, 'num' => 12, 'label' => 'Dic 25'],
+            ['year' => 2026, 'num' => 1,  'label' => 'Ene 26'],
+            ['year' => 2026, 'num' => 2,  'label' => 'Feb 26'],
+            ['year' => 2026, 'num' => 3,  'label' => 'Mar 26'],
+            ['year' => 2026, 'num' => 4,  'label' => 'Abr 26'],
+            ['year' => 2026, 'num' => 5,  'label' => 'May 26'],
+            ['year' => 2026, 'num' => 6,  'label' => 'Jun 26'],
+            ['year' => 2026, 'num' => 7,  'label' => 'Jul 26'],
+            ['year' => 2026, 'num' => 8,  'label' => 'Ago 26'],
+            ['year' => 2026, 'num' => 9,  'label' => 'Sep 26'],
+            ['year' => 2026, 'num' => 10, 'label' => 'Oct 26'],
+            ['year' => 2026, 'num' => 11, 'label' => 'Nov 26'],
+            ['year' => 2026, 'num' => 12, 'label' => 'Dic 26'],
+        ];
+
+        // Stacked bar: amount (millions) per month per ponderacion band
+        $byMonth = [
+            'p100' => array_fill(0, 14, 0),
+            'p75'  => array_fill(0, 14, 0),
+            'p50'  => array_fill(0, 14, 0),
+            'p25'  => array_fill(0, 14, 0),
+            'p10'  => array_fill(0, 14, 0),
+        ];
+
+        foreach ($pipeline as $p) {
+            $colIdx = 2; // fallback: Ene 26
+            foreach ($monthDefs as $idx => $m) {
+                if ($p['mes'] == $m['num'] && $p['mes_year'] == $m['year']) {
+                    $colIdx = $idx;
+                    break;
+                }
+            }
+            $key = 'p' . $p['ponderacion'];
+            if (isset($byMonth[$key])) {
+                $byMonth[$key][$colIdx] = round($byMonth[$key][$colIdx] + ($p['monto'] / 1_000_000), 3);
+            }
+        }
+
+        // Horizontal bar: amount (millions) per sublinea, sorted desc
+        $bySublinea = $pipeline
+            ->groupBy('sublinea')
+            ->map(fn ($g) => round($g->sum('monto') / 1_000_000, 3))
+            ->sortDesc()
+            ->take(10)
+            ->toArray();
+
+        // Horizontal bar: amount (millions) per top client, sorted desc
+        $byCliente = $pipeline
+            ->groupBy('alias')
+            ->map(fn ($g) => round($g->sum('monto') / 1_000_000, 3))
+            ->sortDesc()
+            ->take(8)
+            ->toArray();
+
+        return [
+            'monthLabels' => array_column($monthDefs, 'label'),
+            'byMonth'     => $byMonth,
+            'bySublinea'  => $bySublinea,
+            'byCliente'   => $byCliente,
+        ];
+    }
+
     public function render()
     {
         return view('livewire.ejecutivo.pipeline-global', [
-            'pipeline' => $this->pipeline,
-            'kpis'     => $this->kpis,
+            'pipeline'  => $this->pipeline,
+            'kpis'      => $this->kpis,
+            'chartData' => $this->chartData,
         ])->layout('components.layouts.app', ['fullWidth' => true]);
     }
 }
