@@ -40,15 +40,18 @@
 
         {{-- Proyectos --}}
         @canany(['ver proyectos', 'ver libro proyecto'])
+        @php
+        $proyectosItems = ['/proyectos', '/proyectos/asignaciones', '/proyectos/bom-boe', '/proyectos/suministros'];
+        @endphp
         <x-sidebar-section label="Proyectos" collapsible>
             @can('ver proyectos')
-            <x-sidebar-item href="/proyectos" icon="clipboard-document-list" label="Proyectos" />
+            <x-sidebar-item href="/proyectos" icon="clipboard-document-list" label="Proyectos" :siblingHrefs="$proyectosItems" />
             @endcan
             @can('ver libro proyecto')
-            <x-sidebar-item href="/proyectos/asignaciones" icon="chart-bar" label="Asignaciones" />
+            <x-sidebar-item href="/proyectos/asignaciones" icon="chart-bar" label="Asignaciones" :siblingHrefs="$proyectosItems" />
             @endcan
-            <x-sidebar-item href="/proyectos/bom-boe" icon="cog-6-tooth" label="BOM / BOE" />
-            <x-sidebar-item href="/proyectos/suministros" icon="truck" label="Suministros" />
+            <x-sidebar-item href="/proyectos/bom-boe" icon="cog-6-tooth" label="BOM / BOE" :siblingHrefs="$proyectosItems" />
+            <x-sidebar-item href="/proyectos/suministros" icon="truck" label="Suministros" :siblingHrefs="$proyectosItems" />
         </x-sidebar-section>
         @endcanany
 
@@ -66,9 +69,12 @@
 
         {{-- Finanzas --}}
         @canany(['ver finanzas'])
+        @php
+        $finanzasItems = ['/finanzas', '/finanzas/cierres'];
+        @endphp
         <x-sidebar-section label="Finanzas" collapsible>
-            <x-sidebar-item href="/finanzas" icon="banknotes" label="Finanzas" />
-            <x-sidebar-item href="/finanzas/cierres" icon="calculator" label="Cierres" />
+            <x-sidebar-item href="/finanzas" icon="banknotes" label="Finanzas" :siblingHrefs="$finanzasItems" />
+            <x-sidebar-item href="/finanzas/cierres" icon="calculator" label="Cierres" :siblingHrefs="$finanzasItems" />
         </x-sidebar-section>
         @endcanany
 

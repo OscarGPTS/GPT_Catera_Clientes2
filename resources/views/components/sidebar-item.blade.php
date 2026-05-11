@@ -1,7 +1,22 @@
-@props(['href' => '#', 'icon' => 'square-2-stack', 'label' => ''])
+@props(['href' => '#', 'icon' => 'square-2-stack', 'label' => '', 'siblingHrefs' => []])
 
 @php
-$isActive = request()->is(trim($href, '/')) || (trim($href, '/') !== '' && request()->is(trim($href, '/') . '/*'));
+$cleanHref = trim($href, '/');
+$exactMatch = request()->is($cleanHref);
+$wildcardMatch = $cleanHref !== '' && request()->is($cleanHref . '/*');
+
+// If another sibling item matches the current URL exactly,
+// skip wildcard matching to avoid parent/prefix items staying highlighted.
+$siblingExact = false;
+foreach ($siblingHrefs as $siblingHref) {
+    $siblingClean = trim($siblingHref, '/');
+    if ($siblingClean !== $cleanHref && request()->is($siblingClean)) {
+        $siblingExact = true;
+        break;
+    }
+}
+
+$isActive = $exactMatch || ($wildcardMatch && !$siblingExact);
 @endphp
 
 <a
