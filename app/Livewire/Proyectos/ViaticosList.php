@@ -247,7 +247,7 @@ class ViaticosList extends Component
                 ->with('cliente')
                 ->orderBy('cp_numero')
                 ->get(),
-            'personalDisponible' => User::where('status', 'activo')->orderBy('name')->get(),
+            'personalDisponible' => User::where('status', 'active')->orderBy('name')->get(),
         ])->layout('components.layouts.app');
     }
 }

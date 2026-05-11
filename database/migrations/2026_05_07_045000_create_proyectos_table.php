@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('tech_reference')->nullable()->unique();
             $table->string('cp_numero')->nullable()->unique();
             $table->string('dn_numero')->nullable()->unique();
-            $table->year('año');
+            $table->year('anio');
             $table->foreignId('cliente_id')->constrained('clientes');
             $table->foreignId('sublinea_id')->constrained('sublineas');
             $table->string('usuario_final')->nullable();

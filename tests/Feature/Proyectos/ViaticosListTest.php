@@ -43,7 +43,7 @@ class ViaticosListTest extends TestCase
 
         $this->proyecto = Proyecto::create([
             'cp_numero' => 'CP-26-VTC',
-            'año' => 2026,
+            'anio' => 2026,
             'cliente_id' => $cliente->id,
             'sublinea_id' => $sublinea->id,
             'estado' => 'en_ejecucion',

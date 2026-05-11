@@ -6,26 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Proyectos\Proyecto;
 use App\Models\Proyectos\MinutaEntrega;
 use App\Models\Proyectos\MinutaEntregaParticipante;
-use App\Settings\SystemSettings;
 use Illuminate\Http\Request;
 
 class MinutaController extends Controller
 {
-    public function show(Proyecto $proyecto)
-    {
-        $proyecto->load(['cliente', 'sublinea', 'gerenteProyectos', 'directorDn']);
-
-        $minuta = $proyecto->minutaEntrega;
-        $minutaObligatoria = app(SystemSettings::class)->minuta_entrega_obligatoria;
-
-        return view('proyectos.minuta-entrega', [
-            'proyectoId' => $proyecto->id,
-            'proyecto' => $proyecto,
-            'minuta' => $minuta,
-            'minutaObligatoria' => $minutaObligatoria,
-        ]);
-    }
-
     public function store(Request $request, Proyecto $proyecto)
     {
         $this->authorize('crear minuta');

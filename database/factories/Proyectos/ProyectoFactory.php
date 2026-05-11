@@ -24,7 +24,7 @@ class ProyectoFactory extends Factory
             'tech_reference' => fake()->unique()->bothify('TR-####'),
             'cp_numero' => 'CP-' . now()->format('y') . '-' . str_pad(fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
             'dn_numero' => fake()->optional(0.7)->bothify('DN-####'),
-            'año' => now()->year,
+            'anio' => now()->year,
             'cliente_id' => Cliente::factory(),
             'sublinea_id' => Sublinea::factory(),
             'usuario_final' => fake()->company(),

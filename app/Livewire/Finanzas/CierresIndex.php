@@ -65,7 +65,7 @@ class CierresIndex extends Component
         try {
             $service = new CierreService();
             $cierre = \App\Models\Finanzas\CierreMensual::where('mes', $this->mes)
-                ->where('año', $this->anio)
+                ->where('anio', $this->anio)
                 ->where('tipo', 'gerencial_avance')
                 ->firstOrFail();
 
@@ -101,6 +101,8 @@ class CierresIndex extends Component
         $data = $this->cierreData;
 
         return view('livewire.finanzas.cierres-index', [
+            'aniosDisponibles' => $this->aniosDisponibles,
+            'meses' => $this->meses,
             'facturasSat' => $data['facturas_sat'],
             'totalSat' => $data['total_sat'],
             'proyectosDevengado' => $data['proyectos_devengado'],

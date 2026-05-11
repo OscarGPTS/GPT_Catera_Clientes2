@@ -14,40 +14,9 @@ class UsuarioController extends Controller
         private AuthOrchestrator $orchestrator,
     ) {}
 
-    public function index(Request $request)
+    public function index()
     {
-        $query = User::with(['roles', 'authProviders']);
-
-        if ($search = $request->input('buscar')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('email', 'ilike', "%{$search}%")
-                    ->orWhere('puesto', 'ilike', "%{$search}%");
-            });
-        }
-
-        if ($rol = $request->input('rol')) {
-            $query->whereHas('roles', fn($q) => $q->where('name', $rol));
-        }
-
-        if ($estado = $request->input('estado')) {
-            $query->where('status', $estado);
-        }
-
-        if ($departamento = $request->input('departamento')) {
-            $query->where('departamento', $departamento);
-        }
-
-        $usuarios = $query->orderBy('name')->paginate(25)->withQueryString();
-
-        $totalActivos = User::where('status', 'active')->count();
-        $totalInvitados = User::where('status', 'invited')->count();
-        $totalSuspendidos = User::where('status', 'suspended')->count();
-        $departamentos = User::whereNotNull('departamento')->distinct()->pluck('departamento')->sort();
-
-        return view('admin.usuarios', compact(
-            'usuarios', 'totalActivos', 'totalInvitados', 'totalSuspendidos', 'departamentos',
-        ));
+        return view('admin.usuarios');
     }
 
     public function show(User $usuario)

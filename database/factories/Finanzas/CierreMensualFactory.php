@@ -14,7 +14,7 @@ class CierreMensualFactory extends Factory
     {
         return [
             'mes' => fake()->numberBetween(1, 12),
-            'año' => now()->year,
+            'anio' => now()->year,
             'tipo' => fake()->randomElement(['contable_sat', 'gerencial_avance']),
             'fecha_corte' => fake()->dateTimeBetween('-1 month', 'now')->format('Y-m-d'),
             'status' => fake()->randomElement(['borrador', 'generado', 'aprobado']),

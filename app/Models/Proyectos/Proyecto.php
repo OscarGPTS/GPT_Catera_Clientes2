@@ -16,7 +16,7 @@ class Proyecto extends Model
     protected $table = 'proyectos';
 
     protected $fillable = [
-        'tech_reference', 'cp_numero', 'dn_numero', 'año',
+        'tech_reference', 'cp_numero', 'dn_numero', 'anio',
         'cliente_id', 'sublinea_id', 'usuario_final', 'sector',
         'estado', 'fecha_inicio_planeada', 'fecha_fin_planeada',
         'metodo_distribucion_plurianual',
@@ -28,7 +28,7 @@ class Proyecto extends Model
     protected function casts(): array
     {
         return [
-            'año' => 'integer',
+            'anio' => 'integer',
             'fecha_inicio_planeada' => 'date',
             'fecha_fin_planeada' => 'date',
         ];

@@ -41,4 +41,9 @@ class MinutaEntrega extends Model
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');
     }
+
+    public function participantes()
+    {
+        return $this->hasMany(MinutaEntregaParticipante::class, 'minuta_id');
+    }
 }

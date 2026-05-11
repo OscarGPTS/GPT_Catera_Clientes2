@@ -11,22 +11,7 @@ class RhMappingController extends Controller
 {
     public function index()
     {
-        $mappings = RhRoleMapping::orderBy('prioridad', 'desc')->get();
-        $totalUsuarios = User::whereNotNull('puesto')->count();
-
-        $impactPreview = [];
-        foreach ($mappings as $mapping) {
-            $pattern = str_replace('%', '', $mapping->puesto_rh);
-            $count = User::where('puesto', 'ilike', "%{$pattern}%")->count();
-            if ($mapping->departamento_filter) {
-                $count = User::where('puesto', 'ilike', "%{$pattern}%")
-                    ->where('departamento', $mapping->departamento_filter)
-                    ->count();
-            }
-            $impactPreview[$mapping->id] = $count;
-        }
-
-        return view('admin.rh-mapping', compact('mappings', 'totalUsuarios', 'impactPreview'));
+        return view('admin.rh-mapping');
     }
 
     public function store(Request $request)

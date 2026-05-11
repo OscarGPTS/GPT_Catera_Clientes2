@@ -17,6 +17,6 @@ class PerfilController extends Controller
 
     public function miAsignacion()
     {
-        return app(\App\Http\Controllers\Proyectos\AsignacionController::class)->miAsignacion();
+        return view('perfil.asignacion');
     }
 }

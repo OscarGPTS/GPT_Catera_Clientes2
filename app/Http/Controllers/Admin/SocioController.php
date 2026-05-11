@@ -11,15 +11,7 @@ class SocioController extends Controller
 {
     public function index()
     {
-        $socios = User::where('es_socio', true)
-            ->orWhereNotNull('es_socio_override')
-            ->with('roles')
-            ->get();
-
-        $allowlist = SocioAllowlist::orderBy('added_at', 'desc')->get();
-        $allowlistCount = $allowlist->count();
-
-        return view('admin.socios', compact('socios', 'allowlist', 'allowlistCount'));
+        return view('admin.socios');
     }
 
     public function toggleOverride(User $usuario)

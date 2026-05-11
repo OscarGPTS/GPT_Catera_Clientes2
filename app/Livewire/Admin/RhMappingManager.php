@@ -35,7 +35,7 @@ class RhMappingManager extends Component
         $preview = [];
         foreach ($this->mappings as $mapping) {
             $pattern = str_replace('%', '', $mapping->puesto_rh);
-            $query = User::where('puesto', 'ilike', "%{$pattern}%");
+            $query = User::whereRaw('LOWER(puesto) LIKE ?', ["%".strtolower($pattern)."%"]);
             if ($mapping->departamento_filter) {
                 $query->where('departamento', $mapping->departamento_filter);
             }

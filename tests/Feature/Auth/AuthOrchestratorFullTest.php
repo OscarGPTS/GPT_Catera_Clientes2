@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Auth\AuthOrchestrator;
 use App\Settings\SystemSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -77,6 +78,7 @@ class AuthOrchestratorFullTest extends TestCase
             'is_primary' => true,
         ]);
 
+        $this->withoutMiddleware(ValidateCsrfToken::class);
         $response = $this->post('/login', [
             'email' => 'test@gptservices.com',
             'password' => 'password123',
@@ -87,6 +89,7 @@ class AuthOrchestratorFullTest extends TestCase
 
     public function test_email_password_login_rejects_unknown_user(): void
     {
+        $this->withoutMiddleware(ValidateCsrfToken::class);
         $response = $this->post('/login', [
             'email' => 'noexiste@gptservices.com',
             'password' => 'password123',
@@ -106,6 +109,7 @@ class AuthOrchestratorFullTest extends TestCase
             'is_primary' => true,
         ]);
 
+        $this->withoutMiddleware(ValidateCsrfToken::class);
         $response = $this->post('/login', [
             'email' => 'wrongpass@gptservices.com',
             'password' => 'wrong_password',
@@ -125,6 +129,7 @@ class AuthOrchestratorFullTest extends TestCase
             'is_primary' => true,
         ]);
 
+        $this->withoutMiddleware(ValidateCsrfToken::class);
         $response = $this->post('/login', [
             'email' => 'suspended@gptservices.com',
             'password' => 'password123',

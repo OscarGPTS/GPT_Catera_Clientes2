@@ -74,7 +74,7 @@ class NuevaOportunidad extends Component
 
         $proyecto = Proyecto::create([
             'cp_numero' => $cp,
-            'año' => now()->year,
+            'anio' => now()->year,
             'cliente_id' => $this->cliente_id,
             'sublinea_id' => $this->sublinea_id,
             'usuario_final' => $this->usuario_final ?: null,

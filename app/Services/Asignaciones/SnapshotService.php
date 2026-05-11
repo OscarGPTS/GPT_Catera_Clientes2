@@ -8,10 +8,10 @@ use App\Models\User;
 
 class SnapshotService
 {
-    public function generar(int $mes, int $año): void
+    public function generar(int $mes, int $anio): void
     {
         $equipo = User::role(['gerente_proyectos', 'ingeniero_proyectos', 'ingeniero_costos', 'trainee_proyectos', 'gerente_operaciones', 'director_dn'])
-            ->where('status', 'activo')
+            ->where('status', 'active')
             ->get();
 
         foreach ($equipo as $persona) {
@@ -50,7 +50,7 @@ class SnapshotService
             $snapshot = AsignacionSnapshot::firstOrNew([
                 'user_id' => $persona->id,
                 'mes' => $mes,
-                'año' => $año,
+                'anio' => $anio,
             ]);
 
             $snapshot->fill([
@@ -64,26 +64,26 @@ class SnapshotService
                 'dn_cancelados' => $dnCancelados,
                 'total_servicio' => $totalServicio,
                 'total_suministro' => $totalSuministro,
-                'gerencia_regional' => $persona->departamento,
+                'gerencia_regional' => $this->mapDepartamentoToGerencia($persona->departamento),
                 'generado_at' => now(),
             ]);
             $snapshot->save();
         }
     }
 
-    public function getSnapshotData(int $mes, int $año): array
+    public function getSnapshotData(int $mes, int $anio): array
     {
         $snapshots = AsignacionSnapshot::where('mes', $mes)
-            ->where('año', $año)
+->where('anio', $anio)
             ->get();
 
         $users = User::role(['gerente_proyectos', 'ingeniero_proyectos', 'ingeniero_costos', 'trainee_proyectos', 'gerente_operaciones', 'director_dn'])
-            ->where('status', 'activo')
+            ->where('status', 'active')
             ->orderBy('name')
             ->get()
             ->keyBy('id');
 
-        $allYearSnapshots = AsignacionSnapshot::where('año', $año)
+        $allYearSnapshots = AsignacionSnapshot::where('anio', $anio)
             ->whereIn('user_id', $users->keys())
             ->get()
             ->groupBy('user_id');
@@ -137,5 +137,19 @@ class SnapshotService
             'sobrecarga' => $sobrecarga,
             'snapshot_generado' => $snapshots->count() > 0,
         ];
+    }
+
+    protected function mapDepartamentoToGerencia(?string $departamento): ?string
+    {
+        $map = [
+            'Proyectos' => null,
+            'Comercial' => null,
+            'Finanzas' => null,
+            'Dirección' => 'DG',
+            'Operaciones' => null,
+            'QHSE' => null,
+        ];
+
+        return $map[$departamento] ?? null;
     }
 }

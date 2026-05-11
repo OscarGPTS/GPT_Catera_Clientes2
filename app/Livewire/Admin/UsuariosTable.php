@@ -62,10 +62,11 @@ class UsuariosTable extends Component
         $query = User::with(['roles', 'authProviders']);
 
         if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('name', 'ilike', "%{$this->search}%")
-                    ->orWhere('email', 'ilike', "%{$this->search}%")
-                    ->orWhere('puesto', 'ilike', "%{$this->search}%");
+            $search = strtolower($this->search);
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(puesto) LIKE ?', ["%{$search}%"]);
             });
         }
 

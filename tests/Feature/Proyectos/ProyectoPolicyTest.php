@@ -39,7 +39,7 @@ class ProyectoPolicyTest extends TestCase
 
         $this->proyecto = Proyecto::create([
             'tech_reference' => 'REF-001',
-            'año' => 2026,
+            'anio' => 2026,
             'cliente_id' => $cliente->id,
             'sublinea_id' => $sublinea->id,
             'estado' => 'en_revision',

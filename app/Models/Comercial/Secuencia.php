@@ -8,5 +8,5 @@ class Secuencia extends Model
 {
     protected $table = 'secuencias';
 
-    protected $fillable = ['tipo', 'año', 'ultimo_consecutivo'];
+    protected $fillable = ['tipo', 'anio', 'ultimo_consecutivo'];
 }

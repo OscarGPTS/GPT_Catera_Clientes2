@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
         if ($iga && $sdn && $pmx) {
             Proyecto::create([
                 'cp_numero' => 'CP-003/25', 'tech_reference' => '250121-0-IGA-HTP x _HT 30x10 Texmelucan',
-                'año' => 2025, 'cliente_id' => $iga->id, 'sublinea_id' => 1,
+                'anio' => 2025, 'cliente_id' => $iga->id, 'sublinea_id' => 1,
                 'usuario_final' => 'CENAGAS', 'sector' => 'Oil & Gas',
                 'estado' => 'en_ejecucion',
                 'gerente_proyectos_id' => $fernando?->id,
@@ -73,7 +73,7 @@ class DatabaseSeeder extends Seeder
             ]);
 
             Proyecto::create([
-                'cp_numero' => 'CP-005/25', 'año' => 2025,
+                'cp_numero' => 'CP-005/25', 'anio' => 2025,
                 'cliente_id' => $sdn->id, 'sublinea_id' => 2,
                 'usuario_final' => 'SEDENA', 'sector' => 'Defensa',
                 'estado' => 'cotizando',
@@ -83,7 +83,7 @@ class DatabaseSeeder extends Seeder
             ]);
 
             Proyecto::create([
-                'cp_numero' => 'CP-007/25', 'año' => 2025,
+                'cp_numero' => 'CP-007/25', 'anio' => 2025,
                 'cliente_id' => $pmx->id, 'sublinea_id' => 3,
                 'usuario_final' => 'PEMEX Refinación', 'sector' => 'Oil & Gas',
                 'estado' => 'presentado',
@@ -92,7 +92,7 @@ class DatabaseSeeder extends Seeder
             ]);
 
             Proyecto::create([
-                'cp_numero' => 'CP-010/25', 'año' => 2025,
+                'cp_numero' => 'CP-010/25', 'anio' => 2025,
                 'cliente_id' => $iga->id, 'sublinea_id' => 1,
                 'usuario_final' => 'CENAGAS', 'sector' => 'Oil & Gas',
                 'estado' => 'en_revision',
@@ -101,7 +101,7 @@ class DatabaseSeeder extends Seeder
             ]);
 
             Proyecto::create([
-                'cp_numero' => 'CP-012/25', 'año' => 2025,
+                'cp_numero' => 'CP-012/25', 'anio' => 2025,
                 'cliente_id' => $sdn->id, 'sublinea_id' => 4,
                 'usuario_final' => 'SEDENA', 'sector' => 'Defensa',
                 'estado' => 'adjudicado_firmado', 'dn_numero' => 'DN-001/25',

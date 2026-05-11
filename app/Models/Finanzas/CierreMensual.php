@@ -14,7 +14,7 @@ class CierreMensual extends Model
     protected $table = 'cierres_mensuales';
 
     protected $fillable = [
-        'año',
+        'anio',
         'mes',
         'tipo',
         'fecha_corte',
@@ -27,7 +27,7 @@ class CierreMensual extends Model
     protected function casts(): array
     {
         return [
-            'año' => 'integer',
+            'anio' => 'integer',
             'mes' => 'integer',
             'fecha_corte' => 'date',
         ];

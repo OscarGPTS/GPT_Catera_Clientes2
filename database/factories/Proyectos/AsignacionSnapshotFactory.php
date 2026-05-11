@@ -15,7 +15,7 @@ class AsignacionSnapshotFactory extends Factory
         return [
             'user_id' => User::factory(),
             'mes' => fake()->numberBetween(1, 12),
-            'año' => now()->year,
+            'anio' => now()->year,
             'cp_asignados' => fake()->numberBetween(1, 12),
             'cp_ejecutados' => fake()->numberBetween(0, 8),
             'cp_remanentes' => fake()->numberBetween(0, 4),

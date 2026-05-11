@@ -4,84 +4,10 @@ namespace App\Http\Controllers\Proyectos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Proyectos\Proyecto;
-use App\Models\Comercial\Cliente;
-use App\Models\Comercial\Sublinea;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class OportunidadController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = Proyecto::with(['cliente', 'sublinea', 'gerenteProyectos', 'directorDn']);
-
-        if ($request->filled('buscar')) {
-            $buscar = $request->input('buscar');
-            $query->where(function ($q) use ($buscar) {
-                $q->where('cp_numero', 'ilike', "%{$buscar}%")
-                    ->orWhere('tech_reference', 'ilike', "%{$buscar}%")
-                    ->orWhereHas('cliente', fn($c) => $c->where('razon_social', 'ilike', "%{$buscar}%"))
-                    ->orWhere('usuario_final', 'ilike', "%{$buscar}%");
-            });
-        }
-
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->input('estado'));
-        }
-
-        if ($request->filled('sublinea')) {
-            $query->where('sublinea_id', $request->input('sublinea'));
-        }
-
-        if ($request->filled('cliente')) {
-            $query->where('cliente_id', $request->input('cliente'));
-        }
-
-        if ($request->filled('año')) {
-            $query->where('año', $request->input('año'));
-        }
-
-        $proyectos = $query->latest()->paginate(20)->withQueryString();
-
-        $estadisticas = [
-            'total' => Proyecto::count(),
-            'en_revision' => Proyecto::where('estado', 'en_revision')->count(),
-            'cotizando' => Proyecto::where('estado', 'cotizando')->count(),
-            'presentado' => Proyecto::where('estado', 'presentado')->count(),
-            'adjudicado_firmado' => Proyecto::where('estado', 'adjudicado_firmado')->count(),
-            'en_ejecucion' => Proyecto::where('estado', 'en_ejecucion')->count(),
-        ];
-
-        $sublineas = Sublinea::all();
-        $clientes = Cliente::where('activo', true)->orderBy('razon_social')->get();
-
-        return view('proyectos.oportunidades', compact('proyectos', 'estadisticas', 'sublineas', 'clientes'));
-    }
-
-    public function show(Proyecto $proyecto)
-    {
-        $proyecto->load([
-            'cliente.contactos',
-            'sublinea',
-            'directorDn',
-            'gerenteProyectos',
-            'gerenteOperaciones',
-            'ingenieroCostos',
-            'ingenieroProyectos',
-            'trainee',
-            'eventos.user',
-            'cotizaciones.partidas',
-            'solicitudesInterna.items',
-        ]);
-
-        $equipoDisponible = User::role(['gerente_proyectos', 'ingeniero_proyectos', 'ingeniero_costos', 'trainee_proyectos', 'gerente_operaciones'])
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
-
-        return view('proyectos.detalle', compact('proyecto', 'equipoDisponible'));
-    }
-
     public function aprobar(Request $request, Proyecto $proyecto)
     {
         $this->authorize('aprobar cp');

@@ -41,7 +41,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->integer('mes');
-            $table->year('año');
+            $table->year('anio');
             $table->integer('cp_asignados')->default(0);
             $table->integer('cp_ejecutados')->default(0);
             $table->integer('cp_remanentes')->default(0);
@@ -55,7 +55,7 @@ return new class extends Migration
             $table->enum('gerencia_regional', ['GRC', 'GRS', 'GRN', 'DG', 'GPT-IM'])->nullable();
             $table->timestamp('generado_at')->useCurrent();
             $table->timestamps();
-            $table->unique(['user_id', 'mes', 'año']);
+            $table->unique(['user_id', 'mes', 'anio']);
         });
 
         Schema::create('cuentas_bancarias', function (Blueprint $table) {
@@ -73,7 +73,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('cuenta_id')->constrained('cuentas_bancarias');
             $table->integer('mes');
-            $table->year('año');
+            $table->year('anio');
             $table->string('archivo_origen_path')->nullable();
             $table->timestamp('parseado_at')->nullable();
             $table->integer('total_movimientos')->default(0);
@@ -95,7 +95,7 @@ return new class extends Migration
         Schema::create('cierres_mensuales', function (Blueprint $table) {
             $table->id();
             $table->integer('mes');
-            $table->year('año');
+            $table->year('anio');
             $table->enum('tipo', ['contable_sat', 'gerencial_avance']);
             $table->date('fecha_corte');
             $table->enum('status', ['borrador', 'generado', 'aprobado'])->default('borrador');

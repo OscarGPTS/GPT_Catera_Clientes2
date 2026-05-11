@@ -83,7 +83,7 @@ abstract class TestCase extends BaseTestCase
         return Proyecto::create(array_merge([
             'tech_reference' => 'TR-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
             'cp_numero' => 'CP-' . now()->format('y') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
-            'año' => now()->year,
+            'anio' => now()->year,
             'estado' => 'en_ejecucion',
             'metodo_distribucion_plurianual' => 'dias_naturales',
         ], $overrides));

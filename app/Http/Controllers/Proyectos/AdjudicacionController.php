@@ -8,15 +8,6 @@ use Illuminate\Http\Request;
 
 class AdjudicacionController extends Controller
 {
-    public function show(Proyecto $proyecto)
-    {
-        $this->authorize('adjudicar', $proyecto);
-
-        $proyecto->load(['cliente.contactos', 'sublinea', 'gerenteProyectos', 'cotizaciones.partidas']);
-
-        return view('proyectos.adjudicacion', compact('proyecto'));
-    }
-
     public function adjudicar(Request $request, Proyecto $proyecto)
     {
         $this->authorize('adjudicar', $proyecto);

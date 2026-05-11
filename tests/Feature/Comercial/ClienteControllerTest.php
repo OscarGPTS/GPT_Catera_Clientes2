@@ -4,7 +4,6 @@ namespace Tests\Feature\Comercial;
 
 use App\Models\User;
 use App\Models\Comercial\Cliente;
-use App\Models\Comercial\ContactoCliente;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -14,7 +13,6 @@ class ClienteControllerTest extends TestCase
 
     private User $superAdmin;
     private User $gerenteProyectos;
-    private User $guestUser;
 
     protected function setUp(): void
     {
@@ -22,13 +20,8 @@ class ClienteControllerTest extends TestCase
 
         $this->seed(\Database\Seeders\RolesPermissionsSeeder::class);
 
-        $this->superAdmin = User::factory()->create();
-        $this->superAdmin->assignRole('super_admin');
-
-        $this->gerenteProyectos = User::factory()->create();
-        $this->gerenteProyectos->assignRole('gerente_proyectos');
-
-        $this->guestUser = User::factory()->create();
+        $this->superAdmin = User::factory()->superAdmin()->create();
+        $this->gerenteProyectos = User::factory()->gerenteProyectos()->create();
     }
 
     public function test_index_requires_authentication(): void
@@ -37,30 +30,39 @@ class ClienteControllerTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_index_accessible_by_super_admin(): void
+    public function test_index_accessible_by_authorized_users(): void
     {
         $response = $this->actingAs($this->superAdmin)->get(route('clientes.index'));
-        $response->assertOk();
-        $response->assertViewIs('comercial.clientes');
+        $response->assertSuccessful();
     }
 
     public function test_index_accessible_by_gerente_proyectos(): void
     {
         $response = $this->actingAs($this->gerenteProyectos)->get(route('clientes.index'));
-        $response->assertOk();
+        $response->assertSuccessful();
     }
 
-    public function test_store_creates_cliente(): void
+    public function test_show_displays_cliente(): void
     {
-        $response = $this->actingAs($this->superAdmin)->post(route('clientes.store'), [
-            'razon_social' => 'Nueva Empresa SA',
-            'alias_3letras' => 'NES',
-            'rfc' => 'NES260101ABC',
-            'sector' => 'Industrial',
-            'segmento' => 'A',
-        ]);
+        $cliente = $this->makeCliente();
 
-        $response->assertRedirect();
+        $response = $this->actingAs($this->superAdmin)->get(route('clientes.show', $cliente));
+        $response->assertSuccessful();
+    }
+
+    public function test_store_creates_cliente_via_livewire(): void
+    {
+        $this->actingAs($this->superAdmin);
+
+        \Livewire\Livewire::test(\App\Livewire\Comercial\ClientesIndex::class)
+            ->set('razon_social', 'Nueva Empresa SA')
+            ->set('alias_3letras', 'NES')
+            ->set('rfc', 'NES260101ABC')
+            ->set('nuevoSector', 'Industrial')
+            ->set('nuevoSegmento', 'A')
+            ->call('store')
+            ->assertSuccessful();
+
         $this->assertDatabaseHas('clientes', [
             'razon_social' => 'Nueva Empresa SA',
             'alias_3letras' => 'NES',
@@ -69,40 +71,48 @@ class ClienteControllerTest extends TestCase
 
     public function test_store_validates_required_fields(): void
     {
-        $response = $this->actingAs($this->superAdmin)->post(route('clientes.store'), []);
+        $this->actingAs($this->superAdmin);
 
-        $response->assertSessionHasErrors(['razon_social', 'alias_3letras']);
+        \Livewire\Livewire::test(\App\Livewire\Comercial\ClientesIndex::class)
+            ->set('razon_social', '')
+            ->set('alias_3letras', '')
+            ->call('store')
+            ->assertHasErrors(['razon_social', 'alias_3letras']);
     }
 
-    public function test_show_displays_cliente(): void
+    public function test_add_contacto_via_livewire(): void
     {
-        $cliente = Cliente::create([
-            'razon_social' => 'Cliente Show Test',
-            'alias_3letras' => 'CST',
-            'activo' => true,
-        ]);
+        $cliente = $this->makeCliente();
+        $this->actingAs($this->superAdmin);
 
-        $response = $this->actingAs($this->superAdmin)->get(route('clientes.show', $cliente));
-        $response->assertOk();
-        $response->assertViewIs('comercial.cliente-detalle');
-        $response->assertViewHas('cliente');
+        \Livewire\Livewire::test(\App\Livewire\Comercial\ClienteDetalle::class, ['cliente' => $cliente])
+            ->set('contacto_nombre', 'Juan Perez')
+            ->set('contacto_puesto', 'Director')
+            ->set('contacto_email', 'juan@test.com')
+            ->set('contacto_telefono', '555-1234')
+            ->set('contacto_principal', true)
+            ->call('addContacto')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('contactos_cliente', [
+            'cliente_id' => $cliente->id,
+            'nombre' => 'Juan Perez',
+            'email' => 'juan@test.com',
+            'principal' => true,
+        ]);
     }
 
-    public function test_update_modifies_cliente(): void
+    public function test_update_cliente_via_livewire(): void
     {
-        $cliente = Cliente::create([
-            'razon_social' => 'Cliente Original',
-            'alias_3letras' => 'COR',
-            'activo' => true,
-        ]);
+        $cliente = $this->makeCliente();
+        $this->actingAs($this->superAdmin);
 
-        $response = $this->actingAs($this->superAdmin)->put(route('clientes.update', $cliente), [
-            'razon_social' => 'Cliente Modificado',
-            'alias_3letras' => 'CMO',
-            'activo' => true,
-        ]);
+        \Livewire\Livewire::test(\App\Livewire\Comercial\ClienteDetalle::class, ['cliente' => $cliente])
+            ->set('edit_razon_social', 'Cliente Modificado')
+            ->set('edit_alias_3letras', 'CMO')
+            ->call('updateCliente')
+            ->assertSuccessful();
 
-        $response->assertRedirect();
         $this->assertDatabaseHas('clientes', [
             'id' => $cliente->id,
             'razon_social' => 'Cliente Modificado',
@@ -110,43 +120,13 @@ class ClienteControllerTest extends TestCase
         ]);
     }
 
-    public function test_destroy_soft_deletes_cliente(): void
+    private function makeCliente(array $overrides = []): Cliente
     {
-        $cliente = Cliente::create([
-            'razon_social' => 'Cliente a Desactivar',
-            'alias_3letras' => 'CDA',
+        return Cliente::create(array_merge([
+            'razon_social' => 'Test Cliente SA',
+            'alias_3letras' => 'TCS',
+            'sector' => 'Gobierno',
             'activo' => true,
-        ]);
-
-        $response = $this->actingAs($this->superAdmin)->delete(route('clientes.destroy', $cliente));
-        $response->assertRedirect(route('clientes.index'));
-
-        $cliente->refresh();
-        $this->assertFalse($cliente->activo);
-    }
-
-    public function test_add_contacto_to_cliente(): void
-    {
-        $cliente = Cliente::create([
-            'razon_social' => 'Cliente Contacto Test',
-            'alias_3letras' => 'CCT',
-            'activo' => true,
-        ]);
-
-        $response = $this->actingAs($this->superAdmin)->post(route('clientes.add-contacto', $cliente), [
-            'nombre' => 'Juan Perez',
-            'puesto' => 'Director',
-            'email' => 'juan@test.com',
-            'telefono' => '555-1234',
-            'principal' => true,
-        ]);
-
-        $response->assertRedirect();
-        $this->assertDatabaseHas('contactos_cliente', [
-            'cliente_id' => $cliente->id,
-            'nombre' => 'Juan Perez',
-            'email' => 'juan@test.com',
-            'principal' => true,
-        ]);
+        ], $overrides));
     }
 }

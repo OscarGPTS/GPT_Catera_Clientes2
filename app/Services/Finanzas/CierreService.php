@@ -10,15 +10,15 @@ use Illuminate\Support\Facades\DB;
 
 class CierreService
 {
-    public function generarCierreGerencial(int $mes, int $año, int $userId): CierreMensual
+    public function generarCierreGerencial(int $mes, int $anio, int $userId): CierreMensual
     {
-        return DB::transaction(function () use ($mes, $año, $userId) {
-            $fechaCorte = now()->createFromDate($año, $mes, 1)->endOfMonth();
+        return DB::transaction(function () use ($mes, $anio, $userId) {
+            $fechaCorte = now()->createFromDate($anio, $mes, 1)->endOfMonth();
 
             $cierre = CierreMensual::updateOrCreate(
                 [
                     'mes' => $mes,
-                    'año' => $año,
+                    'anio' => $anio,
                     'tipo' => 'gerencial_avance',
                 ],
                 [
@@ -31,9 +31,9 @@ class CierreService
 
             $cierre->secciones()->delete();
 
-            $facturasSat = $this->calcularSatBase($mes, $año);
-            $proyectosDevengado = $this->calcularDevengado($mes, $año);
-            $pipelinePonderado = $this->calcularPipelinePonderado($año);
+            $facturasSat = $this->calcularSatBase($mes, $anio);
+            $proyectosDevengado = $this->calcularDevengado($mes, $anio);
+            $pipelinePonderado = $this->calcularPipelinePonderado($anio);
 
             $seccionSat = $cierre->secciones()->create([
                 'codigo' => 'sat_base',
@@ -90,17 +90,17 @@ class CierreService
         return $cierre->load('secciones.lineas.proyecto', 'generadoPor', 'aprobadoPor');
     }
 
-    public function getCierreData(int $mes, int $año): array
+    public function getCierreData(int $mes, int $anio): array
     {
         $cierre = CierreMensual::where('mes', $mes)
-            ->where('año', $año)
+            ->where('anio', $anio)
             ->where('tipo', 'gerencial_avance')
             ->with('secciones.lineas.proyecto', 'generadoPor', 'aprobadoPor')
             ->first();
 
-        $facturasSat = $this->calcularSatBase($mes, $año);
-        $proyectosDevengado = $this->calcularDevengado($mes, $año);
-        $pipelinePonderado = $this->calcularPipelinePonderado($año);
+        $facturasSat = $this->calcularSatBase($mes, $anio);
+        $proyectosDevengado = $this->calcularDevengado($mes, $anio);
+        $pipelinePonderado = $this->calcularPipelinePonderado($anio);
 
         $totalSat = $facturasSat['total'];
         $totalDevengado = collect($proyectosDevengado)->sum('monto_devengado');
@@ -156,7 +156,7 @@ class CierreService
         ];
     }
 
-    protected function calcularSatBase(int $mes, int $año): array
+    protected function calcularSatBase(int $mes, int $anio): array
     {
         $proyectosConCotizacion = Proyecto::whereHas('cotizaciones', function ($q) {
             $q->where('status', 'aprobado');
@@ -190,7 +190,7 @@ class CierreService
         return ['lineas' => $lineas, 'total' => $total];
     }
 
-    protected function calcularDevengado(int $mes, int $año): array
+    protected function calcularDevengado(int $mes, int $anio): array
     {
         $proyectos = Proyecto::whereIn('estado', ['en_ejecucion', 'en_cierre'])
             ->with(['cliente', 'cotizaciones' => function ($q) {
@@ -220,7 +220,7 @@ class CierreService
         return $result;
     }
 
-    protected function calcularPipelinePonderado(int $año): array
+    protected function calcularPipelinePonderado(int $anio): array
     {
         $proyectos = Proyecto::whereIn('estado', ['cotizando', 'presentado'])
             ->with(['cliente', 'sublinea', 'cotizaciones'])

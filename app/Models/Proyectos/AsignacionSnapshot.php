@@ -15,7 +15,7 @@ class AsignacionSnapshot extends Model
     protected $fillable = [
         'user_id',
         'mes',
-        'año',
+        'anio',
         'cp_asignados',
         'cp_ejecutados',
         'cp_remanentes',
@@ -33,7 +33,7 @@ class AsignacionSnapshot extends Model
     {
         return [
             'mes' => 'integer',
-            'año' => 'integer',
+            'anio' => 'integer',
             'cp_asignados' => 'integer',
             'cp_ejecutados' => 'integer',
             'cp_remanentes' => 'integer',

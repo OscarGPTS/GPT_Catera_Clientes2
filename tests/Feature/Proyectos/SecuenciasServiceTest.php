@@ -37,7 +37,7 @@ class SecuenciasServiceTest extends TestCase
 
         $this->proyecto = Proyecto::create([
             'tech_reference' => 'REF-SEQ-001',
-            'año' => 2026,
+            'anio' => 2026,
             'cliente_id' => $cliente->id,
             'sublinea_id' => $sublinea->id,
             'estado' => 'cotizando',
@@ -68,7 +68,7 @@ class SecuenciasServiceTest extends TestCase
 
         $proyecto2 = Proyecto::create([
             'tech_reference' => 'REF-SEQ-002',
-            'año' => 2026,
+            'anio' => 2026,
             'cliente_id' => $cliente2->id,
             'sublinea_id' => $this->proyecto->sublinea_id,
             'estado' => 'cotizando',
@@ -134,7 +134,7 @@ class SecuenciasServiceTest extends TestCase
 
         $proyecto2025 = Proyecto::create([
             'tech_reference' => 'REF-2025',
-            'año' => 2025,
+            'anio' => 2025,
             'cliente_id' => $cliente25->id,
             'sublinea_id' => $this->proyecto->sublinea_id,
             'estado' => 'cotizando',

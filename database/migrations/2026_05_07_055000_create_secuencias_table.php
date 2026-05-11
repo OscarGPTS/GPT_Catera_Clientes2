@@ -15,11 +15,11 @@ return new class extends Migration
         Schema::create('secuencias', function (Blueprint $table) {
             $table->id();
             $table->string('tipo');
-            $table->year('año');
+            $table->year('anio');
             $table->integer('ultimo_consecutivo')->default(0);
             $table->timestamps();
 
-            $table->unique(['tipo', 'año']);
+            $table->unique(['tipo', 'anio']);
         });
     }
 
