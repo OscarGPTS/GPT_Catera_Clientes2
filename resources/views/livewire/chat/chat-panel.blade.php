@@ -1,205 +1,430 @@
-<div class="-mx-4 -my-4 flex h-[calc(100vh-4rem)] flex-col bg-slate-50 lg:-mx-6 lg:-my-6">
-    @if($activeChannelId)
-        @php $activeChannel = collect($canales)->firstWhere('id', $activeChannelId); @endphp
-        {{-- Channel header --}}
-        <div class="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 gap-3">
-            <div class="min-w-0 flex-1">
-                <p class="text-sm font-semibold text-slate-800 truncate">{{ $activeChannel['nombre'] ?? 'Canal' }}</p>
-                @if(!empty($activeChannel['miembros']))
-                <div class="flex items-center gap-1.5 mt-0.5">
-                    <div class="flex -space-x-1.5">
-                        @foreach(array_slice($activeChannel['miembros'], 0, 8) as $miembro)
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-gpt-600 text-[9px] font-semibold text-white ring-1 ring-white" title="{{ $miembro['name'] }}">
-                            {{ $miembro['avatar'] }}
-                        </span>
+<div class="flex h-[calc(100vh-64px)]">
+    {{-- Left panel: Channel sidebar --}}
+    <div class="flex w-72 shrink-0 flex-col border-r border-slate-800 bg-slate-900">
+        {{-- Sidebar header --}}
+        <div class="flex items-center justify-between border-b border-slate-800/80 px-4 py-3">
+            <h2 class="text-sm font-semibold text-white">Chat</h2>
+            <div class="flex items-center gap-1">
+                <button wire:click="$set('showNewChannel', true)" class="rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white" title="Nuevo canal">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                </button>
+            </div>
+        </div>
+
+        {{-- Search --}}
+        <div class="px-3 py-2">
+            <div class="relative">
+                <svg class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input
+                    wire:model.live.debounce.300ms="search"
+                    type="text"
+                    placeholder="Buscar canales..."
+                    class="w-full rounded-lg border border-slate-700 bg-slate-800 py-1.5 pl-8 pr-3 text-[13px] text-white placeholder:text-slate-500 focus:border-gpt-600 focus:outline-none focus:ring-1 focus:ring-gpt-600"
+                >
+            </div>
+        </div>
+
+        {{-- Channels list --}}
+        <div class="flex-1 overflow-y-auto">
+            @php
+                $tipos = [
+                    'proyecto' => ['label' => 'Proyectos', 'icon' => 'clipboard-document-list'],
+                    'departamento' => ['label' => 'Departamentos', 'icon' => 'building-office'],
+                    'direccion' => ['label' => 'Dirección', 'icon' => 'star'],
+                    'privado' => ['label' => 'Mensajes directos', 'icon' => 'user'],
+                ];
+                $grouped = collect($canales)->groupBy('tipo');
+            @endphp
+
+@foreach($tipos as $tipo => $info)
+                @php $channels = $grouped->get($tipo, []); @endphp
+                @if(count($channels) > 0)
+                <div class="mb-1">
+                    <button
+                        wire:click="toggleChannelSection('{{ $tipo }}')"
+                        class="flex w-full items-center gap-1 px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300"
+                    >
+                        <svg class="h-3 w-3 transition-transform {{ in_array($tipo, $expandedSections ?? ['proyecto','departamento','direccion','privado']) ? '' : '-rotate-90' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        {{ $info['label'] }}
+                    </button>
+                    @if(in_array($tipo, $expandedSections ?? ['proyecto','departamento','direccion','privado']))
+                    <div class="space-y-0.5 px-2">
+                        @foreach($channels as $canal)
+                        <button
+                            wire:click="selectChannel({{ $canal['id'] }})"
+                            class="group flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-colors {{ (int)$activeChannelId === (int)$canal['id'] ? 'bg-slate-700/80 text-white' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white' }}"
+                        >
+                            @if($tipo === 'privado')
+                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-700 text-[9px] font-semibold text-slate-400 group-hover:text-slate-200">
+                                    {{ strtoupper(substr($canal['nombre'], 0, 2)) }}
+                                </span>
+                            @else
+                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg {{ (int)$activeChannelId === (int)$canal['id'] ? 'bg-gpt-600 text-white' : 'bg-slate-700 text-slate-400 group-hover:bg-slate-600 group-hover:text-slate-200' }} text-[10px] font-semibold">
+                                    #
+                                </span>
+                            @endif
+                            <span class="min-w-0 flex-1">
+                                <span class="block truncate text-[13px] {{ (int)$activeChannelId === (int)$canal['id'] ? 'font-semibold text-white' : 'font-medium' }}">
+                                    @if($tipo !== 'privado'){{ $canal['nombre'] }}@else{{ collect($canal['miembros'])->where('id', '!=', auth()->id())->pluck('name')->first() ?? $canal['nombre'] }}@endif
+                                </span>
+                                @if($canal['ultimo_mensaje'] && (int)$activeChannelId !== (int)$canal['id'])
+                                <span class="block truncate text-[11px] text-slate-500">{{ $canal['ultimo_mensaje']['user_name'] }}: {{ $canal['ultimo_mensaje']['contenido'] }}</span>
+                                @endif
+                            </span>
+                            @if($canal['no_leidos'] > 0 && (int)$activeChannelId !== (int)$canal['id'])
+                            <span class="flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full bg-gpt-600 px-1 text-[10px] font-semibold text-white">
+                                {{ $canal['no_leidos'] > 99 ? '99+' : $canal['no_leidos'] }}
+                            </span>
+                            @endif
+                        </button>
                         @endforeach
                     </div>
-                    @if(count($activeChannel['miembros']) > 8)
-                    <span class="text-[11px] text-slate-400">+{{ count($activeChannel['miembros']) - 8 }} más</span>
                     @endif
                 </div>
                 @endif
+            @endforeach
+
+            @if(empty($canales))
+            <div class="px-4 py-8 text-center">
+                <svg class="mx-auto h-8 w-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <p class="mt-2 text-[12px] text-slate-500">No tienes canales aún</p>
             </div>
-            <div class="relative w-48 shrink-0">
-                <svg class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input
-                    wire:model.live.debounce.200ms="highlight"
-                    type="search"
-                    placeholder="Buscar en mensajes..."
-                    class="w-full rounded-md border border-slate-200 py-1 pl-8 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:outline-none"
-                >
-            </div>
+            @endif
         </div>
 
-        {{-- Messages --}}
-        <div
-            class="flex-1 overflow-y-auto px-6 py-4 space-y-4 relative"
-            id="chat-messages-page"
-            x-data="{ dragOver: false }"
-            x-init="$nextTick(() => { var el = document.getElementById('chat-messages-page'); if(el) el.scrollTop = el.scrollHeight; })"
-            x-on:dragover.prevent="dragOver = true"
-            x-on:dragleave.prevent="dragOver = false"
-            x-on:drop.prevent="dragOver = false; if($event.dataTransfer.files.length) { const input = document.getElementById('chat-file-input-page'); const dt = new DataTransfer(); for(let f of $event.dataTransfer.files) dt.items.add(f); input.files = dt.files; input.dispatchEvent(new Event('change')) }"
-        >
-            {{-- Drop zone overlay --}}
-            <div x-show="dragOver" x-transition class="absolute inset-0 z-10 flex items-center justify-center bg-gpt-600/20 backdrop-blur-sm">
-                <div class="rounded-xl bg-white/90 px-6 py-4 shadow-lg text-center">
-                    <svg class="mx-auto h-10 w-10 text-gpt-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-                    <p class="mt-2 text-sm font-medium text-slate-700">Suelta los archivos aquí</p>
+        {{-- User footer --}}
+        <div class="mt-auto border-t border-slate-800/80 px-3 py-2">
+            <div class="flex items-center gap-2.5">
+                <div class="relative shrink-0">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gpt-500 to-gpt-700 text-[11px] font-semibold text-white">
+                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
+                    </div>
+                    <span class="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full border-2 border-slate-900 bg-green-500"></span>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-[12px] font-medium text-white">{{ auth()->user()->name ?? 'Usuario' }}</p>
+                    <p class="text-[10px] text-slate-500">En línea</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Right panel: Messages area --}}
+    <div class="flex flex-1 flex-col bg-slate-50">
+        @if($activeChannelId)
+            @php $activeChannel = collect($canales)->firstWhere('id', $activeChannelId); @endphp
+
+            {{-- Channel header --}}
+            <div class="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-3">
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gpt-600 text-xs font-semibold text-white">
+                            {{ strtoupper(substr($activeChannel['nombre'] ?? 'C', 0, 1)) }}
+                        </span>
+                        <div class="min-w-0">
+                            <h3 class="truncate text-sm font-semibold text-slate-800">
+                                @if($activeChannel['tipo'] !== 'privado'){{ $activeChannel['nombre'] }}@else{{ collect($activeChannel['miembros'])->where('id', '!=', auth()->id())->pluck('name')->first() ?? $activeChannel['nombre'] }}@endif
+                            </h3>
+                            @if($activeChannel['descripcion'])
+                            <p class="truncate text-[11px] text-slate-400">{{ $activeChannel['descripcion'] }}</p>
+                            @endif
+                        </div>
+                    </div>
+                    @if(!empty($activeChannel['miembros']))
+                    <div class="mt-1.5 flex items-center gap-1.5">
+                        <div class="flex -space-x-1.5">
+                            @foreach(array_slice($activeChannel['miembros'], 0, 6) as $miembro)
+                            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-gpt-600 text-[8px] font-semibold text-white ring-2 ring-white" title="{{ $miembro['name'] }}">
+                                {{ strtoupper(substr($miembro['name'], 0, 2)) }}
+                            </span>
+                            @endforeach
+                        </div>
+                        @if(count($activeChannel['miembros']) > 6)
+                        <span class="text-[11px] text-slate-400">+{{ count($activeChannel['miembros']) - 6 }} más</span>
+                        @endif
+                    </div>
+                    @endif
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <div class="relative w-44">
+                        <svg class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input
+                            wire:model.live.debounce.300ms="highlight"
+                            type="search"
+                            placeholder="Buscar en mensajes..."
+                            class="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-[12px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gpt-200"
+                        >
+                    </div>
                 </div>
             </div>
 
-            @foreach($mensajes as $msg)
-            <div class="group">
-                <div class="flex items-start gap-3 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
-                    <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-300 text-[10px] font-semibold text-slate-700">
-                        {{ $msg['user_avatar'] }}
-                    </span>
-                    <div class="max-w-[60%]">
-                        <div class="flex items-center gap-2 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
-                            <span class="text-[12px] font-medium text-slate-700">{{ $msg['user_name'] }}</span>
-                            <span class="text-[11px] text-slate-400">{{ $msg['created_at_full'] }}</span>
-                        </div>
-                        <div class="mt-1 rounded-lg px-3 py-2 {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-white border border-slate-200 text-slate-700' }}">
-                            <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">
-                                @php
-                                $texto = e($msg['contenido']);
-                                $texto = preg_replace('/@(\w+)/', '<span class="font-semibold '.($msg['is_mine'] ? 'text-gpt-200' : 'text-gpt-700').'">@$1</span>', $texto);
-                                if ($highlight) {
-                                    $texto = preg_replace('/(' . preg_quote(e($highlight), '/') . ')/i', '<mark class="bg-yellow-200 text-slate-900 rounded px-0.5">$1</mark>', $texto);
-                                }
-                                echo $texto;
-                                @endphp
-                            </p>
-                            @if($msg['edited'])
-                            <span class="mt-1 block text-[10px] {{ $msg['is_mine'] ? 'text-gpt-200' : 'text-slate-400' }}">(editado)</span>
+            {{-- Messages area --}}
+            <div
+                class="flex-1 overflow-y-auto px-5 py-4"
+                id="chat-messages-page"
+                wire:init="$nextTick(() => { const el = document.getElementById('chat-messages-page'); if (el) el.scrollTop = el.scrollHeight; })"
+            >
+                {{-- Date separators + messages --}}
+                @php
+                    $lastDate = null;
+                    $lastUserId = null;
+                    $lastTimestamp = null;
+                @endphp
+
+                @foreach($mensajes as $msg)
+                    @php
+                        $msgDate = \Carbon\Carbon::parse($msg['created_at_full_raw'] ?? now())->format('Y-m-d');
+                        $showDate = $lastDate !== $msgDate;
+                        $lastDate = $msgDate;
+                        $isGrouped = !$showDate && $lastUserId === $msg['user_id'] && $lastTimestamp && (now()->parse($msg['created_at'])->diffInMinutes($lastTimestamp) < 5);
+                        $lastUserId = $msg['user_id'];
+                        $lastTimestamp = now()->parse($msg['created_at']);
+                    @endphp
+
+                    @if($showDate)
+                    <div class="flex items-center gap-3 my-4">
+                        <div class="h-px flex-1 bg-slate-200"></div>
+                        <span class="text-[11px] font-medium text-slate-400">
+                            @if($msgDate === now()->format('Y-m-d'))Hoy
+                            @elseif($msgDate === now()->subDay()->format('Y-m-d'))Ayer
+                            @else{{ now()->parse($msgDate)->isoFormat('D MMM YYYY') }}
                             @endif
-                            @if(!empty($msg['attachments']))
-                            <div class="mt-1.5 flex flex-wrap gap-1.5">
-                                @foreach($msg['attachments'] as $att)
-                                @php $isImage = str_starts_with($att['type'] ?? '', 'image/'); @endphp
-                                <a href="{{ $att['url'] ?? '#' }}" target="_blank" class="block">
-                                    @if($isImage)
-                                    <img src="{{ $att['url'] }}" class="h-16 w-16 rounded object-cover border border-white/20" alt="{{ $att['name'] }}">
-                                    @else
-                                    <div class="flex items-center gap-1.5 rounded px-2 py-1 text-[11px] {{ $msg['is_mine'] ? 'bg-gpt-600/30 text-white' : 'bg-slate-200 text-slate-600' }}">
-                                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                                        <span class="hover:underline">{{ $att['name'] ?? 'archivo' }}</span>
+                        </span>
+                        <div class="h-px flex-1 bg-slate-200"></div>
+                    </div>
+                    @endif
+
+                    @if($isGrouped)
+                        {{-- Grouped message (same user within 5 min) --}}
+                        <div class="group ml-9">
+                            <div class="flex items-start gap-2 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
+                                <div class="max-w-[70%]">
+                                    <div class="rounded-lg px-3 py-1.5 {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-white border border-slate-200 text-slate-700' }}">
+                                        <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">
+                                            @php
+                                            $texto = e($msg['contenido']);
+                                            $texto = preg_replace('/@(\w+)/', '<span class="font-semibold '.($msg['is_mine'] ? 'text-gpt-200' : 'text-gpt-600').'">@$1</span>', $texto);
+                                            if ($highlight) {
+                                                $texto = preg_replace('/(' . preg_quote(e($highlight), '/') . ')/i', '<mark class="bg-yellow-200 text-slate-900 rounded px-0.5">$1</mark>', $texto);
+                                            }
+                                            echo $texto;
+                                            @endphp
+                                        </p>
+                                        @if($msg['edited'])
+                                        <span class="block text-[10px] {{ $msg['is_mine'] ? 'text-gpt-200' : 'text-slate-400' }}">(editado)</span>
+                                        @endif
+                                        @if(!empty($msg['attachments']))
+                                        <div class="mt-1.5 flex flex-wrap gap-2">
+                                            @foreach($msg['attachments'] as $att)
+                                            @php $isImage = str_starts_with($att['type'] ?? '', 'image/'); @endphp
+                                            <a href="{{ $att['url'] ?? '#' }}" target="_blank" class="block">
+                                                @if($isImage)
+                                                <img src="{{ $att['url'] }}" class="h-16 w-16 rounded-lg object-cover border {{ $msg['is_mine'] ? 'border-white/20' : 'border-slate-200' }}" alt="{{ $att['name'] }}">
+                                                @else
+                                                <div class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 {{ $msg['is_mine'] ? 'bg-gpt-600/30 text-white' : 'bg-slate-100 text-slate-600' }} text-[11px]">
+                                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                                                    <span class="hover:underline">{{ $att['name'] ?? 'archivo' }}</span>
+                                                </div>
+                                                @endif
+                                            </a>
+                                            @endforeach
+                                        </div>
+                                        @endif
                                     </div>
-                                    @endif
-                                </a>
+                                </div>
+                            </div>
+                            <div class="ml-9 mt-0.5 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                <span class="text-[10px] text-slate-400">{{ $msg['created_at'] }}</span>
+                                <button wire:click="$set('replyingTo', {{ $msg['id'] }})" class="text-[10px] text-slate-400 hover:text-gpt-600">Responder</button>
+                            </div>
+                        </div>
+                    @else
+                        {{-- New message (new user or after 5 min gap) --}}
+                        <div class="group mt-4 first:mt-0">
+                            <div class="flex items-start gap-2.5 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
+                                <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-slate-200 text-slate-600' }} text-[11px] font-semibold">
+                                    {{ $msg['user_avatar'] }}
+                                </span>
+                                <div class="max-w-[70%]">
+                                    <div class="flex items-baseline gap-2 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
+                                        <span class="text-[12px] font-semibold {{ $msg['is_mine'] ? 'text-gpt-600' : 'text-slate-700' }}">{{ $msg['user_name'] }}</span>
+                                        <span class="text-[10px] text-slate-400">{{ $msg['created_at'] }}</span>
+                                    </div>
+                                    <div class="mt-1 rounded-lg px-3 py-2 {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-white border border-slate-200 text-slate-700' }}">
+                                        <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">
+                                            @php
+                                            $texto = e($msg['contenido']);
+                                            $texto = preg_replace('/@(\w+)/', '<span class="font-semibold '.($msg['is_mine'] ? 'text-gpt-200' : 'text-gpt-600').'">@$1</span>', $texto);
+                                            if ($highlight) {
+                                                $texto = preg_replace('/(' . preg_quote(e($highlight), '/') . ')/i', '<mark class="bg-yellow-200 text-slate-900 rounded px-0.5">$1</mark>', $texto);
+                                            }
+                                            echo $texto;
+                                            @endphp
+                                        </p>
+                                        @if($msg['edited'])
+                                        <span class="block text-[10px] {{ $msg['is_mine'] ? 'text-gpt-200' : 'text-slate-400' }}">(editado)</span>
+                                        @endif
+                                        @if(!empty($msg['attachments']))
+                                        <div class="mt-1.5 flex flex-wrap gap-2">
+                                            @foreach($msg['attachments'] as $att)
+                                            @php $isImage = str_starts_with($att['type'] ?? '', 'image/'); @endphp
+                                            <a href="{{ $att['url'] ?? '#' }}" target="_blank" class="block">
+                                                @if($isImage)
+                                                <img src="{{ $att['url'] }}" class="h-16 w-16 rounded-lg object-cover border {{ $msg['is_mine'] ? 'border-white/20' : 'border-slate-200' }}" alt="{{ $att['name'] }}">
+                                                @else
+                                                <div class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 {{ $msg['is_mine'] ? 'bg-gpt-600/30 text-white' : 'bg-slate-100 text-slate-600' }} text-[11px]">
+                                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                                                    <span class="hover:underline">{{ $att['name'] ?? 'archivo' }}</span>
+                                                </div>
+                                                @endif
+                                            </a>
+                                            @endforeach
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @if(!empty($msg['replies']))
+                            <div class="ml-10 mt-1.5 space-y-1 border-l-2 border-slate-200 pl-3">
+                                @foreach($msg['replies'] as $reply)
+                                <div class="flex items-start gap-2 text-[12px]">
+                                    <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[8px] font-semibold text-slate-600">{{ $reply['user_avatar'] }}</span>
+                                    <div>
+                                        <span class="font-medium text-slate-700">{{ $reply['user_name'] }}</span>
+                                        <span class="text-slate-500">{{ $reply['contenido'] }}</span>
+                                        <span class="text-[10px] text-slate-400 ml-1">{{ $reply['created_at'] }}</span>
+                                    </div>
+                                </div>
                                 @endforeach
                             </div>
                             @endif
-                        </div>
-                        @if(!empty($msg['replies']))
-                        <div class="mt-1.5 ml-3 space-y-1.5 border-l-2 border-slate-200 pl-3">
-                            @foreach($msg['replies'] as $reply)
-                            <div class="text-[12px]">
-                                <span class="font-medium text-slate-600">{{ $reply['user_name'] }}</span>
-                                <span class="text-slate-500 ml-1">{{ $reply['contenido'] }}</span>
-                                <span class="text-[10px] text-slate-400 ml-1">{{ $reply['created_at'] }}</span>
+                            <div class="ml-10.5 mt-0.5 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                <button wire:click="$set('replyingTo', {{ $msg['id'] }})" class="text-[10px] text-slate-400 hover:text-gpt-600">Responder</button>
                             </div>
-                            @endforeach
+                        </div>
+                    @endif
+                @endforeach
+
+                @empty($mensajes)
+                <div class="flex flex-1 flex-col items-center justify-center py-16">
+                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
+                        <svg class="h-8 w-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                    </div>
+                    <p class="mt-4 text-sm font-medium text-slate-400">Sin mensajes aún</p>
+                    <p class="mt-1 text-[12px] text-slate-400">Sé el primero en enviar un mensaje.</p>
+                </div>
+                @endempty
+
+                {{-- Skeleton loading --}}
+                <div wire:loading wire:target="selectChannel,loadMensajes,sendMessage">
+                    @for($i = 0; $i < 4; $i++)
+                    <div class="flex items-start gap-2.5 animate-pulse">
+                        <span class="mt-0.5 flex h-8 w-8 shrink-0 rounded-full bg-slate-200"></span>
+                        <div class="flex-1 space-y-2">
+                            <div class="h-2.5 w-24 rounded bg-slate-200"></div>
+                            <div class="h-4 w-full max-w-xs rounded bg-slate-200"></div>
+                        </div>
+                    </div>
+                    @endfor
+                </div>
+
+                {{-- Typing indicator --}}
+                @if(!empty($typingUsers))
+                <div class="flex items-center gap-2 px-1 py-2 text-[12px] text-slate-400">
+                    <span class="flex gap-0.5">
+                        <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 0ms"></span>
+                        <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 150ms"></span>
+                        <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 300ms"></span>
+                    </span>
+                    <span class="italic">{{ implode(', ', $typingUsers) }} escribiendo...</span>
+                </div>
+                @endif
+            </div>
+
+            {{-- Reply bar --}}
+            @if($replyingTo)
+            @php $replyMsg = collect($mensajes)->firstWhere('id', $replyingTo); @endphp
+            @if($replyMsg)
+            <div class="flex items-center gap-2 border-t border-slate-200 bg-slate-50 px-5 py-2">
+                <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10l10.5-7L24 10M7 13v8a2 2 0 002 2h6a2 2 0 002-2v-8"/></svg>
+                <span class="text-[12px] text-slate-500">Respondiendo a <strong class="text-slate-700">{{ $replyMsg['user_name'] }}</strong>: {{ Str::limit($replyMsg['contenido'], 60) }}</span>
+                <button wire:click="$set('replyingTo', null)" class="ml-auto text-slate-400 hover:text-slate-600">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            @endif
+            @endif
+
+            {{-- Input area --}}
+            <div class="border-t border-slate-200 bg-white px-5 py-3">
+                @if(count($attachments))
+                <div class="mb-2 flex flex-wrap gap-2">
+                    @foreach($attachments as $i => $file)
+                    <div class="relative group flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+                        @if(str_starts_with($file->getMimeType(), 'image/'))
+                        <img src="{{ $file->temporaryUrl() }}" class="h-10 w-10 rounded object-cover">
+                        @else
+                        <div class="flex h-10 w-10 items-center justify-center rounded bg-slate-200">
+                            <svg class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                         </div>
                         @endif
+                        <span class="text-[11px] text-slate-600 truncate max-w-[100px]">{{ $file->getClientOriginalName() }}</span>
+                        <button wire:click="removeAttachment({{ $i }})" class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gpt-red-500 text-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
+                    @endforeach
                 </div>
-                <div class="mt-0.5 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 {{ $msg['is_mine'] ? 'justify-end' : 'ml-10' }}">
-                    <button wire:click="$set('newMessage', '')" class="text-[11px] text-slate-400 hover:text-gpt-600">Responder</button>
-                </div>
-            </div>
-            @endforeach
-
-            @empty($mensajes)
-            <div class="flex flex-1 flex-col items-center justify-center py-16">
-                <svg class="h-12 w-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                </svg>
-                <p class="mt-4 text-sm font-medium text-slate-400">Sin mensajes aún</p>
-            </div>
-            @endempty
-
-            {{-- Skeleton loading --}}
-            <div wire:loading wire:target="selectChannel,loadMensajes,sendMessage">
-                @for($i = 0; $i < 4; $i++)
-                <div class="flex items-start gap-3 animate-pulse">
-                    <span class="mt-0.5 flex h-7 w-7 shrink-0 rounded-full bg-slate-200"></span>
-                    <div class="flex-1 space-y-1.5">
-                        <div class="h-3 w-24 rounded bg-slate-200"></div>
-                        <div class="h-4 w-full max-w-sm rounded bg-slate-200"></div>
+                @endif
+                <form wire:submit="sendMessage" class="flex items-end gap-2.5">
+                    <label class="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                        <input type="file" wire:model="attachments" multiple id="chat-file-input-page" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+                    </label>
+                    <div class="flex-1 relative">
+                        <textarea
+                            wire:model.live.debounce.200ms="newMessage"
+                            wire:keydown.enter.prevent="sendMessage"
+                            rows="1"
+                            placeholder="Escribe un mensaje... (@usuario para mencionar)"
+                            class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gpt-200 transition-colors"
+                        ></textarea>
                     </div>
-                </div>
-                @endfor
-            </div>
-
-            {{-- Typing indicator --}}
-            @if(!empty($typingUsers))
-            <div class="flex items-center gap-1.5 px-1 text-[12px] italic text-slate-400">
-                <span class="flex gap-0.5">
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" style="animation-delay: 0ms"></span>
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" style="animation-delay: 150ms"></span>
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" style="animation-delay: 300ms"></span>
-                </span>
-                {{ implode(', ', $typingUsers) }} escribiendo...
-            </div>
-            @endif
-        </div>
-
-        {{-- Input --}}
-        <div class="border-t border-slate-200 bg-white px-6 py-3">
-            @if(count($attachments))
-            <div class="mb-2 flex flex-wrap gap-2">
-                @foreach($attachments as $i => $file)
-                <div class="relative group rounded-md border border-slate-200 bg-slate-50 p-1.5">
-                    @if(str_starts_with($file->getMimeType(), 'image/'))
-                    <img src="{{ $file->temporaryUrl() }}" class="h-14 w-14 rounded object-cover">
-                    @else
-                    <div class="flex h-14 w-14 items-center justify-center rounded bg-slate-200">
-                        <svg class="h-6 w-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                    </div>
-                    @endif
-                    <span class="block mt-0.5 text-[10px] text-slate-500 truncate max-w-[56px]">{{ $file->getClientOriginalName() }}</span>
-                    <button wire:click="removeAttachment({{ $i }})" class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gpt-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg class="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <button
+                        type="submit"
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gpt-600 text-white hover:bg-gpt-700 transition-colors shadow-sm"
+                        title="Enviar mensaje"
+                    >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+                        </svg>
                     </button>
-                </div>
-                @endforeach
+                </form>
             </div>
-            @endif
-            <form wire:submit="sendMessage" class="flex items-end gap-3">
-                <label class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-                    <input type="file" wire:model="attachments" multiple id="chat-file-input-page" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
-                </label>
-                <div class="flex-1">
-                    <textarea
-                        wire:model.live.debounce.200ms="newMessage"
-                        id="chat-input"
-                        rows="1"
-                        placeholder="Escribe un mensaje... (@usuario para mencionar)"
-                        class="w-full resize-none rounded-md border border-slate-200 px-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:outline-none focus:ring-1 focus:ring-gpt-200"
-                        x-data
-                        x-on:keydown.enter.prevent="$wire.sendMessage()"
-                    ></textarea>
-                </div>
-                <button
-                    type="submit"
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-gpt-600 text-white hover:bg-gpt-700"
-                >
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        @else
+            {{-- Empty state --}}
+            <div class="flex flex-1 flex-col items-center justify-center">
+                <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-100">
+                    <svg class="h-10 w-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                     </svg>
-                </button>
-            </form>
-        </div>
-    @else
-        <div class="flex flex-1 flex-col items-center justify-center">
-            <svg class="h-16 w-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-            </svg>
-            <p class="mt-4 text-sm font-medium text-slate-400">Selecciona un canal</p>
-            <p class="text-[13px] text-slate-400">Elige un canal en la barra lateral para chatear.</p>
-        </div>
-    @endif
+                </div>
+                <h3 class="mt-4 text-sm font-semibold text-slate-600">Selecciona un canal</h3>
+                <p class="mt-1 text-[13px] text-slate-400">Elige un canal en la barra lateral para chatear.</p>
+            </div>
+        @endif
+    </div>
+
+    <script>
+        window.addEventListener('scroll-chat-to-bottom', () => {
+            requestAnimationFrame(() => {
+                const el = document.getElementById('chat-messages-page');
+                if (el) el.scrollTop = el.scrollHeight;
+            });
+        });
+    </script>
 </div>

@@ -17,10 +17,14 @@
     <div class="flex h-[calc(100vh-64px)] overflow-hidden" x-on:resize.window="sidebarOpen = window.innerWidth >= 1024">
         <x-sidebar />
 
-        <main class="flex-1 overflow-y-auto bg-slate-50 p-4 lg:p-6">
-            <div class="mx-auto max-w-7xl">
+        <main class="flex-1 overflow-hidden {{ $fullWidth ?? false ? '' : 'overflow-y-auto bg-slate-50 p-4 lg:p-6' }}">
+            @if($fullWidth ?? false)
                 {{ $slot }}
-            </div>
+            @else
+                <div class="mx-auto max-w-7xl">
+                    {{ $slot }}
+                </div>
+            @endif
         </main>
     </div>
 

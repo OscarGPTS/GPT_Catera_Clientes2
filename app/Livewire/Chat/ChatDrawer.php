@@ -27,6 +27,9 @@ class ChatDrawer extends Component
     public $attachments = [];
     public $uploading = false;
     public $highlight = '';
+    public $replyingTo = null;
+    public $expandedSections = ['proyecto', 'departamento', 'direccion', 'privado'];
+    public $showNewChannel = false;
 
     protected $listeners = [
         'openChatDrawer' => 'openDrawer',
@@ -114,10 +117,13 @@ class ChatDrawer extends Component
     {
         $this->activeChannelId = (int) $channelId;
         $this->typingUsers = [];
+        $this->replyingTo = null;
+        $this->highlight = '';
         $this->loadMensajes();
         $this->marcarLeido();
 
         $this->dispatch('channel-selected', channelId: (int) $channelId);
+        $this->dispatch('scroll-chat-to-bottom');
     }
 
     public function closeDrawer()
@@ -148,6 +154,7 @@ class ChatDrawer extends Component
                     'contenido' => $msg->contenido,
                     'created_at' => $msg->created_at->format('H:i'),
                     'created_at_full' => $msg->created_at->diffForHumans(),
+                    'created_at_full_raw' => $msg->created_at->toIso8601String(),
                     'parent_id' => $msg->parent_message_id,
                     'replies' => $msg->replies->map(fn ($r) => [
                         'id' => $r->id,
@@ -185,9 +192,20 @@ class ChatDrawer extends Component
         }
     }
 
+    public function toggleChannelSection($tipo)
+    {
+        $index = array_search($tipo, $this->expandedSections);
+        if ($index !== false) {
+            unset($this->expandedSections[$index]);
+            $this->expandedSections = array_values($this->expandedSections);
+        } else {
+            $this->expandedSections[] = $tipo;
+        }
+    }
+
     public function sendMessage()
     {
-        if (empty(trim($this->newMessage)) && empty($this->attachments) || ! $this->activeChannelId) return;
+        if ((empty(trim($this->newMessage)) && empty($this->attachments)) || ! $this->activeChannelId) return;
 
         $attachmentData = [];
         foreach ($this->attachments as $file) {
@@ -205,6 +223,7 @@ class ChatDrawer extends Component
         $mensaje = ChatMensaje::create([
             'canal_id' => $this->activeChannelId,
             'user_id' => auth()->id(),
+            'parent_message_id' => $this->replyingTo,
             'contenido' => trim($this->newMessage) ?: '',
             'attachments' => ! empty($attachmentData) ? $attachmentData : null,
         ]);
@@ -220,35 +239,15 @@ class ChatDrawer extends Component
         try {
             ChatMessageSent::dispatch($mensaje->load('user'));
         } catch (\Exception $e) {
-            // Broadcast failed silently — message is still persisted
         }
 
         $this->newMessage = '';
         $this->attachments = [];
+        $this->replyingTo = null;
         $this->loadMensajes();
         $this->loadCanales();
         $this->marcarLeido();
-    }
-
-    public function replyTo($messageId)
-    {
-        $parent = ChatMensaje::find($messageId);
-        if ($parent && ! empty(trim($this->newMessage))) {
-            $mensaje = ChatMensaje::create([
-                'canal_id' => $this->activeChannelId,
-                'user_id' => auth()->id(),
-                'parent_message_id' => $messageId,
-                'contenido' => trim($this->newMessage),
-            ]);
-
-            try {
-                ChatMessageSent::dispatch($mensaje->load('user'));
-            } catch (\Exception $e) {
-            }
-
-            $this->newMessage = '';
-            $this->loadMensajes();
-        }
+        $this->dispatch('scroll-chat-to-bottom');
     }
 
     public function typing()
@@ -325,7 +324,7 @@ class ChatDrawer extends Component
     {
         if ($this->mode === 'page') {
             return view('livewire.chat.chat-panel')
-                ->layout('components.layouts.app');
+                ->layout('components.layouts.app', ['fullWidth' => true]);
         }
 
         return view('livewire.chat.chat-drawer');
