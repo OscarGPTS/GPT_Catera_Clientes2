@@ -7,6 +7,7 @@ use App\Models\Comercial\Cliente;
 use App\Models\Proyectos\Cotizacion;
 use App\Models\Proyectos\Proyecto;
 use App\Models\User;
+use App\Observers\ProyectoChatObserver;
 use App\Policies\AuthProviderPolicy;
 use App\Policies\ClientePolicy;
 use App\Policies\CotizacionPolicy;
@@ -36,5 +37,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Proyecto::class, ProyectoPolicy::class);
         Gate::policy(Cliente::class, ClientePolicy::class);
         Gate::policy(Cotizacion::class, CotizacionPolicy::class);
+
+        Proyecto::observe(ProyectoChatObserver::class);
     }
 }

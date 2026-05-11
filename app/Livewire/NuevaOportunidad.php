@@ -6,6 +6,7 @@ use App\Models\Comercial\Cliente;
 use App\Models\Comercial\Sublinea;
 use App\Models\Proyectos\Proyecto;
 use App\Models\User;
+use App\Notifications\CpAsignadoNotification;
 use App\Services\Proyectos\SecuenciasService;
 use Livewire\Component;
 
@@ -87,6 +88,17 @@ class NuevaOportunidad extends Component
         ]);
 
         session()->flash('success', "Oportunidad creada: {$cp}");
+
+        if ($this->director_dn_id) {
+            $director = User::find($this->director_dn_id);
+            if ($director) {
+                $director->notify(new CpAsignadoNotification(
+                    $proyecto->id,
+                    $cp,
+                    auth()->user()->name
+                ));
+            }
+        }
 
         return redirect()->route('oportunidades.index');
     }

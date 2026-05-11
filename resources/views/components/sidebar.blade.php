@@ -80,7 +80,7 @@
 
         {{-- Chat --}}
         <x-sidebar-section label="Chat">
-            <x-sidebar-item href="/chat" icon="chat-bubble-left-right" label="Chat" />
+            <livewire:chat.chat-sidebar-channels />
         </x-sidebar-section>
 
         {{-- Ejecutivo --}}

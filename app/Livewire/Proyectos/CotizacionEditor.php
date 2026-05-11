@@ -5,6 +5,7 @@ namespace App\Livewire\Proyectos;
 use App\Models\Proyectos\Proyecto;
 use App\Models\Proyectos\Cotizacion;
 use App\Models\Proyectos\CotizacionPartida;
+use App\Notifications\CotizacionListaNotification;
 use App\Services\Cotizaciones\CalculadoraCoss;
 use Livewire\Component;
 
@@ -196,6 +197,17 @@ class CotizacionEditor extends Component
         $this->successMessage = $status === 'borrador'
             ? "Cotización v{$nuevaVersion} guardada como borrador."
             : "Cotización v{$nuevaVersion} enviada a revisión.";
+
+        if ($status === 'revision') {
+            $gerente = $this->proyecto->gerenteProyectos;
+            if ($gerente) {
+                $gerente->notify(new CotizacionListaNotification(
+                    $this->proyecto->id,
+                    $this->proyecto->cp_numero ?? "CP-{$this->proyecto->id}",
+                    auth()->user()->name
+                ));
+            }
+        }
     }
 
     public function render()

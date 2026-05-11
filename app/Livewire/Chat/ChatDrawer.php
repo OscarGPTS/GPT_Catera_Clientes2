@@ -26,6 +26,7 @@ class ChatDrawer extends Component
     public $typingUsers = [];
     public $attachments = [];
     public $uploading = false;
+    public $highlight = '';
 
     protected $listeners = [
         'openChatDrawer' => 'openDrawer',
@@ -35,7 +36,14 @@ class ChatDrawer extends Component
         'echoMessageRead' => 'handleReadReceipt',
         'echoTyping' => 'handleTyping',
         'echoStopTyping' => 'handleStopTyping',
+        'open-chat-with-channel' => 'openDrawerFromSidebar',
     ];
+
+    public function openDrawerFromSidebar($channelId)
+    {
+        $this->selectChannel($channelId);
+        $this->open = true;
+    }
 
     public function mount()
     {
@@ -123,6 +131,9 @@ class ChatDrawer extends Component
         if (! $this->activeChannelId) return;
 
         $this->mensajes = ChatMensaje::where('canal_id', $this->activeChannelId)
+            ->when($this->highlight, function ($q) {
+                $q->where('contenido', 'like', "%{$this->highlight}%");
+            })
             ->with(['user', 'menciones.user', 'replies.user', 'replies.menciones.user'])
             ->latest()
             ->take(50)

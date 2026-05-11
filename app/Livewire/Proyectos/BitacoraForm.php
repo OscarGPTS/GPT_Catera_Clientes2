@@ -4,6 +4,7 @@ namespace App\Livewire\Proyectos;
 
 use App\Models\Proyectos\BitacoraDiaria;
 use App\Models\Proyectos\Proyecto;
+use App\Notifications\DesviacionReportadaNotification;
 use Livewire\Component;
 
 class BitacoraForm extends Component
@@ -253,6 +254,32 @@ class BitacoraForm extends Component
             'cargado_por_id' => auth()->id(),
             'firmado_at' => $firmar ? now() : null,
         ]);
+
+        // Detectar desviación por keywords en actividades
+        $deviationKeywords = ['retraso', 'no llegó material', 'falla equipo', 'falla', 'incidente', 'problema', 'urgente', 'demora'];
+        $tieneDesviacion = false;
+        foreach ($deviationKeywords as $kw) {
+            if (mb_stripos($this->actividades, $kw) !== false) {
+                $tieneDesviacion = true;
+                break;
+            }
+        }
+
+        if ($tieneDesviacion) {
+            $proyecto = Proyecto::find($this->proyectoId);
+            if ($proyecto && $proyecto->gerente_proyectos_id) {
+                $gerente = $proyecto->gerenteProyectos;
+                if ($gerente) {
+                    $gerente->notify(new DesviacionReportadaNotification(
+                        $proyecto->id,
+                        $proyecto->cp_numero ?? "CP-{$proyecto->id}",
+                        $this->fecha,
+                        auth()->user()->name,
+                        $this->actividades
+                    ));
+                }
+            }
+        }
 
         $this->successMessage = $firmar
             ? 'Bitácora firmada y enviada correctamente.'
