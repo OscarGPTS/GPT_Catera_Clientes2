@@ -11,6 +11,7 @@ use App\Livewire\Comercial\ClientesIndex;
 use App\Livewire\Comercial\ClienteDetalle;
 use App\Livewire\Configuracion\ConfiguracionIndex;
 use App\Livewire\Ejecutivo\DashboardIndex;
+use App\Livewire\Ejecutivo\PipelineGlobal;
 use App\Livewire\Finanzas\CierresIndex;
 use App\Livewire\NuevaOportunidad;
 use App\Livewire\Proyectos\AdjudicacionForm;
@@ -29,6 +30,7 @@ use App\Livewire\Proyectos\ViaticosList;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', DashboardIndex::class)->middleware(['auth', 'can:ver dashboard'])->name('dashboard');
+Route::get('/pipeline', PipelineGlobal::class)->middleware(['auth', 'can:ver dashboard'])->name('pipeline.global');
 
 require __DIR__.'/auth.php';
 

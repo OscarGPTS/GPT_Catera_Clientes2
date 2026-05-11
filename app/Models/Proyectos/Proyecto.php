@@ -18,7 +18,7 @@ class Proyecto extends Model
     protected $fillable = [
         'tech_reference', 'cp_numero', 'dn_numero', 'anio',
         'cliente_id', 'sublinea_id', 'usuario_final', 'sector',
-        'estado', 'fecha_inicio_planeada', 'fecha_fin_planeada',
+        'estado', 'ponderacion', 'fecha_inicio_planeada', 'fecha_fin_planeada',
         'metodo_distribucion_plurianual',
         'director_dn_id', 'gerente_proyectos_id', 'gerente_operaciones_id',
         'ingeniero_costos_id', 'ingeniero_proyectos_id', 'trainee_id',
@@ -29,6 +29,7 @@ class Proyecto extends Model
     {
         return [
             'anio' => 'integer',
+            'ponderacion' => 'integer',
             'fecha_inicio_planeada' => 'date',
             'fecha_fin_planeada' => 'date',
         ];

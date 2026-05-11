@@ -83,13 +83,6 @@
             </div>
         </div>
 
-        {{-- Toggle: Incluir SEDENA --}}
-        <label class="inline-flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" wire:model="incluirSedena" class="sr-only peer">
-            <div class="relative h-5 w-9 rounded-full bg-slate-200 peer-checked:bg-gpt-600 transition-colors after:absolute after:start-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-4"></div>
-            <span class="text-sm text-slate-700 whitespace-nowrap">Incluir SEDENA</span>
-        </label>
-
         {{-- Descargar reporte mensual PDF (placeholder) --}}
         <button type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm hover:bg-slate-50 transition-colors ml-auto cursor-not-allowed opacity-60" disabled title="Próximamente">
             <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -99,41 +92,7 @@
         </button>
     </div>
 
-    {{-- SEDENA Alert --}}
-    @if($concentracionSedena > 50)
-        <div class="mt-4 rounded-lg border border-gpt-red-200 bg-gpt-red-50 p-4">
-            <div class="flex items-start gap-3">
-                <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gpt-red-100">
-                    <svg class="h-5 w-5 text-gpt-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gpt-red-800">Concentración SEDENA {{ number_format($concentracionSedena, 1) }}% del pipeline — Supera el umbral de riesgo del 50%</p>
-                    <p class="mt-1 text-xs text-gpt-red-600">La dependencia excesiva de un solo cliente compromete la estabilidad financiera del portafolio. Acciones recomendadas: diversificar clientes objetivo y priorizar adjudicaciones en sectores no gubernamentales.</p>
-                </div>
-                <a href="{{ route('oportunidades.index') }}" class="flex-shrink-0 rounded-lg border border-gpt-red-200 bg-white px-3 py-1.5 text-xs font-medium text-gpt-red-700 hover:bg-gpt-red-100 transition-colors">
-                    Ver detalle
-                </a>
-            </div>
-        </div>
-    @else
-        <div class="mt-4 rounded-lg border border-green-200 bg-green-50 p-4">
-            <div class="flex items-start gap-3">
-                <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-100">
-                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-green-800">Diversificación saludable</p>
-                    <p class="mt-1 text-xs text-green-600">La concentración de clientes se mantiene dentro de los umbrales de riesgo aceptables (&lt;50%).</p>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    {{-- Section 1: 4 KPI cards --}}
+    {{-- Section 1: KPI cards --}}
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-stat-card
             title="Pipeline total"
@@ -172,43 +131,190 @@
         </div>
     </div>
 
-    {{-- Section 2: Charts grid --}}
-    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {{-- Chart 1: Concentración por cliente --}}
-        <div class="rounded-lg border border-slate-200 bg-white p-6">
-            <h3 class="text-base font-medium text-slate-900">Concentración por cliente</h3>
-            <p class="mt-1 text-sm text-slate-500">Distribución del pipeline por cliente principal</p>
-            <div class="mt-4 space-y-2 max-w-[360px] mx-auto">
-                @php
-                    $maxCliente = max($porCliente->max() ?? 1, 1);
-                    $topClientes = $porCliente->take(8);
-                @endphp
-                @foreach($topClientes as $nombre => $count)
-                    @php
-                        $pct = $pipelineTotal > 0 ? round(($count / $pipelineTotal) * 100, 1) : 0;
-                        $isSedena = str_contains(strtolower($nombre), 'sedena');
-                    @endphp
-                    <div class="flex items-center gap-2">
-                        <span class="w-24 text-xs text-slate-500 text-right truncate" title="{{ $nombre }}">{{ $nombre }}</span>
-                        <div class="flex-1 h-4 rounded {{ $isSedena ? 'bg-gpt-red-100' : 'bg-slate-100' }} relative overflow-hidden">
-                            <div class="absolute inset-y-0 left-0 {{ $isSedena ? 'bg-gpt-red-500' : 'bg-gpt-500' }} rounded" style="width: {{ min($pct, 100) }}%"></div>
-                        </div>
-                        <span class="w-14 text-xs font-medium {{ $isSedena ? 'text-gpt-red-600' : 'text-slate-600' }} text-right">{{ number_format($pct, 1) }}%</span>
-                    </div>
-                @endforeach
-                @if($porCliente->isEmpty())
-                    <p class="text-sm text-slate-400 text-center py-4">Sin datos de clientes</p>
-                @endif
-                @if($concentracionSedena > 50)
-                    <div class="mt-3 relative">
-                        <div class="absolute left-0 right-0 border-t-2 border-dashed border-gpt-red-300" style="top: 0">
-                            <span class="absolute -top-3.5 right-0 text-[10px] text-gpt-red-400">Límite 50%</span>
-                        </div>
-                    </div>
-                @endif
+    {{-- ============================================================ --}}
+    {{-- SECCIÓN: Evolución de Adjudicaciones 2026 (Chart.js)         --}}
+    {{-- ============================================================ --}}
+    <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-5">
+
+        {{-- Chart A: Evolución mensual acumulada (ocupa 3/5 del ancho) --}}
+        <div class="xl:col-span-3 rounded-lg border border-slate-200 bg-white p-6">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+                <div>
+                    <h3 class="text-base font-medium text-slate-900">Evolución de adjudicaciones 2026</h3>
+                    <p class="mt-0.5 text-sm text-slate-500">Adjudicado real acumulado vs. cartera esperada vs. meta anual</p>
+                </div>
+                <div class="flex flex-wrap gap-3 text-xs">
+                    <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-5 rounded-full bg-green-500 inline-block"></span>Adj. real</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-5 rounded-sm border-t-2 border-dashed border-blue-400 inline-block"></span>Cartera esperada</span>
+                    <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-5 rounded-sm border-t-2 border-dashed border-amber-400 inline-block"></span>Meta</span>
+                </div>
+            </div>
+            <div class="relative h-64 w-full"
+                 x-data
+                 x-init="
+                    const ctx = $el.querySelector('canvas').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+                            datasets: [
+                                {
+                                    label: 'Adjudicado real (USD M)',
+                                    data: [0, 0, 0, 0, 0, null, null, null, null, null, null, null],
+                                    borderColor: 'rgb(34,197,94)',
+                                    backgroundColor: 'rgba(34,197,94,0.08)',
+                                    borderWidth: 2.5,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: 'rgb(34,197,94)',
+                                    fill: true,
+                                    tension: 0.3,
+                                    spanGaps: false,
+                                },
+                                {
+                                    label: 'Cartera esperada (USD M)',
+                                    data: [1.1, 13.3, 13.3, 13.3, 13.3, null, null, null, null, null, null, null],
+                                    borderColor: 'rgb(96,165,250)',
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 2,
+                                    borderDash: [5,4],
+                                    pointRadius: 3,
+                                    pointBackgroundColor: 'rgb(96,165,250)',
+                                    fill: false,
+                                    tension: 0.35,
+                                },
+                                {
+                                    label: 'Meta anual (USD M)',
+                                    data: [12.4,12.4,12.4,12.4,12.4,12.4,12.4,12.4,12.4,12.4,12.4,12.4],
+                                    borderColor: 'rgb(251,191,36)',
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 1.5,
+                                    borderDash: [8,4],
+                                    pointRadius: 0,
+                                    fill: false,
+                                    tension: 0,
+                                },
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: ctx => ' ' + ctx.dataset.label + ': \$' + (ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + 'M' : '—')
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { color: 'rgba(148,163,184,0.15)' },
+                                    ticks: { font: { size: 11 }, color: '#94a3b8' }
+                                },
+                                y: {
+                                    grid: { color: 'rgba(148,163,184,0.15)' },
+                                    ticks: {
+                                        font: { size: 11 }, color: '#94a3b8',
+                                        callback: v => '\$' + v + 'M'
+                                    },
+                                    min: 0,
+                                    suggestedMax: 16,
+                                }
+                            }
+                        }
+                    });
+                 ">
+                <canvas></canvas>
             </div>
         </div>
 
+        {{-- Chart B: Avance semanal por proyecto (ocupa 2/5) --}}
+        <div class="xl:col-span-2 rounded-lg border border-slate-200 bg-white p-6">
+            <div class="mb-4">
+                <h3 class="text-base font-medium text-slate-900">Avance semanal por proyecto</h3>
+                <p class="mt-0.5 text-sm text-slate-500">% de cierre — semanas Q1–Q2 2026</p>
+            </div>
+            <div class="relative h-64 w-full"
+                 x-data
+                 x-init="
+                    const weeks = ['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15','S16','S17','S18','S19','S20'];
+                    const palette = [
+                        { border: 'rgb(239,68,68)',   bg: 'rgba(239,68,68,0.06)'   },
+                        { border: 'rgb(59,130,246)',  bg: 'rgba(59,130,246,0.06)'  },
+                        { border: 'rgb(16,185,129)',  bg: 'rgba(16,185,129,0.06)'  },
+                        { border: 'rgb(245,158,11)',  bg: 'rgba(245,158,11,0.06)'  },
+                        { border: 'rgb(139,92,246)',  bg: 'rgba(139,92,246,0.06)'  },
+                    ];
+                    const proyectos = [
+                        { name: 'IGASAMEX – HTS 30x4&quot; Oleofinos CP152/25', data: [55,58,62,66,70,73,76,79,81,83,85,87,88,89,90,91,92,93,94,95] },
+                        { name: 'NATURGY – Anillos separadores',              data: [0,0,0,5,10,15,20,25,30,35,38,41,44,47,50,53,55,57,59,61] },
+                        { name: 'ICA – HTSF 24x24 Naucalpan',                data: [0,0,0,5,8,12,16,19,21,23,25,26,27,28,29,30,31,32,33,35] },
+                        { name: 'ESENTIA – DLSS 36&quot; Villa de Reyes',     data: [0,0,0,0,0,0,5,8,12,15,17,19,21,23,24,25,26,27,28,29] },
+                        { name: 'ENGIE – HTP 42x24 VDR San Luis Potosi',     data: [0,0,0,0,0,0,0,5,9,13,16,18,20,22,23,24,25,26,27,28] },
+                    ];
+                    const ctx = $el.querySelector('canvas').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: weeks,
+                            datasets: proyectos.map((p, i) => ({
+                                label: p.name,
+                                data: p.data,
+                                borderColor: palette[i].border,
+                                backgroundColor: palette[i].bg,
+                                borderWidth: 2,
+                                pointRadius: 2,
+                                pointHoverRadius: 5,
+                                fill: false,
+                                tension: 0.3,
+                            }))
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 10, boxHeight: 10,
+                                        font: { size: 10 }, color: '#64748b',
+                                        padding: 8,
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + '%'
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { color: 'rgba(148,163,184,0.15)' },
+                                    ticks: { font: { size: 10 }, color: '#94a3b8', maxTicksLimit: 10 }
+                                },
+                                y: {
+                                    grid: { color: 'rgba(148,163,184,0.15)' },
+                                    ticks: {
+                                        font: { size: 10 }, color: '#94a3b8',
+                                        callback: v => v + '%'
+                                    },
+                                    min: 0, max: 100,
+                                    stepSize: 25,
+                                }
+                            }
+                        }
+                    });
+                 ">
+                <canvas></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{-- Section 2: Charts grid --}}
+    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {{-- Chart 2: Pipeline por sublínea --}}
         <div class="rounded-lg border border-slate-200 bg-white p-6">
             <h3 class="text-base font-medium text-slate-900">Pipeline por sublínea</h3>
@@ -270,23 +376,226 @@
             </div>
         </div>
 
-        {{-- Chart 4: Hit rate trimestral (placeholder) --}}
-        <div class="rounded-lg border border-slate-200 bg-white p-6">
-            <h3 class="text-base font-medium text-slate-900">Hit rate trimestral</h3>
-            <p class="mt-1 text-sm text-slate-500">Evolución comparativa conteo vs monto — últimos 4 trimestres</p>
-            <div class="mt-4">
-                <div class="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center text-slate-400">
-                    <svg class="mx-auto h-10 w-10 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
-                    </svg>
-                    <p class="mt-2 text-sm font-medium">Hit rate trimestral</p>
-                    <p class="mt-1 text-xs">Gráfica de línea — 2 series (conteo azul, monto naranja) · 4 trimestres</p>
-                    <div class="mt-4 flex items-center justify-center gap-6">
-                        <span class="inline-flex items-center gap-1 text-xs"><span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span> Conteo</span>
-                        <span class="inline-flex items-center gap-1 text-xs"><span class="h-2.5 w-2.5 rounded-full bg-gpt-600"></span> Monto</span>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- SECCIÓN: Evolución por probabilidad de adjudicación          --}}
+    {{-- ============================================================ --}}
+    <div class="mt-8">
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <h3 class="text-base font-medium text-slate-900">Evolución por probabilidad de adjudicación</h3>
+                <p class="mt-0.5 text-sm text-slate-500">Monto bruto (ofertas emitidas) vs. cartera esperada (ponderada = bruto × %) por proyecto y mes</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500">
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-slate-300/60 border border-slate-300"></span>Ofertas emitidas</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-blue-400/70"></span>Cartera esperada</span>
+                <span class="inline-flex items-center gap-1.5 border-l border-slate-200 pl-4">
+                    <svg class="h-3 w-5" viewBox="0 0 20 2"><line x1="0" y1="1" x2="20" y2="1" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 3"/></svg>
+                    Prob. %
+                </span>
+            </div>
+        </div>
+
+        {{-- Combined overview --}}
+        <div class="rounded-lg border border-slate-200 bg-white p-6 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 mb-4">
+                <div>
+                    <h4 class="text-sm font-semibold text-slate-800">Vista general — todos los proyectos</h4>
+                    <p class="text-xs text-slate-400 mt-0.5">Evolución mensual de la probabilidad de adjudicación · 2026</p>
+                </div>
+                <p class="text-xs text-slate-400">
+                    Líneas de referencia: <span class="font-medium text-slate-500">25% · 50% · 75% ·</span>
+                    <span class="font-semibold text-green-600">Concentrada 100%</span>
+                </p>
+            </div>
+            <div class="relative h-64 w-full" x-data x-init="
+                const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                const ctx = $el.querySelector('canvas').getContext('2d');
+                const refLines = [
+                    { label:'_100', data:Array(12).fill(100), borderColor:'rgba(34,197,94,0.35)',   borderWidth:1.5, borderDash:[6,4], pointRadius:0, fill:false, tension:0 },
+                    { label:'_75',  data:Array(12).fill(75),  borderColor:'rgba(148,163,184,0.3)',  borderWidth:1,   borderDash:[4,3], pointRadius:0, fill:false, tension:0 },
+                    { label:'_50',  data:Array(12).fill(50),  borderColor:'rgba(148,163,184,0.3)',  borderWidth:1,   borderDash:[4,3], pointRadius:0, fill:false, tension:0 },
+                    { label:'_25',  data:Array(12).fill(25),  borderColor:'rgba(148,163,184,0.3)',  borderWidth:1,   borderDash:[4,3], pointRadius:0, fill:false, tension:0 },
+                ];
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: meses,
+                        datasets: [
+                            ...refLines,
+                            { label:'IGASAMEX – HTS 30x4&quot; Oleofinos (75%)',
+                              data:[75,75,75,75,75,null,null,null,null,null,null,null],
+                              borderColor:'rgb(59,130,246)', backgroundColor:'rgba(59,130,246,0.06)',
+                              borderWidth:2.5, pointRadius:4, pointBackgroundColor:'rgb(59,130,246)',
+                              fill:false, tension:0, stepped:true, spanGaps:false },
+                            { label:'MOLPER – DLSS 6&quot; 600# Hidalgo (25%)',
+                              data:[10,25,25,25,25,null,null,null,null,null,null,null],
+                              borderColor:'rgb(16,185,129)', backgroundColor:'rgba(16,185,129,0.06)',
+                              borderWidth:2.5, pointRadius:4, pointBackgroundColor:'rgb(16,185,129)',
+                              fill:false, tension:0, stepped:true, spanGaps:false },
+                            { label:'SEDENA – Frente 11 Tren Mex-Qro (25%)',
+                              data:[null,10,25,25,25,null,null,null,null,null,null,null],
+                              borderColor:'rgb(245,158,11)', backgroundColor:'rgba(245,158,11,0.06)',
+                              borderWidth:2.5, pointRadius:4, pointBackgroundColor:'rgb(245,158,11)',
+                              fill:false, tension:0, stepped:true, spanGaps:false },
+                        ]
+                    },
+                    options: {
+                        responsive:true, maintainAspectRatio:false,
+                        interaction:{ mode:'index', intersect:false },
+                        plugins: {
+                            legend:{
+                                display:true, position:'bottom',
+                                labels:{ filter: i => !i.text.startsWith('_'), boxWidth:12, boxHeight:12, font:{size:11}, color:'#64748b', padding:12 }
+                            },
+                            tooltip:{
+                                filter: i => !i.dataset.label.startsWith('_'),
+                                callbacks:{ label: c => ' ' + c.dataset.label + ': ' + c.parsed.y + '%' }
+                            }
+                        },
+                        scales:{
+                            x:{ grid:{color:'rgba(148,163,184,0.15)'}, ticks:{font:{size:11},color:'#94a3b8'} },
+                            y:{ min:0, max:110,
+                                grid:{color:'rgba(148,163,184,0.1)'},
+                                ticks:{ font:{size:11}, color:'#94a3b8',
+                                        callback: v => v===100 ? 'Conc.' : v===75 ? '75%' : v===50 ? '50%' : v===25 ? '25%' : v===10 ? '10%' : v===0 ? '0' : '' }
+                            }
+                        }
+                    }
+                });
+            ">
+                <canvas></canvas>
+            </div>
+        </div>
+
+        {{-- Individual project charts --}}
+        @php
+            $proyectosChart = [
+                [
+                    'nombre'   => 'SEDENA – Frente 11 Tren Méx-Qro',
+                    'sector'   => 'Infraestructura · Tren México-Querétaro',
+                    'bruto'    => 36.37,
+                    'probs'    => [null, 10, 25, 25, 25, null, null, null, null, null, null, null],
+                    'border'   => 'rgb(59,130,246)',
+                    'barBg'    => 'rgba(59,130,246,0.65)',
+                    'barBdr'   => 'rgb(59,130,246)',
+                ],
+                [
+                    'nombre'   => 'MOLPER – DLSS 6" 600# Hidalgo',
+                    'sector'   => 'Gasoductos · Hidalgo',
+                    'bruto'    => 2.98,
+                    'probs'    => [10, 25, 25, 25, 25, null, null, null, null, null, null, null],
+                    'border'   => 'rgb(16,185,129)',
+                    'barBg'    => 'rgba(16,185,129,0.65)',
+                    'barBdr'   => 'rgb(16,185,129)',
+                ],
+                [
+                    'nombre'   => 'ESENTIA – DLSS 36" Gasoducto Villa de Reyes',
+                    'sector'   => 'Gasoductos · Jalisco',
+                    'bruto'    => 1.26,
+                    'probs'    => [null, 25, 25, 25, 25, null, null, null, null, null, null, null],
+                    'border'   => 'rgb(245,158,11)',
+                    'barBg'    => 'rgba(245,158,11,0.65)',
+                    'barBdr'   => 'rgb(245,158,11)',
+                ],
+            ];
+        @endphp
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            @foreach($proyectosChart as $proy)
+                @php
+                    $ponderados   = array_map(fn($p) => $p !== null ? round($proy['bruto'] * $p / 100, 2) : null, $proy['probs']);
+                    $brutosActivos = array_map(fn($p) => $p !== null ? $proy['bruto'] : null, $proy['probs']);
+                    $maxPonderado = max(array_filter($ponderados, fn($v) => $v !== null) ?: [0]);
+                    $eficiencia   = $proy['bruto'] > 0 ? round($maxPonderado / $proy['bruto'] * 100, 1) : 0;
+                    $efColor      = $eficiencia >= 75 ? 'text-green-600' : ($eficiencia >= 50 ? 'text-amber-600' : 'text-blue-600');
+                    $suggestedMax = $proy['bruto'] * 1.25;
+                @endphp
+                <div class="rounded-lg border border-slate-200 bg-white p-5">
+                    <div class="mb-3 border-b border-slate-100 pb-3">
+                        <h4 class="text-sm font-semibold text-slate-800 leading-snug">{{ $proy['nombre'] }}</h4>
+                        <p class="text-[11px] text-slate-400 mt-0.5">{{ $proy['sector'] }}</p>
+                        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                            <span class="text-slate-500">Ofertas emitidas: <strong class="text-slate-700">${{ number_format($proy['bruto'], 1) }}M</strong></span>
+                            <span class="text-slate-500">Cartera esperada máx: <strong class="text-slate-700">${{ number_format($maxPonderado, 2) }}M</strong></span>
+                            <span class="{{ $efColor }} font-semibold">Eficiencia {{ $eficiencia }}%</span>
+                        </div>
+                    </div>
+                    <div class="relative h-52 w-full" x-data x-init="
+                        const ctx = $el.querySelector('canvas').getContext('2d');
+                        new Chart(ctx, {
+                            data: {
+                                labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+                                datasets: [
+                                    {
+                                        type:'bar', label:'Ofertas emitidas',
+                                        data: {{ json_encode($brutosActivos) }},
+                                        backgroundColor:'rgba(148,163,184,0.18)',
+                                        borderColor:'rgba(148,163,184,0.35)',
+                                        borderWidth:1, borderRadius:3,
+                                        yAxisID:'yMonto', order:3,
+                                    },
+                                    {
+                                        type:'bar', label:'Cartera esperada',
+                                        data: {{ json_encode($ponderados) }},
+                                        backgroundColor:'{{ $proy['barBg'] }}',
+                                        borderColor:'{{ $proy['barBdr'] }}',
+                                        borderWidth:1, borderRadius:3,
+                                        yAxisID:'yMonto', order:2,
+                                    },
+                                    {
+                                        type:'line', label:'Probabilidad %',
+                                        data: {{ json_encode($proy['probs']) }},
+                                        borderColor:'{{ $proy['border'] }}',
+                                        backgroundColor:'transparent',
+                                        borderWidth:2.5,
+                                        pointRadius:4, pointBackgroundColor:'{{ $proy['border'] }}',
+                                        fill:false, tension:0, stepped:true, spanGaps:false,
+                                        yAxisID:'yProb', order:1,
+                                    },
+                                ]
+                            },
+                            options: {
+                                responsive:true, maintainAspectRatio:false,
+                                interaction:{ mode:'index', intersect:false },
+                                plugins:{
+                                    legend:{
+                                        display:true, position:'bottom',
+                                        labels:{ boxWidth:10, boxHeight:10, font:{size:10}, color:'#64748b', padding:8 }
+                                    },
+                                    tooltip:{
+                                        callbacks:{
+                                            label: i => i.dataset.yAxisID === 'yProb'
+                                                ? ' Prob.: ' + i.parsed.y + '%'
+                                                : ' ' + i.dataset.label + ': $' + i.parsed.y + 'M'
+                                        }
+                                    }
+                                },
+                                scales:{
+                                    x:{ grid:{display:false}, ticks:{font:{size:9}, color:'#94a3b8'} },
+                                    yMonto:{
+                                        type:'linear', position:'left',
+                                        min:0, suggestedMax: {{ $suggestedMax }},
+                                        grid:{color:'rgba(148,163,184,0.15)'},
+                                        ticks:{ font:{size:10}, color:'#94a3b8', callback: v => '$'+v+'M' },
+                                    },
+                                    yProb:{
+                                        type:'linear', position:'right',
+                                        min:0, max:110,
+                                        grid:{display:false},
+                                        ticks:{
+                                            font:{size:10}, color:'#94a3b8',
+                                            callback: v => v===100?'Conc.':v===75?'75%':v===50?'50%':v===25?'25%':v===10?'10%':v===0?'0':'',
+                                        },
+                                    },
+                                }
+                            }
+                        });
+                    ">
+                        <canvas></canvas>
                     </div>
                 </div>
-            </div>
+            @endforeach
         </div>
     </div>
 
@@ -419,7 +728,7 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="text-base font-medium text-slate-900">Cierre Gerencial</h3>
-                    <p class="mt-0.5 text-sm text-slate-500">Snapshot financiero — Pipeline activo vs Adjudicado</p>
+                    <p class="mt-0.5 text-sm text-slate-500">Snapshot financiero — Ofertas emitidas vs Adjudicado</p>
                 </div>
                 <svg class="h-5 w-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
             </div>
@@ -432,7 +741,7 @@
             @endphp
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <p class="text-xs font-medium text-slate-500">Pipeline activo</p>
+                    <p class="text-xs font-medium text-slate-500">Ofertas emitidas</p>
                     <p class="mt-1 text-xl font-semibold text-gpt-600">$ {{ number_format($pipelineMonto, 0, '.', ',') }}</p>
                     <p class="text-[11px] text-slate-400">{{ number_format($pipelineTotal) }} oportunidades</p>
                 </div>
@@ -444,7 +753,7 @@
                 <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
                     <p class="text-xs font-medium text-slate-500">En revisión/cotización</p>
                     <p class="mt-1 text-xl font-semibold text-blue-600">$ {{ number_format($enRevisionMonto, 0, '.', ',') }}</p>
-                    <p class="text-[11px] text-slate-400">{{ number_format($pipePct, 1) }}% del pipeline</p>
+                    <p class="text-[11px] text-slate-400">{{ number_format($pipePct, 1) }}% del total</p>
                 </div>
             </div>
             <div class="mt-4 flex items-end gap-1 h-10">
