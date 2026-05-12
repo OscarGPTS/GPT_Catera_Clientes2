@@ -120,6 +120,96 @@ class DashboardIndex extends Component
         ];
     }
 
+    public function getStatusOfertasDataProperty(): array
+    {
+        $months = [
+            'Nov 25', 'Dic 25', 'Ene 26', 'Feb 26', 'Mar 26', 'Abr 26',
+            'May 26', 'Jun 26', 'Jul 26', 'Ago 26', 'Sep 26', 'Oct 26',
+            'Nov 26', 'Dic 26',
+        ];
+
+        $proyectos = [
+            ['nombre' => 'IGASAMEX HTS 30x4" Oleofinos',           'cp' => '152/25', 'monto' => 0.037,  'probs' => [50,  75,  75,  75,  75,  75, 100, 100, 100, 100, 100, 100, 100, 100]],
+            ['nombre' => 'ENGIE HTP 42x24" VDR',                  'cp' => '157/25', 'monto' => 0.933,  'probs' => [null,null, 10,  25,  25,  50,  50,  75,  75,  75, 100, 100, 100, 100]],
+            ['nombre' => 'PIR SYSTEM HT 30x20" Cactus',            'cp' => '1',      'monto' => 0.103,  'probs' => [null,null, 10,  10,  10,  25,  25,  25,  25,   0,   0,   0,   0,   0]],
+            ['nombre' => 'NATURGY Anillos separadores',            'cp' => '2',      'monto' => 0.064,  'probs' => [null,null, 25,  50,  50,  75, 100, 100, 100, 100, 100, 100, 100, 100]],
+            ['nombre' => 'IGASAMEX VCP Dif. Diámetros',            'cp' => '3',      'monto' => 0.029,  'probs' => [null,null, 10,  10,  10,  10,  25,  25,  25,  25,  50,  50,  50,  50]],
+            ['nombre' => 'PROTEXA Válvulas Cluster SEJKAN',       'cp' => '4',      'monto' => 1.721,  'probs' => [null,null, 10,  10,  10,  25,  25,  25,  50,  50,  50,  50,  75,  75]],
+            ['nombre' => 'EUROINOVA DLS 6" 600#',                 'cp' => '5',      'monto' => 0.121,  'probs' => [null,null, 10,  10,  10,  10,  10,  25,  25,  25,  25,  50,  50,  50]],
+            ['nombre' => 'MOLPER DLS 6" 600# Hidalgo',             'cp' => '16',     'monto' => 2.977,  'probs' => [null,null, 10,  25,  25,  25,  50,  50,  50,  75,  75, 100, 100, 100]],
+            ['nombre' => 'SERPORT HTP 24x16" Submarino',           'cp' => '6',      'monto' => 0.352,  'probs' => [null,null, 10,  10,  10,  25,  25,  25,  25,  50,  50,  50,  50,  50]],
+            ['nombre' => 'GCI HT 8x8" Nafta',                     'cp' => '7',      'monto' => 0.009,  'probs' => [null,null, 10,  25,  25,  50,  50,  75,  75, 100, 100, 100, 100, 100]],
+            ['nombre' => 'ICA HTSF 24x24" Naucalpan',              'cp' => '8',      'monto' => 1.045,  'probs' => [null,null, 10,  25,  25,  50,  75,  75, 100, 100, 100, 100, 100, 100]],
+            ['nombre' => 'SICIM HT 30x20 600# Ags',               'cp' => '9',      'monto' => 0.256,  'probs' => [null,null, 10,  10,  10,  25,  25,  25,  50,  50,  50,  75,  75,  75]],
+            ['nombre' => 'COPC Juntas dieléctricas',               'cp' => '10',     'monto' => 0.005,  'probs' => [null,null, 10,  10,  10,  25,  50,  50,  50,  75, 100, 100, 100, 100]],
+            ['nombre' => 'INDHECA Separador Horiz. Bakte',         'cp' => '-',      'monto' => 0.376,  'probs' => [null,null, 10,  25,  25,  50,  50,  50,  75,  75, 100, 100, 100, 100]],
+            ['nombre' => 'SARREAL Drillings 2" Niple',             'cp' => '-',      'monto' => 0.045,  'probs' => [null,null, 10,  25,  25,  50,  50,  50,  50,  75, 100, 100, 100, 100]],
+            ['nombre' => 'ARSEAL Válvulas Trunnion 8y10',          'cp' => '11',     'monto' => 0.069,  'probs' => [null,null, 10,  10,  10,  10,  25,  25,  25,  25,  50,  50,  50,  50]],
+            ['nombre' => 'ESENTIA DLSS 36" Villa de Reyes',       'cp' => '12',     'monto' => 1.260,  'probs' => [null,null, 10,  25,  25,  50,  50,  75,  75,  75, 100, 100, 100, 100]],
+            ['nombre' => 'ESENTIA HTP 8" y 2" Samalayuca',         'cp' => '13',     'monto' => 0.063,  'probs' => [null,null, 10,  25,  25,  25,  50,  50,  50,  75,  75,  75, 100, 100]],
+            ['nombre' => 'SEDENA Frente 10 Tren Mx-Qro',          'cp' => '14',     'monto' => 8.892,  'probs' => [null,null, 10,  25,  25,  50,  50,  75,  75, 100, 100, 100, 100, 100]],
+            ['nombre' => 'SEDENA Frente 11 Tren Mx-Qro',          'cp' => '15',     'monto' => 36.375, 'probs' => [null,null, 10,  25,  25,  25,  50,  50,  75,  75, 100, 100, 100, 100]],
+        ];
+
+        $montoByMonth      = array_fill(0, 14, 0.0);
+        $ponderadoByMonth   = array_fill(0, 14, 0.0);
+        $contratadoByMonth  = array_fill(0, 14, 0.0);
+
+        foreach ($proyectos as $p) {
+            for ($i = 0; $i < 14; $i++) {
+                if ($p['probs'][$i] !== null && $p['probs'][$i] > 0) {
+                    $montoByMonth[$i]     += $p['monto'];
+                    $ponderadoByMonth[$i]  += $p['monto'] * $p['probs'][$i] / 100;
+                    if ($p['probs'][$i] === 100) {
+                        $contratadoByMonth[$i] += $p['monto'];
+                    }
+                }
+            }
+        }
+
+        $montoByMonth      = array_map(fn($v) => round($v, 3), $montoByMonth);
+        $ponderadoByMonth   = array_map(fn($v) => round($v, 3), $ponderadoByMonth);
+        $contratadoByMonth  = array_map(fn($v) => round($v, 3), $contratadoByMonth);
+
+        $palette = [
+            ['b' => 'rgb(34,197,94)',   'bg' => 'rgba(34,197,94,0.10)'],
+            ['b' => 'rgb(59,130,246)',   'bg' => 'rgba(59,130,246,0.10)'],
+            ['b' => 'rgb(245,158,11)',   'bg' => 'rgba(245,158,11,0.10)'],
+            ['b' => 'rgb(16,185,129)',   'bg' => 'rgba(16,185,129,0.10)'],
+            ['b' => 'rgb(239,68,68)',    'bg' => 'rgba(239,68,68,0.10)'],
+            ['b' => 'rgb(139,92,246)',   'bg' => 'rgba(139,92,246,0.10)'],
+            ['b' => 'rgb(6,182,212)',    'bg' => 'rgba(6,182,212,0.10)'],
+            ['b' => 'rgb(249,115,22)',   'bg' => 'rgba(249,115,22,0.10)'],
+            ['b' => 'rgb(236,72,153)',   'bg' => 'rgba(236,72,153,0.10)'],
+            ['b' => 'rgb(234,179,8)',    'bg' => 'rgba(234,179,8,0.10)'],
+            ['b' => 'rgb(20,184,166)',   'bg' => 'rgba(20,184,166,0.10)'],
+            ['b' => 'rgb(99,102,241)',   'bg' => 'rgba(99,102,241,0.10)'],
+            ['b' => 'rgb(168,85,247)',   'bg' => 'rgba(168,85,247,0.10)'],
+            ['b' => 'rgb(251,113,133)',  'bg' => 'rgba(251,113,133,0.10)'],
+            ['b' => 'rgb(251,146,60)',   'bg' => 'rgba(251,146,60,0.10)'],
+            ['b' => 'rgb(74,222,128)',   'bg' => 'rgba(74,222,128,0.10)'],
+            ['b' => 'rgb(96,165,250)',   'bg' => 'rgba(96,165,250,0.10)'],
+            ['b' => 'rgb(244,114,182)',  'bg' => 'rgba(244,114,182,0.10)'],
+            ['b' => 'rgb(45,212,191)',   'bg' => 'rgba(45,212,191,0.10)'],
+            ['b' => 'rgb(250,204,21)',   'bg' => 'rgba(250,204,21,0.10)'],
+        ];
+
+        foreach ($proyectos as $i => &$p) {
+            $c = $palette[$i % count($palette)];
+            $p['borderColor'] = $c['b'];
+            $p['bgColor']     = $c['bg'];
+        }
+        unset($p);
+
+        return [
+            'months'             => $months,
+            'proyectos'          => $proyectos,
+            'montoByMonth'       => $montoByMonth,
+            'ponderadoByMonth'   => $ponderadoByMonth,
+            'contratadoByMonth'  => $contratadoByMonth,
+        ];
+    }
+
     /** Chart data for stacked-bar and horizontal bars using real ponderacion */
     public function getChartDataProperty(): array
     {
@@ -212,6 +302,7 @@ class DashboardIndex extends Component
             'nombre_usuario' => auth()->user()->name ?? 'Usuario',
             'quarter_label' => 'Q' . ceil(now()->month / 3) . ' ' . now()->year,
             'chartData' => $this->chartData,
+            'statusOfertasData' => $this->statusOfertasData,
         ])->layout('components.layouts.app');
     }
 }

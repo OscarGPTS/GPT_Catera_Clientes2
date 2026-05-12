@@ -1,4 +1,4 @@
-<script>window._dashData = @json($chartData);</script>
+<script>window._dashData = @json($chartData); window._statusOfertas = @json($statusOfertasData);</script>
 <div>
     <x-slot name="header">
         @php
@@ -722,6 +722,266 @@
                     </div>
                 </div>
             @endforeach
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- SECCIÓN: Status Ofertas 2026 — Multi Axis Line Chart        --}}
+    {{-- ============================================================ --}}
+    <div class="mt-8">
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <h3 class="text-base font-medium text-slate-900">Status Ofertas 2026 — Seguimiento de adjudicación</h3>
+                <p class="mt-0.5 text-sm text-slate-500">Evolución mensual del % de adjudicación por proyecto · Datos basados en Status_Ofertas_2026 · Proyecciones a futuro</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <span class="inline-flex items-center gap-1.5">
+                    <span class="inline-block h-3 w-5 rounded-sm bg-emerald-500/70"></span>Contratada (100%)
+                </span>
+                <span class="inline-flex items-center gap-1.5">
+                    <span class="inline-block h-3 w-5 rounded-sm bg-cyan-500/70"></span>Casi Probable (75%)
+                </span>
+                <span class="inline-flex items-center gap-1.5">
+                    <span class="inline-block h-3 w-5 rounded-sm bg-blue-500/70"></span>Probable (50%)
+                </span>
+                <span class="inline-flex items-center gap-1.5">
+                    <span class="inline-block h-3 w-5 rounded-sm bg-amber-500/70"></span>Posible (25%)
+                </span>
+                <span class="inline-flex items-center gap-1.5">
+                    <span class="inline-block h-3 w-5 rounded-sm bg-slate-400/70"></span>Remoto (10%)
+                </span>
+                <span class="inline-flex items-center gap-1.5">
+                    <span class="inline-block h-3 w-5 rounded-sm bg-red-400/70"></span>Cancelada / Cerrada (0%)
+                </span>
+            </div>
+        </div>
+
+        {{-- Main Multi Axis Line Chart --}}
+        <div class="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+                <div>
+                    <h4 class="text-sm font-semibold text-slate-800">Proyección de adjudicación por oferta · Nov 2025 – Dic 2026</h4>
+                    <p class="text-xs text-slate-400 mt-0.5">Línea = % adjudicación · Barras = Cartera ponderada (USD M) · Valores proyectados después de Feb 2026</p>
+                </div>
+                <div class="text-xs text-slate-400 shrink-0">
+                    Total ofertas: <strong class="text-slate-600">$54.73M USD</strong>
+                </div>
+            </div>
+            <div class="relative h-[520px] w-full" x-data x-init="
+                const d = window._statusOfertas;
+                const ctx = $el.querySelector('canvas').getContext('2d');
+                const refLines = [
+                    { label: '_ref100', data: Array(14).fill(100), borderColor: 'rgba(34,197,94,0.25)', borderWidth: 1.5, borderDash: [6,4], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref75',  data: Array(14).fill(75),  borderColor: 'rgba(6,182,212,0.2)',   borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref50',  data: Array(14).fill(50),  borderColor: 'rgba(59,130,246,0.2)',  borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref25',  data: Array(14).fill(25),  borderColor: 'rgba(245,158,11,0.2)', borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref0',   data: Array(14).fill(0),   borderColor: 'rgba(239,68,68,0.15)',  borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                ];
+                const projectLines = d.proyectos.map((p, i) => ({
+                    label: p.nombre + ' (' + p.cp + ')',
+                    data: p.probs,
+                    borderColor: p.borderColor,
+                    backgroundColor: p.bgColor,
+                    borderWidth: 1.8,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: p.borderColor,
+                    fill: false,
+                    tension: 0,
+                    stepped: 'before',
+                    spanGaps: false,
+                    yAxisID: 'yProb',
+                    order: 1,
+                    _monto: p.monto,
+                }));
+                const datasets = [
+                    ...refLines,
+                    ...projectLines,
+                    {
+                        type: 'bar',
+                        label: 'Cartera ponderada (USD M)',
+                        data: d.ponderadoByMonth,
+                        backgroundColor: 'rgba(99,102,241,0.18)',
+                        borderColor: 'rgba(99,102,241,0.5)',
+                        borderWidth: 1,
+                        borderRadius: 3,
+                        yAxisID: 'yMonto',
+                        order: 50,
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Ofertas activas total (USD M)',
+                        data: d.montoByMonth,
+                        backgroundColor: 'rgba(148,163,184,0.12)',
+                        borderColor: 'rgba(148,163,184,0.35)',
+                        borderWidth: 1,
+                        borderRadius: 3,
+                        yAxisID: 'yMonto',
+                        order: 51,
+                    },
+                ];
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: d.months, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    filter: item => !item.text.startsWith('_ref'),
+                                    boxWidth: 12, boxHeight: 8,
+                                    font: { size: 10 }, color: '#64748b',
+                                    padding: 6,
+                                    usePointStyle: true,
+                                    pointStyle: 'line',
+                                },
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(c) {
+                                        if (c.dataset.label.startsWith('_ref')) return null;
+                                        if (c.dataset.yAxisID === 'yMonto') {
+                                            return ' ' + c.dataset.label + ': $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) + 'M' : '—');
+                                        }
+                                        var monto = c.dataset._monto ? ' · $' + (c.parsed.y !== null ? (c.dataset._monto * c.parsed.y / 100).toFixed(3) : '0') + 'M pond.' : '';
+                                        return ' ' + c.dataset.label + ': ' + (c.parsed.y !== null ? c.parsed.y + '%' : '—') + monto;
+                                    }
+                                }
+                            },
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(148,163,184,0.12)' },
+                                ticks: { font: { size: 11 }, color: '#94a3b8' },
+                            },
+                            yProb: {
+                                type: 'linear',
+                                position: 'left',
+                                min: 0,
+                                max: 110,
+                                grid: { color: 'rgba(148,163,184,0.1)' },
+                                ticks: {
+                                    font: { size: 11 }, color: '#64748b',
+                                    stepSize: 25,
+                                    callback: function(v) {
+                                        if (v === 100) return 'Conc.';
+                                        if (v === 75)  return '75%';
+                                        if (v === 50)  return '50%';
+                                        if (v === 25)  return '25%';
+                                        if (v === 10)  return '10%';
+                                        if (v === 0)   return '0%';
+                                        return '';
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: '% Adjudicación',
+                                    font: { size: 12, weight: '500' },
+                                    color: '#64748b',
+                                },
+                            },
+                            yMonto: {
+                                type: 'linear',
+                                position: 'right',
+                                min: 0,
+                                grid: { display: false },
+                                ticks: {
+                                    font: { size: 11 }, color: '#94a3b8',
+                                    callback: function(v) { return '$' + v + 'M'; },
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'USD Millones',
+                                    font: { size: 12, weight: '500' },
+                                    color: '#94a3b8',
+                                },
+                            },
+                        },
+                    },
+                });
+            ">
+                <canvas></canvas>
+            </div>
+        </div>
+
+        {{-- Data table: Status Ofertas 2026 --}}
+        <div class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <h4 class="text-sm font-semibold text-slate-800">Detalle de ofertas — Status Ofertas 2026</h4>
+                    <p class="text-xs text-slate-400 mt-0.5">CP · Cliente · Monto USD · Evolución mensual del % de adjudicación · 0% = Cancelada/Cerrada</p>
+                </div>
+                <div class="text-xs text-slate-400">
+                    {{ count($statusOfertasData['proyectos']) }} ofertas · $54.73M total
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-xs">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-2 py-2 text-left font-semibold text-slate-600 sticky left-0 bg-slate-50 z-10 min-w-[180px]">Proyecto (CP)</th>
+                            <th class="px-2 py-2 text-right font-semibold text-slate-600">Monto USD</th>
+                            @foreach($statusOfertasData['months'] as $m)
+                                <th class="px-1.5 py-2 text-center font-semibold text-slate-600 whitespace-nowrap">{{ $m }}</th>
+                            @endforeach
+                            <th class="px-2 py-2 text-center font-semibold text-slate-600">Actual</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach($statusOfertasData['proyectos'] as $p)
+                            @php
+                                $currentProb = 0;
+                                for ($i = 13; $i >= 0; $i--) {
+                                    if ($p['probs'][$i] !== null) { $currentProb = $p['probs'][$i]; break; }
+                                }
+                                $probColor = $currentProb >= 75 ? 'text-green-600 bg-green-50' : ($currentProb >= 50 ? 'text-blue-600 bg-blue-50' : ($currentProb >= 25 ? 'text-amber-600 bg-amber-50' : ($currentProb > 0 ? 'text-slate-600 bg-slate-50' : 'text-red-600 bg-red-50')));
+                                $probLabel  = $currentProb >= 100 ? 'Contratada' : ($currentProb >= 75 ? 'Casi Probable' : ($currentProb >= 50 ? 'Probable' : ($currentProb >= 25 ? 'Posible' : ($currentProb >= 10 ? 'Remoto' : 'Cancelada'))));
+                            @endphp
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-2 py-1.5 font-medium text-slate-800 sticky left-0 bg-white z-10 whitespace-nowrap" style="border-right: 1px solid #e2e8f0;">
+                                    <span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style="background-color: {{ $p['borderColor'] }}"></span>
+                                    {{ $p['nombre'] }}
+                                    <span class="text-slate-400 ml-1">{{ $p['cp'] }}</span>
+                                </td>
+                                <td class="px-2 py-1.5 text-right font-mono text-slate-700">${{ number_format($p['monto'] * 1000000, 0, '.', ',') }}</td>
+                                @foreach($p['probs'] as $prob)
+                                    @php
+                                        $cellColor = $prob === null ? 'bg-transparent text-slate-300' : ($prob >= 100 ? 'bg-green-100 text-green-800 font-semibold' : ($prob >= 75 ? 'bg-teal-50 text-teal-700 font-medium' : ($prob >= 50 ? 'bg-blue-50 text-blue-700 font-medium' : ($prob >= 25 ? 'bg-amber-50 text-amber-700' : ($prob >= 10 ? 'bg-slate-50 text-slate-600' : ($prob === 0 ? 'bg-red-50 text-red-700 font-medium' : 'bg-transparent text-slate-300'))))));
+                                    @endphp
+                                    <td class="px-1.5 py-1.5 text-center {{ $cellColor }}">{{ $prob !== null ? $prob . '%' : '—' }}</td>
+                                @endforeach
+                                <td class="px-2 py-1.5 text-center">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $probColor }}">
+                                        {{ $currentProb }}% · {{ $probLabel }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="bg-slate-50 border-t-2 border-slate-200">
+                        <tr class="font-semibold text-slate-700">
+                            <td class="px-2 py-2 sticky left-0 bg-slate-50 z-10" style="border-right: 1px solid #e2e8f0;">Total cartera activa</td>
+                            <td class="px-2 py-2 text-right">${{ number_format(array_sum(array_column($statusOfertasData['proyectos'], 'monto')) * 1000000, 0, '.', ',') }}</td>
+                            @foreach($statusOfertasData['ponderadoByMonth'] as $idx => $pond)
+                                @php $totalAct = $statusOfertasData['montoByMonth'][$idx]; @endphp
+                                <td class="px-1.5 py-2 text-center text-slate-500">
+                                    <span class="block text-indigo-600 font-medium">${{ number_format($pond, 2) }}M</span>
+                                    <span class="block text-[10px] text-slate-400">de ${{ number_format($totalAct, 1) }}M</span>
+                                </td>
+                            @endforeach
+                            <td class="px-2 py-2 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold text-indigo-700 bg-indigo-50">
+                                    Car. Ponderada
+                                </span>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 
