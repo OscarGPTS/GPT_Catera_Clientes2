@@ -102,7 +102,7 @@ class OportunidadesIndex extends Component
             $query->where('gerente_proyectos_id', auth()->id());
         }
 
-        return $query->latest()->paginate($this->perPage);
+        return $query->orderByRaw('fecha_envio IS NULL, fecha_envio DESC')->paginate($this->perPage);
     }
 
     public function getKpisProperty()
