@@ -317,7 +317,7 @@
                         <span class="inline-block h-3 w-5 rounded-sm bg-indigo-500"></span>Ofertas emitidas
                     </span>
                     <span class="inline-flex items-center gap-1.5">
-                        <span class="inline-block h-3 w-8 border-t-2 border-dashed border-amber-500"></span>Cartera esperada
+                        <span class="inline-block h-3 w-5 rounded-sm bg-violet-500"></span>Cartera esperada
                     </span>
                 </div>
             </div>
@@ -349,18 +349,17 @@
                             {
                                 label: 'Cartera esperada (USD M)',
                                 data: d.esperado,
-                                borderColor: 'rgb(245,158,11)',
-                                backgroundColor: 'transparent',
+                                borderColor: 'rgb(139,92,246)',
+                                backgroundColor: 'rgba(139,92,246,0.06)',
                                 borderWidth: 2.5,
-                                borderDash: [8, 4],
                                 pointRadius: 5,
                                 pointHoverRadius: 7,
                                 pointStyle: 'circle',
-                                pointBackgroundColor: 'rgb(245,158,11)',
+                                pointBackgroundColor: 'rgb(139,92,246)',
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 2,
-                                fill: false,
-                                tension: 0.3,
+                                fill: true,
+                                tension: 0.4,
                                 yAxisID: 'y',
                             },
                         ]
