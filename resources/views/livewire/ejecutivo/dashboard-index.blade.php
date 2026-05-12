@@ -662,7 +662,7 @@
                 <p class="mt-0.5 text-sm text-slate-500">Valor bruto vs. Cartera esperada por ejecutivo · Status Ofertas 2026</p>
             </div>
             <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-indigo-500"></span>Valor bruto</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 border-t-2 border-indigo-500"></span>Valor bruto</span>
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-8 border-t-2 border-dashed border-amber-500"></span>Cartera esperada</span>
             </div>
         </div>
@@ -674,22 +674,28 @@
                     const resp = window._statusOfertas.byResponsable;
                     const ctx = $el.querySelector('canvas').getContext('2d');
                     new Chart(ctx, {
-                        type: 'bar',
+                        type: 'line',
                         data: {
                             labels: resp.labels,
                             datasets: [
                                 {
                                     label: 'Valor bruto (USD M)',
                                     data: resp.bruto,
-                                    backgroundColor: 'rgba(99,102,241,0.7)',
                                     borderColor: 'rgb(99,102,241)',
-                                    borderWidth: 1,
-                                    borderRadius: 4,
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 2.5,
+                                    pointRadius: 5,
+                                    pointHoverRadius: 7,
+                                    pointStyle: 'circle',
+                                    pointBackgroundColor: 'rgb(99,102,241)',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2,
+                                    fill: false,
+                                    tension: 0.35,
                                     yAxisID: 'y',
                                     order: 2,
                                 },
                                 {
-                                    type: 'line',
                                     label: 'Cartera esperada (USD M)',
                                     data: resp.pond,
                                     borderColor: 'rgb(245,158,11)',
