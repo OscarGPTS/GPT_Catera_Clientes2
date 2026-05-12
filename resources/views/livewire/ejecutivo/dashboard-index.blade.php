@@ -100,20 +100,19 @@
         <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
                 <h3 class="text-base font-medium text-slate-900">Status Ofertas 2026 — Seguimiento de adjudicación</h3>
-                <p class="mt-0.5 text-sm text-slate-500">Evolución mensual del % de adjudicación por proyecto · 0% = Cancelada/Cerrada · Datos basados en Status_Ofertas_2026</p>
             </div>
             <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-emerald-500/70"></span>Contratada (100%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-emerald-500/70"></span> (100%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-cyan-500/70"></span>Casi Probable (75%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-cyan-500/70"></span> (75%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-blue-500/70"></span>Probable (50%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-blue-500/70"></span> (50%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-amber-500/70"></span>Posible (25%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-amber-500/70"></span> (25%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
                     <span class="inline-block h-3 w-5 rounded-sm bg-red-400/70"></span>Cancelada / Cerrada (0%)
@@ -125,8 +124,7 @@
         <div class="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
                 <div>
-                    <h4 class="text-sm font-semibold text-slate-800">Proyección de adjudicación por oferta · Nov 2025 – Dic 2026</h4>
-                    <p class="text-xs text-slate-400 mt-0.5">Línea = % adjudicación · Barras = Cartera ponderada (USD M) · Valores proyectados después de Feb 2026</p>
+                    <h4 class="text-sm font-semibold text-slate-800">Adjudicación por oferta · Nov 2025 – May 2026</h4>
                 </div>
                 <div class="text-xs text-slate-400 shrink-0">
                     Total ofertas: <strong class="text-slate-600">$54.73M USD</strong>
@@ -136,11 +134,11 @@
                 const d = window._statusOfertas;
                 const ctx = $el.querySelector('canvas').getContext('2d');
                 const refLines = [
-                    { label: '_ref100', data: Array(14).fill(100), borderColor: 'rgba(34,197,94,0.25)', borderWidth: 1.5, borderDash: [6,4], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
-                    { label: '_ref75',  data: Array(14).fill(75),  borderColor: 'rgba(6,182,212,0.2)',   borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
-                    { label: '_ref50',  data: Array(14).fill(50),  borderColor: 'rgba(59,130,246,0.2)',  borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
-                    { label: '_ref25',  data: Array(14).fill(25),  borderColor: 'rgba(245,158,11,0.2)', borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
-                    { label: '_ref0',   data: Array(14).fill(0),   borderColor: 'rgba(239,68,68,0.15)',  borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref100', data: Array(7).fill(100), borderColor: 'rgba(34,197,94,0.25)', borderWidth: 1.5, borderDash: [6,4], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref75',  data: Array(7).fill(75),  borderColor: 'rgba(6,182,212,0.2)',   borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref50',  data: Array(7).fill(50),  borderColor: 'rgba(59,130,246,0.2)',  borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref25',  data: Array(7).fill(25),  borderColor: 'rgba(245,158,11,0.2)', borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref0',   data: Array(7).fill(0),   borderColor: 'rgba(239,68,68,0.15)',  borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
                 ];
                 const projectLines = d.proyectos.map((p, i) => ({
                     label: p.nombre + ' (' + p.cp + ')',
@@ -148,12 +146,12 @@
                     borderColor: p.borderColor,
                     backgroundColor: p.bgColor,
                     borderWidth: 1.8,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointStyle: 'circle',
                     pointBackgroundColor: p.borderColor,
                     fill: false,
-                    tension: 0,
-                    stepped: 'before',
+                    tension: 0.2,
                     spanGaps: false,
                     yAxisID: 'yProb',
                     order: 1,
@@ -233,7 +231,7 @@
                                     font: { size: 11 }, color: '#64748b',
                                     stepSize: 25,
                                     callback: function(v) {
-                                        if (v === 100) return 'Conc.';
+                                        if (v === 100) return '100%';
                                         if (v === 75)  return '75%';
                                         if (v === 50)  return '50%';
                                         if (v === 25)  return '25%';
@@ -277,7 +275,7 @@
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
                     <h4 class="text-sm font-semibold text-slate-800">Detalle de ofertas — Status Ofertas 2026</h4>
-                    <p class="text-xs text-slate-400 mt-0.5">CP · Cliente · Monto USD · Evolución mensual del % de adjudicación · 0% = Cancelada/Cerrada</p>
+                    <p class="text-xs text-slate-400 mt-0.5">CP · Cliente · Monto USD · % adjudicación actual por mes · 0% = Cancelada/Cerrada</p>
                 </div>
                 <div class="text-xs text-slate-400">
                     {{ count($statusOfertasData['proyectos']) }} ofertas · $54.73M total
@@ -299,7 +297,7 @@
                         @foreach($statusOfertasData['proyectos'] as $p)
                             @php
                                 $currentProb = 0;
-                                for ($i = 13; $i >= 0; $i--) {
+                                for ($i = 6; $i >= 0; $i--) {
                                     if ($p['probs'][$i] !== null) { $currentProb = $p['probs'][$i]; break; }
                                 }
                                 $probColor = $currentProb >= 75 ? 'text-green-600 bg-green-50' : ($currentProb >= 50 ? 'text-blue-600 bg-blue-50' : ($currentProb >= 25 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50'));
