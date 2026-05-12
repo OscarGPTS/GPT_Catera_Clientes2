@@ -326,14 +326,15 @@ class DashboardIndex extends Component
                 'ponderado'   => $evoPonderado,
             ],
             'levelResumen'      => $levelResumen,
-            'byResponsable'    => (function() use ($proyectos) {
+            'byResponsable'    => (function() use ($proyectos, $numMonths) {
                 $order = ['Aquiles G', 'Diego R', 'Kevin P', 'Sergio O', 'Guadalupe O'];
                 $grouped = [];
                 foreach ($order as $r) { $grouped[$r] = ['bruto' => 0, 'pond' => 0, 'count' => 0]; }
                 foreach ($proyectos as $p) {
                     $r = $p['resp'];
+                    if (!isset($grouped[$r])) { $grouped[$r] = ['bruto' => 0, 'pond' => 0, 'count' => 0]; }
                     $lp = 0;
-                    for ($i = 6; $i >= 0; $i--) {
+                    for ($i = $numMonths - 1; $i >= 0; $i--) {
                         if ($p['probs'][$i] !== null) { $lp = $p['probs'][$i]; break; }
                     }
                     $grouped[$r]['bruto'] += $p['monto'];

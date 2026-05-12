@@ -675,7 +675,7 @@
             {{-- Chart (3/5) --}}
             <div class="xl:col-span-3 rounded-xl border border-slate-200 bg-white shadow-sm p-6">
                 <div class="relative h-96 w-full" x-data x-init="
-                    const resp = @json($byResponsable);
+                    const resp = window._statusOfertas.byResponsable;
                     const ctx = $el.querySelector('canvas').getContext('2d');
                     new Chart(ctx, {
                         type: 'bar',
