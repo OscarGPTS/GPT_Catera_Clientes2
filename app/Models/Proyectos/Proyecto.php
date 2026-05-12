@@ -18,7 +18,10 @@ class Proyecto extends Model
     protected $fillable = [
         'tech_reference', 'cp_numero', 'dn_numero', 'anio',
         'cliente_id', 'sublinea_id', 'usuario_final', 'sector',
+        'contacto', 'lugar', 'oferta_codigo',
         'estado', 'ponderacion', 'fecha_inicio_planeada', 'fecha_fin_planeada',
+        'fecha_envio', 'fecha_modificacion_oferta',
+        'hitos_pago', 'archivo_oferta', 'elaboro_id',
         'metodo_distribucion_plurianual',
         'director_dn_id', 'gerente_proyectos_id', 'gerente_operaciones_id',
         'ingeniero_costos_id', 'ingeniero_proyectos_id', 'trainee_id',
@@ -32,7 +35,14 @@ class Proyecto extends Model
             'ponderacion' => 'integer',
             'fecha_inicio_planeada' => 'date',
             'fecha_fin_planeada' => 'date',
+            'fecha_envio' => 'date',
+            'fecha_modificacion_oferta' => 'date',
         ];
+    }
+
+    public function elaboro(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'elaboro_id');
     }
 
     public function cliente(): BelongsTo

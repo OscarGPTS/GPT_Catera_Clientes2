@@ -74,7 +74,7 @@ class OportunidadesIndex extends Component
 
     public function getOportunidadesProperty()
     {
-        $query = Proyecto::with(['cliente', 'sublinea', 'gerenteProyectos', 'cotizaciones']);
+        $query = Proyecto::with(['cliente', 'sublinea', 'gerenteProyectos', 'elaboro', 'cotizaciones']);
 
         if ($this->search) {
             $search = strtolower($this->search);
@@ -114,40 +114,37 @@ class OportunidadesIndex extends Component
         }
 
         $pipeline = (clone $baseQuery)->count();
-        $pipelineMonto = (clone $baseQuery)
+        $pipelineItems = (clone $baseQuery)
             ->withSum('cotizaciones as monto_total', 'precio_venta_final')
-            ->get()
-            ->sum('monto_total');
+            ->get();
+        $pipelineMonto = $pipelineItems->sum('monto_total');
 
-        $adjudicados = (clone $baseQuery)
-            ->whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion'])
-            ->count();
+        $montoPonderado = $pipelineItems->sum(fn($p) => ($p->monto_total ?? 0) * ($p->ponderacion / 100));
+        $ponderacionMedia = $pipeline > 0
+            ? round($pipelineItems->avg('ponderacion'))
+            : 0;
+
         $adjudicadoMonto = (clone $baseQuery)
             ->whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion'])
             ->withSum('cotizaciones as monto_total', 'precio_venta_final')
             ->get()
             ->sum('monto_total');
+        $adjudicadoCount = (clone $baseQuery)
+            ->whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion'])
+            ->count();
 
-        $total = max(Proyecto::count(), 1);
-        $adjudicadosCount = Proyecto::whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion', 'cerrado'])->count();
-        $hitRateConteo = round(($adjudicadosCount / $total) * 100);
-
-        $sedenaMonto = (clone $baseQuery)
-            ->whereHas('cliente', fn($q) => $q->whereRaw('LOWER(razon_social) LIKE ?', ['%sedena%']))
-            ->withSum('cotizaciones as monto_total', 'precio_venta_final')
-            ->get()
-            ->sum('monto_total');
-
-        $sedenaConcentracion = $pipelineMonto > 0 ? round(($sedenaMonto / $pipelineMonto) * 100, 1) : 0;
+        $enviadasCount = (clone $baseQuery)
+            ->whereNotIn('estado', ['en_revision', 'cotizando'])
+            ->count();
 
         return [
             'pipeline_monto' => $pipelineMonto,
             'pipeline_count' => $pipeline,
+            'monto_ponderado' => $montoPonderado,
+            'ponderacion_media' => $ponderacionMedia,
             'adjudicado_monto' => $adjudicadoMonto,
-            'adjudicado_count' => $adjudicados,
-            'hit_rate_conteo' => $hitRateConteo,
-            'hit_rate_monto' => $pipelineMonto > 0 ? round(($adjudicadoMonto / $pipelineMonto) * 100) : 0,
-            'sedena_concentracion' => $sedenaConcentracion,
+            'adjudicado_count' => $adjudicadoCount,
+            'enviadas_count' => $enviadasCount,
         ];
     }
 

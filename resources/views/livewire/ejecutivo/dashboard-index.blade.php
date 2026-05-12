@@ -477,8 +477,7 @@
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-cyan-500"></span>75% Casi Probable</span>
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-blue-500"></span>50% Probable</span>
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-amber-500"></span>25% Posible</span>
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-rose-400"></span>10% Remoto</span>
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-slate-300"></span>0% Cancelada</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-red-400"></span>0% Cancelada</span>
             </div>
         </div>
 
@@ -497,8 +496,7 @@
                                 { label: '75% Casi Probable', data: evo.series.p75, backgroundColor: 'rgba(6,182,212,0.8)', stack: 's', borderRadius: 2 },
                                 { label: '50% Probable', data: evo.series.p50, backgroundColor: 'rgba(59,130,246,0.8)', stack: 's', borderRadius: 2 },
                                 { label: '25% Posible', data: evo.series.p25, backgroundColor: 'rgba(245,158,11,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '10% Remoto', data: evo.series.p10, backgroundColor: 'rgba(251,113,133,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '0% Cancelada', data: evo.series.p0, backgroundColor: 'rgba(203,213,225,0.7)', stack: 's', borderRadius: 2 },
+                                { label: '0% Cancelada', data: evo.series.p0, backgroundColor: 'rgba(248,113,113,0.7)', stack: 's', borderRadius: 2 },
                                 {
                                     type: 'line',
                                     label: 'Cartera esperada (ponderada)',
@@ -587,8 +585,7 @@
                                 'p75'  => ['bg' => 'bg-cyan-500',    'text' => 'text-cyan-700',    'bar' => 'bg-cyan-400'],
                                 'p50'  => ['bg' => 'bg-blue-500',    'text' => 'text-blue-700',    'bar' => 'bg-blue-400'],
                                 'p25'  => ['bg' => 'bg-amber-500',   'text' => 'text-amber-700',   'bar' => 'bg-amber-400'],
-                                'p10'  => ['bg' => 'bg-rose-400',    'text' => 'text-rose-700',    'bar' => 'bg-rose-300'],
-                                'p0'   => ['bg' => 'bg-slate-400',   'text' => 'text-slate-700',   'bar' => 'bg-slate-300'],
+                                'p0'   => ['bg' => 'bg-red-400',     'text' => 'text-red-700',     'bar' => 'bg-red-300'],
                             ];
                             $c = $bandColors[$lr['key']] ?? ['bg' => 'bg-gray-400', 'text' => 'text-gray-700', 'bar' => 'bg-gray-300'];
                             $maxBruto = $carteraKpis['bruto'] > 0 ? $carteraKpis['bruto'] : 1;

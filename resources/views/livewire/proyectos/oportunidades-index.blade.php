@@ -35,52 +35,33 @@
         </button>
     </div>
 
-    {{-- KPI cards --}}
+{{-- KPI cards --}}
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-stat-card
-            title="Pipeline total"
-            :value="'$ ' . number_format($kpis['pipeline_monto'], 2, '.', ',')"
-            :subtitle="number_format($kpis['pipeline_count']) . ' oportunidades activas'"
+            title="Total Ofertas"
+            :value="'$ ' . number_format($kpis['pipeline_monto'], 0, '.', ',')"
+            :subtitle="number_format($kpis['pipeline_count']) . ' oportunidades'"
             color="blue"
         />
         <x-stat-card
+            title="Monto Ponderado"
+            :value="'$ ' . number_format($kpis['monto_ponderado'], 0, '.', ',')"
+            :subtitle="'% adjud. promedio: ' . $kpis['ponderacion_media'] . '%'"
+            color="violet"
+        />
+        <x-stat-card
             title="Adjudicado"
-            :value="'$ ' . number_format($kpis['adjudicado_monto'], 2, '.', ',')"
+            :value="'$ ' . number_format($kpis['adjudicado_monto'], 0, '.', ',')"
             :subtitle="number_format($kpis['adjudicado_count']) . ' proyectos'"
             color="green"
         />
         <x-stat-card
-            title="Hit rate"
-            :value="$kpis['hit_rate_conteo'] . '% / ' . $kpis['hit_rate_monto'] . '%'"
-            subtitle="Conteo / Monto"
+            title="Enviadas"
+            :value="number_format($kpis['enviadas_count'])"
+            :subtitle="'de ' . number_format($kpis['pipeline_count']) . ' en pipeline'"
             color="amber"
         />
-        <x-stat-card
-            title="Concentración SEDENA"
-            :value="$kpis['sedena_concentracion'] . '%'"
-            subtitle="Del pipeline total"
-            :color="$kpis['sedena_concentracion'] > 50 ? 'red' : 'amber'"
-        />
     </div>
-
-    {{-- SEDENA Alert --}}
-    @if($kpis['sedena_concentracion'] > 50)
-        <div class="mt-4 rounded-lg border border-gpt-red-200 bg-gpt-red-50 p-4">
-            <div class="flex items-start gap-3">
-                <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gpt-red-100">
-                    <svg class="h-5 w-5 text-gpt-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gpt-red-800">
-                        Concentración SEDENA {{ $kpis['sedena_concentracion'] }}% del pipeline — Supera el umbral de riesgo del 50%
-                    </p>
-                    <p class="mt-1 text-xs text-gpt-red-600">Se recomienda diversificar la cartera de clientes para mitigar riesgos operativos y financieros.</p>
-                </div>
-            </div>
-        </div>
-    @endif
 
     {{-- Filters --}}
     <div class="mt-6 rounded-lg border border-slate-200 bg-white p-4">
@@ -173,83 +154,82 @@
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">CP</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Tech Reference</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Cliente</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Sublínea</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Sector</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Monto estimado</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Estado</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Líder</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Última actividad</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"></th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">CP</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Cliente</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Contacto</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Lugar</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Alcance</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Oferta</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Fecha Envío</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Fecha Modif.</th>
+                        <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Monto USD</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Hitos de Pago</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Elaboró</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                        <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">% Adjud.</th>
+                        <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
                     @forelse($oportunidades as $op)
                         @php
-                            $sublineaColors = [
-                                'HTP' => 'bg-gpt-100 text-gpt-800',
-                                'LSP' => 'bg-blue-100 text-blue-800',
-                                'VLV' => 'bg-green-100 text-green-800',
-                                'SOL' => 'bg-amber-100 text-amber-800',
-                                'SG'  => 'bg-slate-100 text-slate-700',
-                            ];
-                            $subKey = $op->sublinea->codigo ?? '';
-                            $subColor = $sublineaColors[$subKey] ?? 'bg-slate-100 text-slate-700';
-                            $clienteAlias = $op->cliente->alias_3letras ?? mb_strtoupper(mb_substr($op->cliente->razon_social ?? 'N/A', 0, 3));
-                            $liderInitials = collect(explode(' ', $op->gerenteProyectos->name ?? 'N A'))->map(fn($n) => mb_strtoupper(mb_substr($n, 0, 1)))->take(2)->implode('');
                             $monto = $op->cotizaciones->where('status', 'aprobado')->sortByDesc('version')->first()?->precio_venta_final
                                 ?? $op->cotizaciones->sortByDesc('version')->first()?->precio_venta_final
                                 ?? 0;
+                            $fechaEnvio = $op->fecha_envio
+                                ?? $op->cotizaciones->where('fecha_emision', '!=', null)->sortByDesc('version')->first()?->fecha_emision;
+                            $fechaModif = $op->fecha_modificacion_oferta;
+                            $ponderacionLabel = match((int) $op->ponderacion) {
+                                10 => 'Remoto',
+                                25 => 'Posible',
+                                50 => 'Probable',
+                                75 => 'Casi Probable',
+                                100 => 'Contratado',
+                                default => $op->ponderacion . '%',
+                            };
                         @endphp
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="whitespace-nowrap px-4 py-3 text-sm font-mono font-medium text-slate-900">
+                            <td class="whitespace-nowrap px-3 py-3 text-sm font-mono font-medium text-slate-900">
                                 <a href="{{ route('oportunidades.show', $op) }}" class="hover:text-gpt-600 transition-colors">{{ $op->cp_numero ?? '—' }}</a>
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3">
-                                <span class="text-sm text-slate-600 block max-w-[180px] truncate" title="{{ $op->tech_reference }}">
-                                    {{ $op->tech_reference ?? '—' }}
-                                </span>
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="inline-flex items-center justify-center rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600 uppercase min-w-[28px]">
-                                        {{ $clienteAlias }}
-                                    </span>
-                                    <span class="text-sm text-slate-900">{{ $op->cliente->razon_social ?? '—' }}</span>
-                                </div>
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-3">
-                                @if($subKey)
-                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $subColor }}">
-                                        {{ $subKey }}
-                                    </span>
+                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-900">{{ $op->cliente->razon_social ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{{ $op->contacto ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{{ $op->lugar ?? '—' }}</td>
+                            <td class="px-3 py-3 text-sm text-slate-600 max-w-[220px] truncate" title="{{ $op->notas ?? '' }}">{{ $op->notas ?? '—' }}</td>
+                            <td class="px-3 py-3 text-sm text-slate-600 max-w-[200px] truncate" title="{{ $op->oferta_codigo ?? $op->tech_reference ?? '' }}">
+                                @if($op->archivo_oferta)
+                                    <a href="{{ Storage::url($op->archivo_oferta) }}" target="_blank" class="text-gpt-600 hover:underline">{{ $op->oferta_codigo ?? $op->tech_reference ?? '—' }}</a>
                                 @else
-                                    <span class="text-sm text-slate-400">—</span>
+                                    {{ $op->oferta_codigo ?? $op->tech_reference ?? '—' }}
                                 @endif
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-600">{{ $op->sector ?? '—' }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-slate-900">
+                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{{ $fechaEnvio?->format('Y-m-d') ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{{ $fechaModif?->format('Y-m-d') ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-3 py-3 text-right text-sm font-medium text-slate-900">
                                 @if($monto > 0)
                                     $ {{ number_format($monto, 0, '.', ',') }}
                                 @else
                                     <span class="text-slate-400">—</span>
                                 @endif
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3">
+                            <td class="px-3 py-3 text-sm text-slate-600 max-w-[180px]">
+                                @if($op->hitos_pago)
+                                    <span class="truncate block" title="{{ $op->hitos_pago }}">{{ Str::limit($op->hitos_pago, 50) }}</span>
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-700">{{ $op->elaboro?->name ?? $op->gerenteProyectos?->name ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-3 py-3">
                                 <x-badge :status="$op->estado" />
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gpt-100 text-xs font-semibold text-gpt-700">
-                                        {{ $liderInitials }}
-                                    </span>
-                                    <span class="text-sm text-slate-700">{{ $op->gerenteProyectos->name ?? '—' }}</span>
-                                </div>
+                            <td class="whitespace-nowrap px-3 py-3 text-right">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $op->ponderacion >= 75 ? 'bg-green-100 text-green-800' : ($op->ponderacion >= 50 ? 'bg-amber-100 text-amber-800' : ($op->ponderacion >= 25 ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700')) }}">
+                                    {{ $op->ponderacion }}%
+                                </span>
+                                <span class="block text-[10px] text-slate-400 text-center">{{ $ponderacionLabel }}</span>
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-500">{{ $op->updated_at?->diffForHumans() ?? '—' }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-right" x-data="{ open: false }" @click.outside="open = false">
+                            <td class="whitespace-nowrap px-3 py-3 text-right" x-data="{ open: false }" @click.outside="open = false">
                                 <button @click="open = !open" class="inline-flex items-center rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
                                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/>
@@ -287,7 +267,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-4 py-12 text-center">
+                            <td colspan="14" class="px-4 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-slate-300" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                                     <h3 class="mt-2 text-sm font-medium text-slate-900">Sin oportunidades</h3>

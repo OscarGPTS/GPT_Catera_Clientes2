@@ -7,6 +7,7 @@ $colors = [
     'green' => 'from-green-50 to-green-100 border-green-200',
     'amber' => 'from-amber-50 to-amber-100 border-amber-200',
     'red' => 'from-gpt-red-50 to-gpt-red-100 border-gpt-red-200',
+    'violet' => 'from-violet-50 to-violet-100 border-violet-200',
 ];
 $colorClass = $colors[$color] ?? $colors['gpt'];
 @endphp

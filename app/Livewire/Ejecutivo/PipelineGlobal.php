@@ -2,133 +2,76 @@
 
 namespace App\Livewire\Ejecutivo;
 
-use App\Models\Proyectos\Proyecto;
 use Livewire\Component;
 
 class PipelineGlobal extends Component
 {
-    /** @return \Illuminate\Support\Collection */
-    public function getPipelineProperty()
+    public function getStatusOfertasProperty(): array
     {
-        return Proyecto::with(['cliente', 'sublinea', 'cotizaciones'])
-            ->orderByDesc('ponderacion')
-            ->orderBy('created_at')
-            ->get()
-            ->map(function (Proyecto $p) {
-                $cotizacion = $p->cotizaciones->sortByDesc('version')->first();
-                $monto      = (float) ($cotizacion?->precio_venta_final ?? 0);
-                $fecha      = $cotizacion?->fecha_emision;
-                $mes        = $fecha ? (int) $fecha->format('n') : null;
-                // Offers from 2025 still active in 2026 → show in month 11 (Nov) of the timeline
-                $mesYear    = $fecha ? (int) $fecha->format('Y') : null;
-                if ($mesYear && $mesYear < 2026) {
-                    $mes = (int) $fecha->format('n'); // keep original month (Nov=11, Dec=12)
-                }
+        $months = [
+            ['year' => 2025, 'num' => 11, 'label' => 'Nov'],
+            ['year' => 2025, 'num' => 12, 'label' => 'Dic'],
+            ['year' => 2026, 'num' => 1,  'label' => 'Ene'],
+            ['year' => 2026, 'num' => 2,  'label' => 'Feb'],
+            ['year' => 2026, 'num' => 3,  'label' => 'Mar'],
+            ['year' => 2026, 'num' => 4,  'label' => 'Abr'],
+            ['year' => 2026, 'num' => 5,  'label' => 'May'],
+        ];
 
-                return [
-                    'id'          => $p->id,
-                    'cp'          => $p->cp_numero,
-                    'cliente'     => $p->cliente?->razon_social ?? 'N/A',
-                    'alias'       => $p->cliente?->alias_3letras ?? '---',
-                    'sublinea'    => $p->sublinea?->codigo ?? '---',
-                    'sector'      => $p->sector,
-                    'estado'      => $p->estado,
-                    'ponderacion' => (int) $p->ponderacion,
-                    'monto'       => $monto,
-                    'mes'         => $mes,
-                    'mes_year'    => $mesYear,
-                    'fecha_str'   => $fecha ? $fecha->format('d/m/Y') : '—',
-                ];
-            });
+        $proyectos = [
+            ['nombre' => 'IGASAMEX HTS 30x4" Oleofinos',           'cp' => '152/25', 'monto' => 37000,      'probs' => [75,  75, 100, 100, 100, 100, 100], 'resp' => 'Diego R',    'sublinea' => 'HTS',  'alias' => 'IGX'],
+            ['nombre' => 'ENGIE HTP 42x24" VDR',                  'cp' => '157/25', 'monto' => 933000,      'probs' => [null, null, null, 25,  25,  50,  50], 'resp' => 'Kevin P',    'sublinea' => 'HTP',  'alias' => 'ENG'],
+            ['nombre' => 'PIR SYSTEM HT 30x20" Cactus',            'cp' => '1',      'monto' => 103000,      'probs' => [null, null, 25,  25,  50,  25,   0], 'resp' => 'Diego R',    'sublinea' => 'HTS',  'alias' => 'PIR'],
+            ['nombre' => 'NATURGY Anillos separadores',            'cp' => '2',      'monto' => 64000,       'probs' => [null, null, 25,  50,  75,  75, 100], 'resp' => 'Diego R',    'sublinea' => 'VRS',  'alias' => 'NAT'],
+            ['nombre' => 'IGASAMEX VCP Dif. Diámetros',            'cp' => '3',      'monto' => 29000,       'probs' => [null, null, 25,  25,  50,  50,  75], 'resp' => 'Diego R',    'sublinea' => 'VLV',  'alias' => 'IGX'],
+            ['nombre' => 'PROTEXA Válvulas Cluster SEJKAN',       'cp' => '4',      'monto' => 1721000,     'probs' => [null, null, null, 25,  25,  25,  50], 'resp' => 'Diego R',    'sublinea' => 'VLV',  'alias' => 'PTX'],
+            ['nombre' => 'EUROINOVA DLS 6" 600#',                 'cp' => '5',      'monto' => 121000,      'probs' => [null, null, 25,  25,  25,  50,  50], 'resp' => 'Diego R',    'sublinea' => 'DLSS', 'alias' => 'EIN'],
+            ['nombre' => 'MOLPER DLS 6" 600# Hidalgo',             'cp' => '16',     'monto' => 2977000,     'probs' => [null, null, 25,  50,  50,  75, 100], 'resp' => 'Aquiles G',  'sublinea' => 'DLSS', 'alias' => 'MOL'],
+            ['nombre' => 'SERPORT HTP 24x16" Submarino',           'cp' => '6',      'monto' => 352000,      'probs' => [null, null, 25,  25,  25,  25,  50], 'resp' => 'Sergio O',   'sublinea' => 'HTP',  'alias' => 'SRP'],
+            ['nombre' => 'GCI HT 8x8" Nafta',                     'cp' => '7',      'monto' => 9000,        'probs' => [null, null, 25,  50,  75,  75, 100], 'resp' => 'Diego R',    'sublinea' => 'HTS',  'alias' => 'GCI'],
+            ['nombre' => 'ICA HTSF 24x24" Naucalpan',              'cp' => '8',      'monto' => 1045000,     'probs' => [null, null, 25,  50,  75, 100, 100], 'resp' => 'Diego R',    'sublinea' => 'HTSF', 'alias' => 'ICA'],
+            ['nombre' => 'SICIM HT 30x20 600# Ags',               'cp' => '9',      'monto' => 256000,      'probs' => [null, null, null, 25,  25,  50,  50], 'resp' => 'Kevin P',    'sublinea' => 'HTS',  'alias' => 'SIC'],
+            ['nombre' => 'COPC Juntas dieléctricas',               'cp' => '10',     'monto' => 5000,        'probs' => [null, null, 25,  50,  75, 100, 100], 'resp' => 'Kevin P',    'sublinea' => 'OTH',  'alias' => 'CPC'],
+            ['nombre' => 'INDHECA Separador Horiz. Bakte',         'cp' => '-',      'monto' => 376000,      'probs' => [null, null, null, 25,  50,  50,  75], 'resp' => 'Guadalupe O','sublinea' => 'P&C',  'alias' => 'IGC'],
+            ['nombre' => 'SARREAL Drillings 2" Niple',             'cp' => '-',      'monto' => 45000,       'probs' => [null, null, null, 25,  50,  75, 100], 'resp' => 'Sergio O',   'sublinea' => 'HTP',  'alias' => 'SAR'],
+            ['nombre' => 'ARSEAL Válvulas Trunnion 8y10',          'cp' => '11',     'monto' => 69000,       'probs' => [null, null, null, 25,  25,  25,  25], 'resp' => 'Kevin P',    'sublinea' => 'VLV',  'alias' => 'ARS'],
+            ['nombre' => 'ESENTIA DLSS 36" Villa de Reyes',       'cp' => '12',     'monto' => 1260000,     'probs' => [null, null, null, 25,  50,  75,  75], 'resp' => 'Aquiles G',  'sublinea' => 'DLSS', 'alias' => 'ESE'],
+            ['nombre' => 'ESENTIA HTP 8" y 2" Samalayuca',         'cp' => '13',     'monto' => 63000,       'probs' => [null, null, null, 25,  25,  50,  75], 'resp' => 'Aquiles G',  'sublinea' => 'HTP',  'alias' => 'ESE'],
+            ['nombre' => 'SEDENA Frente 10 Tren Mx-Qro',          'cp' => '14',     'monto' => 8892000,     'probs' => [null, null, null, 25,  50,  50,  75], 'resp' => 'Aquiles G',  'sublinea' => 'HTSF', 'alias' => 'SDN'],
+            ['nombre' => 'SEDENA Frente 11 Tren Mx-Qro',          'cp' => '15',     'monto' => 36375000,    'probs' => [null, null, null, 25,  25,  50,  75], 'resp' => 'Aquiles G',  'sublinea' => 'HTSF', 'alias' => 'SDN'],
+        ];
+
+        return [
+            'months'    => $months,
+            'proyectos' => $proyectos,
+        ];
     }
 
-    /** KPI totals */
     public function getKpisProperty(): array
     {
-        $data = $this->pipeline;
-
-        return [
-            'total'     => $data->sum('monto'),
-            'ponderado' => $data->sum(fn ($p) => $p['monto'] * $p['ponderacion'] / 100),
-            'count'     => $data->count(),
-        ];
-    }
-
-    /** Data prepared for Chart.js */
-    public function getChartDataProperty(): array
-    {
-        $pipeline = $this->pipeline;
-
-        $monthDefs = [
-            ['year' => 2025, 'num' => 11, 'label' => 'Nov 25'],
-            ['year' => 2025, 'num' => 12, 'label' => 'Dic 25'],
-            ['year' => 2026, 'num' => 1,  'label' => 'Ene 26'],
-            ['year' => 2026, 'num' => 2,  'label' => 'Feb 26'],
-            ['year' => 2026, 'num' => 3,  'label' => 'Mar 26'],
-            ['year' => 2026, 'num' => 4,  'label' => 'Abr 26'],
-            ['year' => 2026, 'num' => 5,  'label' => 'May 26'],
-            ['year' => 2026, 'num' => 6,  'label' => 'Jun 26'],
-            ['year' => 2026, 'num' => 7,  'label' => 'Jul 26'],
-            ['year' => 2026, 'num' => 8,  'label' => 'Ago 26'],
-            ['year' => 2026, 'num' => 9,  'label' => 'Sep 26'],
-            ['year' => 2026, 'num' => 10, 'label' => 'Oct 26'],
-            ['year' => 2026, 'num' => 11, 'label' => 'Nov 26'],
-            ['year' => 2026, 'num' => 12, 'label' => 'Dic 26'],
-        ];
-
-        // Stacked bar: amount (millions) per month per ponderacion band
-        $byMonth = [
-            'p100' => array_fill(0, 14, 0),
-            'p75'  => array_fill(0, 14, 0),
-            'p50'  => array_fill(0, 14, 0),
-            'p25'  => array_fill(0, 14, 0),
-            'p10'  => array_fill(0, 14, 0),
-        ];
-
-        foreach ($pipeline as $p) {
-            $colIdx = 2; // fallback: Ene 26
-            foreach ($monthDefs as $idx => $m) {
-                if ($p['mes'] == $m['num'] && $p['mes_year'] == $m['year']) {
-                    $colIdx = $idx;
-                    break;
-                }
+        $data = $this->statusOfertas['proyectos'];
+        $total = 0;
+        $ponderado = 0;
+        foreach ($data as $p) {
+            $total += $p['monto'];
+            $lp = 0;
+            for ($i = 6; $i >= 0; $i--) {
+                if ($p['probs'][$i] !== null) { $lp = $p['probs'][$i]; break; }
             }
-            $key = 'p' . $p['ponderacion'];
-            if (isset($byMonth[$key])) {
-                $byMonth[$key][$colIdx] = round($byMonth[$key][$colIdx] + ($p['monto'] / 1_000_000), 3);
-            }
+            $ponderado += $p['monto'] * $lp / 100;
         }
-
-        // Horizontal bar: amount (millions) per sublinea, sorted desc
-        $bySublinea = $pipeline
-            ->groupBy('sublinea')
-            ->map(fn ($g) => round($g->sum('monto') / 1_000_000, 3))
-            ->sortDesc()
-            ->take(10)
-            ->toArray();
-
-        // Horizontal bar: amount (millions) per top client, sorted desc
-        $byCliente = $pipeline
-            ->groupBy('alias')
-            ->map(fn ($g) => round($g->sum('monto') / 1_000_000, 3))
-            ->sortDesc()
-            ->take(8)
-            ->toArray();
-
         return [
-            'monthLabels' => array_column($monthDefs, 'label'),
-            'byMonth'     => $byMonth,
-            'bySublinea'  => $bySublinea,
-            'byCliente'   => $byCliente,
+            'count'     => count($data),
+            'total'     => $total,
+            'ponderado' => $ponderado,
         ];
     }
 
     public function render()
     {
         return view('livewire.ejecutivo.pipeline-global', [
-            'pipeline'  => $this->pipeline,
-            'kpis'      => $this->kpis,
-            'chartData' => $this->chartData,
+            'statusOfertas' => $this->statusOfertas,
+            'kpis'         => $this->kpis,
         ])->layout('components.layouts.app', ['fullWidth' => true]);
     }
 }

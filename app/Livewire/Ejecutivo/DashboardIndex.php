@@ -251,7 +251,6 @@ class DashboardIndex extends Component
             ['key' => 'p75',  'min' => 75,  'max' => 99,  'label' => '75% Casi Probable'],
             ['key' => 'p50',  'min' => 50,  'max' => 74,  'label' => '50% Probable'],
             ['key' => 'p25',  'min' => 25,  'max' => 49,  'label' => '25% Posible'],
-            ['key' => 'p10',  'min' => 10,  'max' => 24,  'label' => '10% Remoto'],
             ['key' => 'p0',   'min' => 0,   'max' => 0,   'label' => '0% Cancelada'],
         ];
 
@@ -380,7 +379,6 @@ class DashboardIndex extends Component
             'p75'  => array_fill(0, 14, 0),
             'p50'  => array_fill(0, 14, 0),
             'p25'  => array_fill(0, 14, 0),
-            'p10'  => array_fill(0, 14, 0),
         ];
 
         foreach ($pipeline as $p) {
