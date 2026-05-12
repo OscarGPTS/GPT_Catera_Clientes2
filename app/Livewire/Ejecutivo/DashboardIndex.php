@@ -125,26 +125,26 @@ class DashboardIndex extends Component
         $months = ['Nov', 'Dic', 'Ene', 'Feb', 'Mar', 'Abr', 'May'];
 
         $proyectos = [
-            ['nombre' => 'IGASAMEX HTS 30x4" Oleofinos',           'cp' => '152/25', 'monto' => 0.037,  'probs' => [75,  75, 100, 100, 100, 100, 100]],
-            ['nombre' => 'ENGIE HTP 42x24" VDR',                  'cp' => '157/25', 'monto' => 0.933,  'probs' => [null, null, null, 25,  25,  50,  50]],
-            ['nombre' => 'PIR SYSTEM HT 30x20" Cactus',            'cp' => '1',      'monto' => 0.103,  'probs' => [null, null, 25,  25,  50,  25,   0]],
-            ['nombre' => 'NATURGY Anillos separadores',            'cp' => '2',      'monto' => 0.064,  'probs' => [null, null, 25,  50,  75,  75, 100]],
-            ['nombre' => 'IGASAMEX VCP Dif. Diámetros',            'cp' => '3',      'monto' => 0.029,  'probs' => [null, null, 25,  25,  50,  50,  75]],
-            ['nombre' => 'PROTEXA Válvulas Cluster SEJKAN',       'cp' => '4',      'monto' => 1.721,  'probs' => [null, null, null, 25,  25,  25,  50]],
-            ['nombre' => 'EUROINOVA DLS 6" 600#',                 'cp' => '5',      'monto' => 0.121,  'probs' => [null, null, 25,  25,  25,  50,  50]],
-            ['nombre' => 'MOLPER DLS 6" 600# Hidalgo',             'cp' => '16',     'monto' => 2.977,  'probs' => [null, null, 25,  50,  50,  75, 100]],
-            ['nombre' => 'SERPORT HTP 24x16" Submarino',           'cp' => '6',      'monto' => 0.352,  'probs' => [null, null, 25,  25,  25,  25,  50]],
-            ['nombre' => 'GCI HT 8x8" Nafta',                     'cp' => '7',      'monto' => 0.009,  'probs' => [null, null, 25,  50,  75,  75, 100]],
-            ['nombre' => 'ICA HTSF 24x24" Naucalpan',              'cp' => '8',      'monto' => 1.045,  'probs' => [null, null, 25,  50,  75, 100, 100]],
-            ['nombre' => 'SICIM HT 30x20 600# Ags',               'cp' => '9',      'monto' => 0.256,  'probs' => [null, null, null, 25,  25,  50,  50]],
-            ['nombre' => 'COPC Juntas dieléctricas',               'cp' => '10',     'monto' => 0.005,  'probs' => [null, null, 25,  50,  75, 100, 100]],
-            ['nombre' => 'INDHECA Separador Horiz. Bakte',         'cp' => '-',      'monto' => 0.376,  'probs' => [null, null, null, 25,  50,  50,  75]],
-            ['nombre' => 'SARREAL Drillings 2" Niple',             'cp' => '-',      'monto' => 0.045,  'probs' => [null, null, null, 25,  50,  75, 100]],
-            ['nombre' => 'ARSEAL Válvulas Trunnion 8y10',          'cp' => '11',     'monto' => 0.069,  'probs' => [null, null, null, 25,  25,  25,  25]],
-            ['nombre' => 'ESENTIA DLSS 36" Villa de Reyes',       'cp' => '12',     'monto' => 1.260,  'probs' => [null, null, null, 25,  50,  75,  75]],
-            ['nombre' => 'ESENTIA HTP 8" y 2" Samalayuca',         'cp' => '13',     'monto' => 0.063,  'probs' => [null, null, null, 25,  25,  50,  75]],
-            ['nombre' => 'SEDENA Frente 10 Tren Mx-Qro',          'cp' => '14',     'monto' => 8.892,  'probs' => [null, null, null, 25,  50,  50,  75]],
-            ['nombre' => 'SEDENA Frente 11 Tren Mx-Qro',          'cp' => '15',     'monto' => 36.375, 'probs' => [null, null, null, 25,  25,  50,  75]],
+            ['nombre' => 'IGASAMEX HTS 30x4" Oleofinos',           'cp' => '152/25', 'monto' => 0.037,  'probs' => [75,  75, 100, 100, 100, 100, 100], 'resp' => 'Diego R'],
+            ['nombre' => 'ENGIE HTP 42x24" VDR',                  'cp' => '157/25', 'monto' => 0.933,  'probs' => [null, null, null, 25,  25,  50,  50], 'resp' => 'Kevin P'],
+            ['nombre' => 'PIR SYSTEM HT 30x20" Cactus',            'cp' => '1',      'monto' => 0.103,  'probs' => [null, null, 25,  25,  50,  25,   0], 'resp' => 'Diego R'],
+            ['nombre' => 'NATURGY Anillos separadores',            'cp' => '2',      'monto' => 0.064,  'probs' => [null, null, 25,  50,  75,  75, 100], 'resp' => 'Diego R'],
+            ['nombre' => 'IGASAMEX VCP Dif. Diámetros',            'cp' => '3',      'monto' => 0.029,  'probs' => [null, null, 25,  25,  50,  50,  75], 'resp' => 'Diego R'],
+            ['nombre' => 'PROTEXA Válvulas Cluster SEJKAN',       'cp' => '4',      'monto' => 1.721,  'probs' => [null, null, null, 25,  25,  25,  50], 'resp' => 'Diego R'],
+            ['nombre' => 'EUROINOVA DLS 6" 600#',                 'cp' => '5',      'monto' => 0.121,  'probs' => [null, null, 25,  25,  25,  50,  50], 'resp' => 'Diego R'],
+            ['nombre' => 'MOLPER DLS 6" 600# Hidalgo',             'cp' => '16',     'monto' => 2.977,  'probs' => [null, null, 25,  50,  50,  75, 100], 'resp' => 'Aquiles G'],
+            ['nombre' => 'SERPORT HTP 24x16" Submarino',           'cp' => '6',      'monto' => 0.352,  'probs' => [null, null, 25,  25,  25,  25,  50], 'resp' => 'Sergio O'],
+            ['nombre' => 'GCI HT 8x8" Nafta',                     'cp' => '7',      'monto' => 0.009,  'probs' => [null, null, 25,  50,  75,  75, 100], 'resp' => 'Diego R'],
+            ['nombre' => 'ICA HTSF 24x24" Naucalpan',              'cp' => '8',      'monto' => 1.045,  'probs' => [null, null, 25,  50,  75, 100, 100], 'resp' => 'Diego R'],
+            ['nombre' => 'SICIM HT 30x20 600# Ags',               'cp' => '9',      'monto' => 0.256,  'probs' => [null, null, null, 25,  25,  50,  50], 'resp' => 'Kevin P'],
+            ['nombre' => 'COPC Juntas dieléctricas',               'cp' => '10',     'monto' => 0.005,  'probs' => [null, null, 25,  50,  75, 100, 100], 'resp' => 'Kevin P'],
+            ['nombre' => 'INDHECA Separador Horiz. Bakte',         'cp' => '-',      'monto' => 0.376,  'probs' => [null, null, null, 25,  50,  50,  75], 'resp' => 'Guadalupe O'],
+            ['nombre' => 'SARREAL Drillings 2" Niple',             'cp' => '-',      'monto' => 0.045,  'probs' => [null, null, null, 25,  50,  75, 100], 'resp' => 'Sergio O'],
+            ['nombre' => 'ARSEAL Válvulas Trunnion 8y10',          'cp' => '11',     'monto' => 0.069,  'probs' => [null, null, null, 25,  25,  25,  25], 'resp' => 'Kevin P'],
+            ['nombre' => 'ESENTIA DLSS 36" Villa de Reyes',       'cp' => '12',     'monto' => 1.260,  'probs' => [null, null, null, 25,  50,  75,  75], 'resp' => 'Aquiles G'],
+            ['nombre' => 'ESENTIA HTP 8" y 2" Samalayuca',         'cp' => '13',     'monto' => 0.063,  'probs' => [null, null, null, 25,  25,  50,  75], 'resp' => 'Aquiles G'],
+            ['nombre' => 'SEDENA Frente 10 Tren Mx-Qro',          'cp' => '14',     'monto' => 8.892,  'probs' => [null, null, null, 25,  50,  50,  75], 'resp' => 'Aquiles G'],
+            ['nombre' => 'SEDENA Frente 11 Tren Mx-Qro',          'cp' => '15',     'monto' => 36.375, 'probs' => [null, null, null, 25,  25,  50,  75], 'resp' => 'Aquiles G'],
         ];
 
         $numMonths = 7;
@@ -198,12 +198,157 @@ class DashboardIndex extends Component
         }
         unset($p);
 
+        $bruto = 0;
+        $esperado = 0;
+        $count = 0;
+        foreach ($proyectos as $item) {
+            $bruto += $item['monto'];
+            $lastProb = 0;
+            for ($i = 6; $i >= 0; $i--) {
+                if ($item['probs'][$i] !== null) { $lastProb = $item['probs'][$i]; break; }
+            }
+            $esperado += $item['monto'] * $lastProb / 100;
+            if ($item['monto'] > 0) $count++;
+        }
+        $eficiencia = $bruto > 0 ? round($esperado / $bruto * 100, 1) : 0;
+
+        $carteraKpis = [
+            'bruto'      => round($bruto, 2),
+            'esperado'   => round($esperado, 2),
+            'count'      => $count,
+            'eficiencia' => $eficiencia,
+        ];
+
+        $thresholds = [0, 25, 50, 75, 100];
+        $carteraLabels = ['0% Cancelada', '25% Posible', '50% Probable', '75% Casi Probable', '100% Contratada'];
+        $carteraArr = [];
+        foreach ($thresholds as $tidx => $t) {
+            $tBruto = 0;
+            $tEsperado = 0;
+            $tCount = 0;
+            foreach ($proyectos as $p) {
+                $lp = 0;
+                for ($i = 6; $i >= 0; $i--) {
+                    if ($p['probs'][$i] !== null) { $lp = $p['probs'][$i]; break; }
+                }
+                if ($p['monto'] > 0 && $lp >= $t) {
+                    $tBruto += $p['monto'];
+                    $tEsperado += $p['monto'] * $lp / 100;
+                    $tCount++;
+                }
+            }
+            $carteraArr[] = ['label' => $carteraLabels[$tidx], 'threshold' => $t, 'bruto' => round($tBruto, 3), 'esperado' => round($tEsperado, 3), 'count' => $tCount];
+        }
+        $carteraData = [
+            'labels'   => $carteraLabels,
+            'bruto'    => array_column($carteraArr, 'bruto'),
+            'esperado' => array_column($carteraArr, 'esperado'),
+            'counts'   => array_column($carteraArr, 'count'),
+        ];
+
+        $bands = [
+            ['key' => 'p100', 'min' => 100, 'max' => 100, 'label' => '100% Contratada'],
+            ['key' => 'p75',  'min' => 75,  'max' => 99,  'label' => '75% Casi Probable'],
+            ['key' => 'p50',  'min' => 50,  'max' => 74,  'label' => '50% Probable'],
+            ['key' => 'p25',  'min' => 25,  'max' => 49,  'label' => '25% Posible'],
+            ['key' => 'p10',  'min' => 10,  'max' => 24,  'label' => '10% Remoto'],
+            ['key' => 'p0',   'min' => 0,   'max' => 0,   'label' => '0% Cancelada'],
+        ];
+
+        $evolucion = [];
+        foreach ($bands as $band) {
+            $evolucion[$band['key']] = array_fill(0, $numMonths, 0.0);
+        }
+        $evoBruto     = array_fill(0, $numMonths, 0.0);
+        $evoPonderado = array_fill(0, $numMonths, 0.0);
+
+        foreach ($proyectos as $p) {
+            for ($i = 0; $i < $numMonths; $i++) {
+                $prob = $p['probs'][$i];
+                if ($prob !== null && $prob > 0) {
+                    $evoBruto[$i] += $p['monto'];
+                    $evoPonderado[$i] += $p['monto'] * $prob / 100;
+                    foreach ($bands as $band) {
+                        if ($prob >= $band['min'] && $prob <= $band['max']) {
+                            $evolucion[$band['key']][$i] += $p['monto'];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        $evoBruto     = array_map(fn($v) => round($v, 3), $evoBruto);
+        $evoPonderado = array_map(fn($v) => round($v, 3), $evoPonderado);
+        foreach ($bands as $band) {
+            $evolucion[$band['key']] = array_map(fn($v) => round($v, 3), $evolucion[$band['key']]);
+        }
+
+        $levelResumen = [];
+        foreach ($bands as $band) {
+            $lBruto = 0;
+            $lPond = 0;
+            $lCount = 0;
+            foreach ($proyectos as $p) {
+                $lp = 0;
+                for ($i = $numMonths - 1; $i >= 0; $i--) {
+                    if ($p['probs'][$i] !== null) { $lp = $p['probs'][$i]; break; }
+                }
+                if ($lp >= $band['min'] && $lp <= $band['max'] && $p['monto'] > 0) {
+                    $lBruto += $p['monto'];
+                    $lPond += $p['monto'] * $lp / 100;
+                    $lCount++;
+                }
+            }
+            $levelResumen[] = [
+                'key'  => $band['key'],
+                'label' => $band['label'],
+                'bruto' => round($lBruto, 2),
+                'pond'  => round($lPond, 2),
+                'count' => $lCount,
+                'eficiencia' => $lBruto > 0 ? round($lPond / $lBruto * 100, 1) : 0,
+            ];
+        }
+
         return [
             'months'             => $months,
             'proyectos'          => $proyectos,
             'montoByMonth'       => $montoByMonth,
             'ponderadoByMonth'   => $ponderadoByMonth,
             'contratadoByMonth'  => $contratadoByMonth,
+            'carteraKpis'        => $carteraKpis,
+            'carteraData'        => $carteraData,
+            'carteraEvolucion'  => [
+                'months'      => $months,
+                'bands'       => $bands,
+                'series'      => $evolucion,
+                'bruto'       => $evoBruto,
+                'ponderado'   => $evoPonderado,
+            ],
+            'levelResumen'      => $levelResumen,
+            'byResponsable'    => (function() use ($proyectos) {
+                $order = ['Aquiles G', 'Diego R', 'Kevin P', 'Sergio O', 'Guadalupe O'];
+                $grouped = [];
+                foreach ($order as $r) { $grouped[$r] = ['bruto' => 0, 'pond' => 0, 'count' => 0]; }
+                foreach ($proyectos as $p) {
+                    $r = $p['resp'];
+                    $lp = 0;
+                    for ($i = 6; $i >= 0; $i--) {
+                        if ($p['probs'][$i] !== null) { $lp = $p['probs'][$i]; break; }
+                    }
+                    $grouped[$r]['bruto'] += $p['monto'];
+                    $grouped[$r]['pond'] += $p['monto'] * $lp / 100;
+                    $grouped[$r]['count']++;
+                }
+                $labels = []; $brutos = []; $ponds = []; $counts = [];
+                foreach ($order as $r) {
+                    $labels[] = $r;
+                    $brutos[] = round($grouped[$r]['bruto'], 3);
+                    $ponds[] = round($grouped[$r]['pond'], 3);
+                    $counts[] = $grouped[$r]['count'];
+                }
+                return ['labels' => $labels, 'bruto' => $brutos, 'pond' => $ponds, 'counts' => $counts];
+            })(),
         ];
     }
 
@@ -300,6 +445,11 @@ class DashboardIndex extends Component
             'quarter_label' => 'Q' . ceil(now()->month / 3) . ' ' . now()->year,
             'chartData' => $this->chartData,
             'statusOfertasData' => $this->statusOfertasData,
+            'carteraKpis' => $this->statusOfertasData['carteraKpis'],
+            'carteraData' => $this->statusOfertasData['carteraData'],
+            'carteraEvolucion' => $this->statusOfertasData['carteraEvolucion'],
+            'levelResumen' => $this->statusOfertasData['levelResumen'],
+            'byResponsable' => $this->statusOfertasData['byResponsable'],
         ])->layout('components.layouts.app');
     }
 }

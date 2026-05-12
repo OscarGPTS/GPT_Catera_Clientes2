@@ -15,83 +15,7 @@
         </div>
     </x-slot>
 
-    {{-- Global filters row --}}
-    <div class="flex flex-wrap items-center gap-3">
-        {{-- Período selector --}}
-        <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" role="group">
-            @foreach(['mes' => 'Mes', 'trimestre' => 'Trimestre', 'anio' => 'Año', 'custom' => 'Custom'] as $key => $label)
-                <button wire:click="$set('periodo', '{{ $key }}')"
-                        class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors {{ $periodo == $key ? 'bg-gpt-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
-                    {{ $label }}
-                </button>
-            @endforeach
-        </div>
-
-        {{-- Cliente multi-select --}}
-        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-            <button type="button" @click="open = !open"
-                    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
-                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Cliente
-                @if(count($clientesSeleccionados) > 0)
-                    <span class="text-xs text-gpt-600">({{ count($clientesSeleccionados) }})</span>
-                @endif
-                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-            <div x-show="open" x-cloak class="absolute left-0 z-30 mt-1 w-64 rounded-lg border border-slate-200 bg-white shadow-lg">
-                <div class="p-2">
-                    <input type="text" placeholder="Buscar cliente..." class="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm focus:border-gpt-600 focus:ring-gpt-600 mb-2">
-                </div>
-                <div class="max-h-48 overflow-y-auto px-2 pb-2 space-y-0.5">
-                    @foreach($clientes as $cliente)
-                        <label class="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-50 cursor-pointer">
-                            <input type="checkbox" value="{{ $cliente->id }}" wire:model="clientesSeleccionados"
-                                   class="h-4 w-4 rounded border-slate-300 text-gpt-600 focus:ring-gpt-600">
-                            <span class="text-sm text-slate-700">{{ $cliente->razon_social }}</span>
-                        </label>
-                    @endforeach
-                </div>
-                <div class="border-t border-slate-100 px-2 py-1.5">
-                    <button type="button" wire:click="$set('clientesSeleccionados', [])" class="text-xs text-slate-500 hover:text-gpt-600">Limpiar</button>
-                </div>
-            </div>
-        </div>
-
-        {{-- Sublínea multi-select --}}
-        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-            <button type="button" @click="open = !open"
-                    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
-                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-                Sublínea
-                @if(count($sublineasSeleccionadas) > 0)
-                    <span class="text-xs text-gpt-600">({{ count($sublineasSeleccionadas) }})</span>
-                @endif
-                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-            <div x-show="open" x-cloak class="absolute left-0 z-30 mt-1 w-56 rounded-lg border border-slate-200 bg-white shadow-lg">
-                <div class="p-2 space-y-0.5">
-                    @foreach($sublineas as $sub)
-                        <label class="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-50 cursor-pointer">
-                            <input type="checkbox" value="{{ $sub->id }}" wire:model="sublineasSeleccionadas"
-                                   class="h-4 w-4 rounded border-slate-300 text-gpt-600 focus:ring-gpt-600">
-                            <span class="text-sm text-slate-700">{{ $sub->nombre }}</span>
-                        </label>
-                    @endforeach
-                </div>
-                <div class="border-t border-slate-100 px-2 py-1.5">
-                    <button type="button" wire:click="$set('sublineasSeleccionadas', [])" class="text-xs text-slate-500 hover:text-gpt-600">Limpiar</button>
-                </div>
-            </div>
-        </div>
-
-        {{-- Descargar reporte mensual PDF (placeholder) --}}
-        <button type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm hover:bg-slate-50 transition-colors ml-auto cursor-not-allowed opacity-60" disabled title="Próximamente">
-            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
-            </svg>
-            Reporte PDF — Próximamente
-        </button>
-    </div>
+    {{-- Global filters row (hidden — no dynamic filtering for Status Ofertas) --}}
 
     {{-- ============================================================ --}}
     {{-- SECCIÓN: Status Ofertas 2026 — Multi Axis Line Chart        --}}
@@ -348,6 +272,574 @@
     </div>
 
     {{-- ============================================================ --}}
+    {{-- ============================================================ --}}
+    {{-- SECCIÓN: Evolución de Cartera x Ejecutar 2026              --}}
+    {{-- ============================================================ --}}
+    <div class="mt-8">
+        @php
+            $kpis = $carteraKpis;
+        @endphp
+
+        {{-- KPI cards --}}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+            <div class="rounded-lg border border-slate-200 bg-white p-4">
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Ofertas emitidas</p>
+                <p class="mt-1 text-2xl font-semibold text-slate-900">${{ number_format($kpis['bruto'], 2, '.', ',') }}M</p>
+                <p class="mt-0.5 text-xs text-slate-400">Cartera total bruta USD</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-4">
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Cartera esperada</p>
+                <p class="mt-1 text-2xl font-semibold text-indigo-600">${{ number_format($kpis['esperado'], 2, '.', ',') }}M</p>
+                <p class="mt-0.5 text-xs text-slate-400">Monto ponderado × probabilidad</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-4">
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total ofertas</p>
+                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ $kpis['count'] }}</p>
+                <p class="mt-0.5 text-xs text-slate-400">Ofertas activas en pipeline</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-4">
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Eficiencia ponderada</p>
+                <p class="mt-1 text-2xl font-semibold {{ $kpis['eficiencia'] >= 50 ? 'text-green-600' : 'text-amber-600' }}">{{ $kpis['eficiencia'] }}%</p>
+                <p class="mt-0.5 text-xs text-slate-400">Esperada / Emitida × 100</p>
+            </div>
+        </div>
+
+        {{-- Chart: cumulative by probability threshold --}}
+        <div class="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+                <div>
+                    <h3 class="text-base font-medium text-slate-900">Evolución de cartera por ejecutar 2026</h3>
+                    <p class="mt-0.5 text-sm text-slate-500">Cartera acumulada por umbral de probabilidad · Monto bruto vs. cartera esperada</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500 shrink-0">
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="inline-block h-3 w-5 rounded-sm bg-indigo-500"></span>Ofertas emitidas
+                    </span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="inline-block h-3 w-8 border-t-2 border-dashed border-amber-500"></span>Cartera esperada
+                    </span>
+                </div>
+            </div>
+            <div class="relative h-80 w-full" x-data x-init="
+                const k = window._statusOfertas.carteraKpis;
+                const d = window._statusOfertas.carteraData;
+                const ctx = $el.querySelector('canvas').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: d.labels,
+                        datasets: [
+                            {
+                                label: 'Ofertas emitidas (USD M)',
+                                data: d.bruto,
+                                borderColor: 'rgb(99,102,241)',
+                                backgroundColor: 'rgba(99,102,241,0.08)',
+                                borderWidth: 2.5,
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointStyle: 'circle',
+                                pointBackgroundColor: 'rgb(99,102,241)',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                fill: true,
+                                tension: 0.3,
+                                yAxisID: 'y',
+                            },
+                            {
+                                label: 'Cartera esperada (USD M)',
+                                data: d.esperado,
+                                borderColor: 'rgb(245,158,11)',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2.5,
+                                borderDash: [8, 4],
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointStyle: 'circle',
+                                pointBackgroundColor: 'rgb(245,158,11)',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                fill: false,
+                                tension: 0.3,
+                                yAxisID: 'y',
+                            },
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12, boxHeight: 8,
+                                    font: { size: 11 }, color: '#64748b', padding: 16,
+                                    usePointStyle: true, pointStyle: 'circle',
+                                },
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(c) {
+                                        var val = c.parsed.y !== null ? c.parsed.y.toFixed(2) : '—';
+                                        var prefix = c.dataset.label.includes('esperada') ? ' Esperada' : ' Emitidas';
+                                        return prefix + ': $' + val + 'M';
+                                    },
+                                    afterBody: function(items) {
+                                        if (!items.length) return '';
+                                        var idx = items[0].dataIndex;
+                                        var cnt = d.counts[idx];
+                                        return 'Ofertas en umbral: ' + cnt;
+                                    }
+                                }
+                            },
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(148,163,184,0.12)' },
+                                ticks: { font: { size: 12, weight: '500' }, color: '#374151' },
+                            },
+                            y: {
+                                grid: { color: 'rgba(148,163,184,0.12)' },
+                                ticks: {
+                                    font: { size: 11 }, color: '#94a3b8',
+                                    callback: function(v) { return '$' + v + 'M'; }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Millones USD',
+                                    font: { size: 12, weight: '500' },
+                                    color: '#64748b',
+                                },
+                                min: 0,
+                            },
+                        },
+                    },
+                });
+            ">
+                <canvas></canvas>
+            </div>
+
+            {{-- Detail table by threshold --}}
+            <div class="mt-6 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-semibold text-slate-600">Umbral</th>
+                            <th class="px-4 py-2 text-right font-semibold text-slate-600">Ofertas emitidas</th>
+                            <th class="px-4 py-2 text-right font-semibold text-slate-600">Cartera esperada</th>
+                            <th class="px-4 py-2 text-right font-semibold text-slate-600">N° ofertas</th>
+                            <th class="px-4 py-2 text-right font-semibold text-slate-600">Eficiencia</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach($carteraData['labels'] as $idx => $label)
+                            @php
+                                $bruto = $carteraData['bruto'][$idx];
+                                $esperado = $carteraData['esperado'][$idx];
+                                $count = $carteraData['counts'][$idx];
+                                $eff = $bruto > 0 ? round($esperado / $bruto * 100, 1) : 0;
+                                $effColor = $eff >= 50 ? 'text-green-600' : ($eff >= 25 ? 'text-amber-600' : 'text-red-600');
+                                $barW = $kpis['bruto'] > 0 ? round($bruto / $kpis['bruto'] * 100) : 0;
+                            @endphp
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-4 py-2 font-medium text-slate-800">{{ $label }}</td>
+                                <td class="px-4 py-2 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <div class="w-24 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                            <div class="h-2 rounded-full bg-indigo-500" style="width: {{ $barW }}%"></div>
+                                        </div>
+                                        <span class="font-mono text-slate-700">${{ number_format($bruto, 2) }}M</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-2 text-right font-mono text-amber-600">${{ number_format($esperado, 2) }}M</td>
+                                <td class="px-4 py-2 text-right text-slate-700">{{ $count }}</td>
+                                <td class="px-4 py-2 text-right font-semibold {{ $effColor }}">{{ $eff }}%</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- SECCIÓN: Evolución Cartera x Ejecutar – Mes × Banda     --}}
+    {{-- ============================================================ --}}
+    <div class="mt-8">
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <h3 class="text-base font-medium text-slate-900">Evolución de cartera x ejecutar 2026</h3>
+                <p class="mt-0.5 text-sm text-slate-500">Monto bruto por mes y banda de probabilidad · Nov 2025 – May 2026</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-emerald-500"></span>100% Contratada</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-cyan-500"></span>75% Casi Probable</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-blue-500"></span>50% Probable</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-amber-500"></span>25% Posible</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-rose-400"></span>10% Remoto</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-slate-300"></span>0% Cancelada</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
+            {{-- Chart (3/5) --}}
+            <div class="xl:col-span-3 rounded-xl border border-slate-200 bg-white shadow-sm p-6">
+                <div class="relative h-96 w-full" x-data x-init="
+                    const evo = window._statusOfertas.carteraEvolucion;
+                    const ctx = $el.querySelector('canvas').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: evo.months,
+                            datasets: [
+                                { label: '100% Contratada', data: evo.series.p100, backgroundColor: 'rgba(16,185,129,0.8)', stack: 's', borderRadius: 2 },
+                                { label: '75% Casi Probable', data: evo.series.p75, backgroundColor: 'rgba(6,182,212,0.8)', stack: 's', borderRadius: 2 },
+                                { label: '50% Probable', data: evo.series.p50, backgroundColor: 'rgba(59,130,246,0.8)', stack: 's', borderRadius: 2 },
+                                { label: '25% Posible', data: evo.series.p25, backgroundColor: 'rgba(245,158,11,0.8)', stack: 's', borderRadius: 2 },
+                                { label: '10% Remoto', data: evo.series.p10, backgroundColor: 'rgba(251,113,133,0.8)', stack: 's', borderRadius: 2 },
+                                { label: '0% Cancelada', data: evo.series.p0, backgroundColor: 'rgba(203,213,225,0.7)', stack: 's', borderRadius: 2 },
+                                {
+                                    type: 'line',
+                                    label: 'Cartera esperada (ponderada)',
+                                    data: evo.ponderado,
+                                    borderColor: 'rgb(245,158,11)',
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 2.5,
+                                    borderDash: [8, 4],
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6,
+                                    pointStyle: 'circle',
+                                    pointBackgroundColor: 'rgb(245,158,11)',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2,
+                                    fill: false,
+                                    tension: 0.3,
+                                    yAxisID: 'y',
+                                    order: 0,
+                                },
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'bottom',
+                                    labels: {
+                                        filter: function(item) { return !item.text.includes('(ponderada)'); },
+                                        boxWidth: 12, boxHeight: 8,
+                                        font: { size: 10 }, color: '#64748b', padding: 10,
+                                        usePointStyle: true,
+                                    },
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(c) {
+                                            if (c.dataset.label.includes('ponderada')) return ' Esperada: $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) : '—') + 'M';
+                                            return ' ' + c.dataset.label + ': $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) : '—') + 'M';
+                                        }
+                                    }
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    stacked: true,
+                                    grid: { color: 'rgba(148,163,184,0.12)' },
+                                    ticks: { font: { size: 12, weight: '500' }, color: '#374151' },
+                                },
+                                y: {
+                                    stacked: false,
+                                    grid: { color: 'rgba(148,163,184,0.12)' },
+                                    ticks: {
+                                        font: { size: 11 }, color: '#94a3b8',
+                                        stepSize: 5,
+                                        callback: function(v) { return '$' + v + 'M'; }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Millones USD',
+                                        font: { size: 12, weight: '500' },
+                                        color: '#64748b',
+                                    },
+                                    min: 0,
+                                },
+                            },
+                        },
+                    });
+                ">
+                    <canvas></canvas>
+                </div>
+            </div>
+
+            {{-- Summary card (2/5) --}}
+            <div class="xl:col-span-2 rounded-xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col">
+                <h4 class="text-sm font-semibold text-slate-800 mb-1">Por nivel de probabilidad (Ponderación)</h4>
+                <p class="text-xs text-slate-400 mb-4">Distribución del valor bruto y cartera ponderada por banda</p>
+
+                <div class="space-y-3 flex-1">
+                    @foreach($levelResumen as $lr)
+                        @php
+                            $bandColors = [
+                                'p100' => ['bg' => 'bg-emerald-500', 'text' => 'text-emerald-700', 'bar' => 'bg-emerald-400'],
+                                'p75'  => ['bg' => 'bg-cyan-500',    'text' => 'text-cyan-700',    'bar' => 'bg-cyan-400'],
+                                'p50'  => ['bg' => 'bg-blue-500',    'text' => 'text-blue-700',    'bar' => 'bg-blue-400'],
+                                'p25'  => ['bg' => 'bg-amber-500',   'text' => 'text-amber-700',   'bar' => 'bg-amber-400'],
+                                'p10'  => ['bg' => 'bg-rose-400',    'text' => 'text-rose-700',    'bar' => 'bg-rose-300'],
+                                'p0'   => ['bg' => 'bg-slate-400',   'text' => 'text-slate-700',   'bar' => 'bg-slate-300'],
+                            ];
+                            $c = $bandColors[$lr['key']] ?? ['bg' => 'bg-gray-400', 'text' => 'text-gray-700', 'bar' => 'bg-gray-300'];
+                            $maxBruto = $carteraKpis['bruto'] > 0 ? $carteraKpis['bruto'] : 1;
+                            $barW = $lr['bruto'] > 0 ? round($lr['bruto'] / $maxBruto * 100) : 0;
+                        @endphp
+                        <div class="flex items-start gap-2">
+                            <span class="mt-1 inline-block h-3 w-3 rounded-sm shrink-0 {{ $c['bg'] }}"></span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-baseline justify-between gap-2">
+                                    <span class="text-xs font-semibold text-slate-800">{{ $lr['label'] }}</span>
+                                    <span class="text-xs {{ $c['text'] }} font-medium">${{ number_format($lr['bruto'], 1) }}M</span>
+                                </div>
+                                <div class="mt-1 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                                    <div class="h-1.5 rounded-full {{ $c['bar'] }}" style="width: {{ $barW }}%"></div>
+                                </div>
+                                <div class="flex items-baseline justify-between gap-2 mt-0.5">
+                                    <span class="text-[10px] text-slate-400">{{ $lr['count'] }} oferta{{ $lr['count'] !== 1 ? 's' : '' }} · Ponderado: ${{ number_format($lr['pond'], 1) }}M</span>
+                                    <span class="text-[10px] {{ $lr['eficiencia'] >= 50 ? 'text-green-600' : 'text-slate-500' }}">Ef. {{ $lr['eficiencia'] }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-slate-200">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-lg bg-slate-50 p-3 text-center">
+                            <p class="text-[10px] font-medium text-slate-500 uppercase">Bruto total</p>
+                            <p class="mt-0.5 text-lg font-bold text-slate-900">${{ number_format($carteraKpis['bruto'], 1) }}M</p>
+                        </div>
+                        <div class="rounded-lg bg-indigo-50 p-3 text-center">
+                            <p class="text-[10px] font-medium text-indigo-600 uppercase">Esperado</p>
+                            <p class="mt-0.5 text-lg font-bold text-indigo-700">${{ number_format($carteraKpis['esperado'], 1) }}M</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-center">
+                        <p class="text-xs text-slate-500">Eficiencia ponderada total: <strong class="{{ $carteraKpis['eficiencia'] >= 50 ? 'text-green-600' : 'text-amber-600' }}">{{ $carteraKpis['eficiencia'] }}%</strong></p>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100">
+                    <p class="text-[11px] text-slate-400 leading-relaxed">
+                        La mayor concentración de valor bruto está en el 50%
+                        @foreach($levelResumen as $lr)
+                            @if($lr['key'] === 'p50' && $lr['bruto'] > 0)
+                                <strong>(${{ number_format($lr['bruto'], 1) }}M)</strong>
+                            @endif
+                        @endforeach
+                        pero la cartera ponderada baja significativamente.
+                        @foreach($levelResumen as $lr)
+                            @if($lr['key'] === 'p25' && $lr['count'] > 0)
+                                Las ofertas al {{ $lr['label'] }} son las más numerosas (<strong>{{ $lr['count'] }}</strong> en total).
+                            @endif
+                        @endforeach
+                        La eficiencia ponderada total es del <strong>{{ $carteraKpis['eficiencia'] }}%</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- SECCIÓN: Distribución por Responsable                       --}}
+    {{-- ============================================================ --}}
+    <div class="mt-8">
+        @php
+            $respData = $byResponsable;
+            $respTotalBruto = array_sum($respData['bruto']);
+            $respTotalPond = array_sum($respData['pond']);
+        @endphp
+
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <h3 class="text-base font-medium text-slate-900">Distribución de cartera por responsable (USD)</h3>
+                <p class="mt-0.5 text-sm text-slate-500">Valor bruto vs. cartera ponderada por ejecutivo · Status Ofertas 2026</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-indigo-500"></span>Valor bruto</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-8 border-t-2 border-dashed border-amber-500"></span>Cartera ponderada</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
+            {{-- Chart (3/5) --}}
+            <div class="xl:col-span-3 rounded-xl border border-slate-200 bg-white shadow-sm p-6">
+                <div class="relative h-96 w-full" x-data x-init="
+                    const resp = @json($byResponsable);
+                    const ctx = $el.querySelector('canvas').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: resp.labels,
+                            datasets: [
+                                {
+                                    label: 'Valor bruto (USD M)',
+                                    data: resp.bruto,
+                                    backgroundColor: 'rgba(99,102,241,0.7)',
+                                    borderColor: 'rgb(99,102,241)',
+                                    borderWidth: 1,
+                                    borderRadius: 4,
+                                    yAxisID: 'y',
+                                    order: 2,
+                                },
+                                {
+                                    type: 'line',
+                                    label: 'Cartera ponderada (USD M)',
+                                    data: resp.pond,
+                                    borderColor: 'rgb(245,158,11)',
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 2.5,
+                                    borderDash: [8, 4],
+                                    pointRadius: 5,
+                                    pointHoverRadius: 7,
+                                    pointStyle: 'circle',
+                                    pointBackgroundColor: 'rgb(245,158,11)',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2,
+                                    fill: false,
+                                    tension: 0.2,
+                                    yAxisID: 'y',
+                                    order: 1,
+                                },
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12, boxHeight: 8,
+                                        font: { size: 11 }, color: '#64748b', padding: 16,
+                                        usePointStyle: true,
+                                    },
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(c) {
+                                            var prefix = c.dataset.label.includes('ponderada') ? ' Ponderado' : ' Bruto';
+                                            return prefix + ': $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) : '—') + 'M';
+                                        },
+                                        afterBody: function(items) {
+                                            if (!items.length) return '';
+                                            var idx = items[0].dataIndex;
+                                            return 'Ofertas: ' + resp.counts[idx];
+                                        }
+                                    }
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { font: { size: 12, weight: '600' }, color: '#374151' },
+                                },
+                                y: {
+                                    grid: { color: 'rgba(148,163,184,0.12)' },
+                                    ticks: {
+                                        font: { size: 11 }, color: '#94a3b8',
+                                        stepSize: 5,
+                                        callback: function(v) { return '$' + v + 'M'; },
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Millones USD',
+                                        font: { size: 12, weight: '500' },
+                                        color: '#64748b',
+                                    },
+                                    min: 0,
+                                },
+                            },
+                        },
+                    });
+                ">
+                    <canvas></canvas>
+                </div>
+            </div>
+
+            {{-- Summary card (2/5) --}}
+            <div class="xl:col-span-2 rounded-xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col">
+                <h4 class="text-sm font-semibold text-slate-800 mb-1">Por responsable (Ponderación)</h4>
+                <p class="text-xs text-slate-400 mb-4">Distribución de valor bruto y cartera ponderada por responsable</p>
+
+                <div class="space-y-3 flex-1">
+                    @foreach($respData['labels'] as $idx => $label)
+                        @php
+                            $b = $respData['bruto'][$idx];
+                            $p = $respData['pond'][$idx];
+                            $c = $respData['counts'][$idx];
+                            $eff = $b > 0 ? round($p / $b * 100, 1) : 0;
+                            $barW = $respTotalBruto > 0 ? round($b / $respTotalBruto * 100) : 0;
+                            $colors = [
+                                ['dot' => 'bg-indigo-500', 'bar' => 'bg-indigo-400', 'eff' => $eff >= 50 ? 'text-green-600' : 'text-amber-600'],
+                            ];
+                            $effColor = $eff >= 50 ? 'text-green-600' : 'text-amber-600';
+                        @endphp
+                        <div class="flex items-start gap-2">
+                            <span class="mt-1.5 inline-block h-2.5 w-2.5 rounded-full bg-indigo-500 shrink-0"></span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-baseline justify-between gap-2">
+                                    <span class="text-xs font-semibold text-slate-800">{{ $label }}</span>
+                                    <span class="text-xs text-indigo-700 font-medium">${{ number_format($b, 2) }}M</span>
+                                </div>
+                                <div class="mt-1 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                                    <div class="h-1.5 rounded-full bg-indigo-400" style="width: {{ $barW }}%"></div>
+                                </div>
+                                <div class="flex items-baseline justify-between gap-2 mt-0.5">
+                                    <span class="text-[10px] text-slate-400">{{ $c }} oferta{{ $c !== 1 ? 's' : '' }} · Pond: ${{ number_format($p, 2) }}M</span>
+                                    <span class="text-[10px] {{ $effColor }} font-semibold">Ef. {{ $eff }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-slate-200">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-lg bg-slate-50 p-3 text-center">
+                            <p class="text-[10px] font-medium text-slate-500 uppercase">Bruto total</p>
+                            <p class="mt-0.5 text-lg font-bold text-slate-900">${{ number_format($respTotalBruto, 1) }}M</p>
+                        </div>
+                        <div class="rounded-lg bg-amber-50 p-3 text-center">
+                            <p class="text-[10px] font-medium text-amber-600 uppercase">Esperado</p>
+                            <p class="mt-0.5 text-lg font-bold text-amber-700">${{ number_format($respTotalPond, 1) }}M</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-center">
+                        <p class="text-xs text-slate-500">Eficiencia ponderada total: <strong class="{{ $carteraKpis['eficiencia'] >= 50 ? 'text-green-600' : 'text-amber-600' }}">{{ $carteraKpis['eficiencia'] }}%</strong></p>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100">
+                    <p class="text-[11px] text-slate-400 leading-relaxed">
+                        @foreach($respData['labels'] as $idx => $label)
+                            @if($respData['bruto'][$idx] > 0 && $respData['bruto'][$idx] / $respTotalBruto > 0.1)
+                                <strong>{{ $label }}</strong> concentra el {{ round($respData['bruto'][$idx] / $respTotalBruto * 100) }}% del valor bruto (${{ number_format($respData['bruto'][$idx], 1) }}M)
+                                @if($respData['counts'][$idx] >= 2)
+                                    , gestionando {{ $respData['counts'][$idx] }} ofertas
+                                @endif.
+                            @endif
+                        @endforeach
+                        SEDENA distorsiona la escala: sin ella, la cartera del resto suma apenas ${{ number_format($respTotalBruto - $respData['bruto'][array_search('Aquiles G', $respData['labels'])], 1) }}M brutos.
+                        La eficiencia ponderada total es del <strong>{{ $carteraKpis['eficiencia'] }}%</strong> — del total bruto de ${{ number_format($respTotalBruto, 1) }}M, la expectativa estadística de adjudicación es ${{ number_format($respTotalPond, 1) }}M.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- SECCIÓN PRINCIPAL: Cartera por mes y probabilidad (Chart.js) --}}
     {{-- ============================================================ --}}
     <div class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
