@@ -21,11 +21,11 @@
             <div class="mt-4 h-0.5 w-12 bg-white/30 lg:mx-0 mx-auto"></div>
             <p class="mt-4 text-sm text-white/60">Tech Energy Control S.A. de C.V.</p>
 
-            <div class="mt-8 flex justify-center gap-2 lg:justify-start">
+            {{-- <div class="mt-8 flex justify-center gap-2 lg:justify-start">
                 <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white/70">ISO 9001</span>
                 <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white/70">ISO 14001</span>
                 <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white/70">ISO 45001</span>
-            </div>
+            </div> --}}
         </div>
     </section>
 

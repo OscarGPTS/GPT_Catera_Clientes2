@@ -25,7 +25,7 @@ Cada card muestra:
 - Header del card:
   - Badge tipo: "Requisición Compras" (azul) o "Orden de Trabajo Ingeniería" (naranja).
   - Código formato: `RE-GPT-COM-01-A · #SOL-024` o similar.
-  - Estado: badge (Pendiente / En revisión / Respondida / Cancelada).
+  - Estado: badge (Pendiente / En revisión / Respondida / Cerrada).
   - Fecha solicitud + fecha respuesta requerida (con dot rojo si vencida).
   - Solicitante (avatar) → Asignado a (avatar).
 - Body:

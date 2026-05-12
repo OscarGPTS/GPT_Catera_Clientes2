@@ -45,7 +45,7 @@ class ClienteDetalle extends Component
 
     public function mount(Cliente $cliente)
     {
-        $this->cliente = $cliente->load(['contactos', 'proyectos' => fn($q) => $q->latest()->take(10)]);
+        $this->cliente = $cliente;
         $this->loadEditForm();
     }
 
@@ -140,8 +140,29 @@ class ClienteDetalle extends Component
 
     public function render()
     {
+        $proyectos = $this->cliente->proyectos()
+            ->with(['sublinea', 'cotizaciones'])
+            ->latest('updated_at')
+            ->get();
+
+        $estadosOportunidad = ['en_revision', 'cotizando', 'cotizado', 'presentado', 'adjudicado_pendiente', 'adjudicado_firmado'];
+
+        $oportunidades = $proyectos->whereIn('estado', $estadosOportunidad)->values();
+
+        $facturadoTotal = $proyectos
+            ->whereIn('estado', ['cerrado', 'en_cierre', 'adjudicado_firmado', 'en_ejecucion'])
+            ->sum(fn($p) => (float)($p->cotizaciones->max('precio_venta_final') ?? 0));
+
+        $pipelineActivo = $oportunidades
+            ->whereIn('estado', ['cotizando', 'cotizado', 'presentado'])
+            ->sum(fn($p) => (float)($p->cotizaciones->max('precio_venta_final') ?? 0));
+
         return view('livewire.comercial.cliente-detalle', [
-            'cliente' => $this->cliente->load(['contactos', 'proyectos' => fn($q) => $q->latest()->take(10)]),
+            'cliente'        => $this->cliente->load('contactos'),
+            'proyectos'      => $proyectos,
+            'oportunidades'  => $oportunidades,
+            'facturadoTotal' => $facturadoTotal,
+            'pipelineActivo' => $pipelineActivo,
         ])->layout('components.layouts.app');
     }
 

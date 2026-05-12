@@ -220,7 +220,7 @@ class DashboardIndex extends Component
         ];
 
         $thresholds = [0, 25, 50, 75, 100];
-        $carteraLabels = ['0% Cancelada', '25% Posible', '50% Probable', '75% Casi Probable', '100% Contratada'];
+        $carteraLabels = ['0% Cerrada', '25% Posible', '50% Probable', '75% Casi Probable', '100% Contratada'];
         $carteraArr = [];
         foreach ($thresholds as $tidx => $t) {
             $tBruto = 0;
@@ -251,7 +251,7 @@ class DashboardIndex extends Component
             ['key' => 'p75',  'min' => 75,  'max' => 99,  'label' => '75% Casi Probable'],
             ['key' => 'p50',  'min' => 50,  'max' => 74,  'label' => '50% Probable'],
             ['key' => 'p25',  'min' => 25,  'max' => 49,  'label' => '25% Posible'],
-            ['key' => 'p0',   'min' => 0,   'max' => 0,   'label' => '0% Cancelada'],
+            ['key' => 'p0',   'min' => 0,   'max' => 0,   'label' => '0% Cerrada'],
         ];
 
         $evolucion = [];

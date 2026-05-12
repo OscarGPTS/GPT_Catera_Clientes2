@@ -4,7 +4,7 @@ $bands = [
     75  => ['label'=>'CASI PROBABLE','pct'=>'75%','rowbg'=>'bg-cyan-950/60','lbg'=>'bg-cyan-950','accent'=>'bg-cyan-500','text'=>'text-cyan-300','pctcol'=>'text-cyan-400','chip'=>'bg-cyan-900/80 border border-cyan-700/60 hover:bg-cyan-800/90 text-cyan-100','sep'=>'border-cyan-900/60','empty'=>'text-cyan-900/50'],
     50  => ['label'=>'PROBABLE','pct'=>'50%','rowbg'=>'bg-blue-950/60','lbg'=>'bg-blue-950','accent'=>'bg-blue-500','text'=>'text-blue-300','pctcol'=>'text-blue-400','chip'=>'bg-blue-900/80 border border-blue-700/60 hover:bg-blue-800/90 text-blue-100','sep'=>'border-blue-900/60','empty'=>'text-blue-900/50'],
     25  => ['label'=>'POSIBLE','pct'=>'25%','rowbg'=>'bg-amber-950/50','lbg'=>'bg-amber-950','accent'=>'bg-amber-500','text'=>'text-amber-300','pctcol'=>'text-amber-400','chip'=>'bg-amber-900/80 border border-amber-700/60 hover:bg-amber-800/90 text-amber-100','sep'=>'border-amber-900/60','empty'=>'text-amber-900/50'],
-    0   => ['label'=>'CANCELADA','pct'=>'0%','rowbg'=>'bg-red-950/40','lbg'=>'bg-red-950','accent'=>'bg-red-500','text'=>'text-red-300','pctcol'=>'text-red-400','chip'=>'bg-red-900/80 border border-red-700/60 hover:bg-red-800/90 text-red-100','sep'=>'border-red-900/60','empty'=>'text-red-900/50'],
+    0   => ['label'=>'Cerrada','pct'=>'0%','rowbg'=>'bg-red-950/40','lbg'=>'bg-red-950','accent'=>'bg-red-500','text'=>'text-red-300','pctcol'=>'text-red-400','chip'=>'bg-red-900/80 border border-red-700/60 hover:bg-red-800/90 text-red-100','sep'=>'border-red-900/60','empty'=>'text-red-900/50'],
 ];
 
 $months = $statusOfertas['months'];

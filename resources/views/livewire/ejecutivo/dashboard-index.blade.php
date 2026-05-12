@@ -39,7 +39,7 @@
                     <span class="inline-block h-3 w-5 rounded-sm bg-amber-500/70"></span> (25%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-red-400/70"></span>Cancelada / Cerrada (0%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-red-400/70"></span>Cerrada (0%)
                 </span>
             </div>
         </div>
@@ -86,7 +86,7 @@
                     ...projectLines,
                     {
                         type: 'bar',
-                        label: 'Cartera ponderada (USD M)',
+                        label: 'Cartera esperada (USD M)',
                         data: d.ponderadoByMonth,
                         backgroundColor: 'rgba(99,102,241,0.18)',
                         borderColor: 'rgba(99,102,241,0.5)',
@@ -199,7 +199,7 @@
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
                     <h4 class="text-sm font-semibold text-slate-800">Detalle de ofertas — Status Ofertas 2026</h4>
-                    <p class="text-xs text-slate-400 mt-0.5">CP · Cliente · Monto USD · % adjudicación actual por mes · 0% = Cancelada/Cerrada</p>
+                   
                 </div>
                 <div class="text-xs text-slate-400">
                     {{ count($statusOfertasData['proyectos']) }} ofertas · $54.73M total
@@ -225,7 +225,7 @@
                                     if ($p['probs'][$i] !== null) { $currentProb = $p['probs'][$i]; break; }
                                 }
                                 $probColor = $currentProb >= 75 ? 'text-green-600 bg-green-50' : ($currentProb >= 50 ? 'text-blue-600 bg-blue-50' : ($currentProb >= 25 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50'));
-                                $probLabel  = $currentProb >= 100 ? 'Contratada' : ($currentProb >= 75 ? 'Casi Probable' : ($currentProb >= 50 ? 'Probable' : ($currentProb >= 25 ? 'Posible' : 'Cancelada')));
+                                $probLabel  = $currentProb >= 100 ? 'Contratada' : ($currentProb >= 75 ? 'Casi Probable' : ($currentProb >= 50 ? 'Probable' : ($currentProb >= 25 ? 'Posible' : 'Cerrada')));
                             @endphp
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="px-2 py-1.5 font-medium text-slate-800 sticky left-0 bg-white z-10 whitespace-nowrap" style="border-right: 1px solid #e2e8f0;">
@@ -285,7 +285,7 @@
             <div class="rounded-lg border border-slate-200 bg-white p-4">
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Ofertas emitidas</p>
                 <p class="mt-1 text-2xl font-semibold text-slate-900">${{ number_format($kpis['bruto'], 2, '.', ',') }}M</p>
-                <p class="mt-0.5 text-xs text-slate-400">Cartera total bruta USD</p>
+                <p class="mt-0.5 text-xs text-slate-400">Ofertas emitidasUSD</p>
             </div>
             <div class="rounded-lg border border-slate-200 bg-white p-4">
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Cartera esperada</p>
@@ -300,7 +300,7 @@
             <div class="rounded-lg border border-slate-200 bg-white p-4">
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Eficiencia ponderada</p>
                 <p class="mt-1 text-2xl font-semibold {{ $kpis['eficiencia'] >= 50 ? 'text-green-600' : 'text-amber-600' }}">{{ $kpis['eficiencia'] }}%</p>
-                <p class="mt-0.5 text-xs text-slate-400">Esperada / Emitida × 100</p>
+                {{-- <p class="mt-0.5 text-xs text-slate-400">Esperada / Emitida × 100</p> --}}
             </div>
         </div>
 
@@ -477,7 +477,7 @@
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-cyan-500"></span>75% Casi Probable</span>
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-blue-500"></span>50% Probable</span>
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-amber-500"></span>25% Posible</span>
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-red-400"></span>0% Cancelada</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-red-400"></span>0% Cerrada</span>
             </div>
         </div>
 
@@ -496,7 +496,7 @@
                                 { label: '75% Casi Probable', data: evo.series.p75, backgroundColor: 'rgba(6,182,212,0.8)', stack: 's', borderRadius: 2 },
                                 { label: '50% Probable', data: evo.series.p50, backgroundColor: 'rgba(59,130,246,0.8)', stack: 's', borderRadius: 2 },
                                 { label: '25% Posible', data: evo.series.p25, backgroundColor: 'rgba(245,158,11,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '0% Cancelada', data: evo.series.p0, backgroundColor: 'rgba(248,113,113,0.7)', stack: 's', borderRadius: 2 },
+                                { label: '0% Cerrada', data: evo.series.p0, backgroundColor: 'rgba(248,113,113,0.7)', stack: 's', borderRadius: 2 },
                                 {
                                     type: 'line',
                                     label: 'Cartera esperada (ponderada)',
@@ -575,7 +575,7 @@
             {{-- Summary card (2/5) --}}
             <div class="xl:col-span-2 rounded-xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col">
                 <h4 class="text-sm font-semibold text-slate-800 mb-1">Por nivel de probabilidad (Ponderación)</h4>
-                <p class="text-xs text-slate-400 mb-4">Distribución del valor bruto y cartera ponderada por banda</p>
+                <p class="text-xs text-slate-400 mb-4">Distribución del valor bruto y Cartera esperada por banda</p>
 
                 <div class="space-y-3 flex-1">
                     @foreach($levelResumen as $lr)
@@ -634,7 +634,7 @@
                                 <strong>(${{ number_format($lr['bruto'], 1) }}M)</strong>
                             @endif
                         @endforeach
-                        pero la cartera ponderada baja significativamente.
+                        pero la Cartera esperada baja significativamente.
                         @foreach($levelResumen as $lr)
                             @if($lr['key'] === 'p25' && $lr['count'] > 0)
                                 Las ofertas al {{ $lr['label'] }} son las más numerosas (<strong>{{ $lr['count'] }}</strong> en total).
@@ -660,11 +660,11 @@
         <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
                 <h3 class="text-base font-medium text-slate-900">Distribución de cartera por responsable (USD)</h3>
-                <p class="mt-0.5 text-sm text-slate-500">Valor bruto vs. cartera ponderada por ejecutivo · Status Ofertas 2026</p>
+                <p class="mt-0.5 text-sm text-slate-500">Valor bruto vs. Cartera esperada por ejecutivo · Status Ofertas 2026</p>
             </div>
             <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-indigo-500"></span>Valor bruto</span>
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-8 border-t-2 border-dashed border-amber-500"></span>Cartera ponderada</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-8 border-t-2 border-dashed border-amber-500"></span>Cartera esperada</span>
             </div>
         </div>
 
@@ -691,7 +691,7 @@
                                 },
                                 {
                                     type: 'line',
-                                    label: 'Cartera ponderada (USD M)',
+                                    label: 'Cartera esperada (USD M)',
                                     data: resp.pond,
                                     borderColor: 'rgb(245,158,11)',
                                     backgroundColor: 'transparent',
@@ -769,7 +769,7 @@
             {{-- Summary card (2/5) --}}
             <div class="xl:col-span-2 rounded-xl border border-slate-200 bg-white shadow-sm p-6 flex flex-col">
                 <h4 class="text-sm font-semibold text-slate-800 mb-1">Por responsable (Ponderación)</h4>
-                <p class="text-xs text-slate-400 mb-4">Distribución de valor bruto y cartera ponderada por responsable</p>
+                <p class="text-xs text-slate-400 mb-4">Distribución de valor bruto y Cartera esperada por responsable</p>
 
                 <div class="space-y-3 flex-1">
                     @foreach($respData['labels'] as $idx => $label)

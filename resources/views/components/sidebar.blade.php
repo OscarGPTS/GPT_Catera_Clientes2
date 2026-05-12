@@ -34,7 +34,7 @@
         {{-- Principal --}}
         <x-sidebar-section label="Principal">
             <x-sidebar-item href="/" icon="home" label="Dashboard" />
-            <x-sidebar-item href="/pipeline" icon="presentation-chart-line" label="Pipeline Global" />
+            {{-- <x-sidebar-item href="/pipeline" icon="presentation-chart-line" label="Pipeline Global" /> --}}
             <x-sidebar-item href="/oportunidades" icon="briefcase" label="Oportunidades" />
             <x-sidebar-item href="/clientes" icon="building-office" label="Clientes" />
         </x-sidebar-section>

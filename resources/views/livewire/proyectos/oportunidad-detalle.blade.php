@@ -410,7 +410,7 @@
                                             'pendiente' => 'bg-amber-100 text-amber-800',
                                             'en_proceso' => 'bg-blue-100 text-blue-800',
                                             'respondida' => 'bg-green-100 text-green-800',
-                                            'cancelada' => 'bg-slate-100 text-slate-500',
+                                            'Cerrada' => 'bg-slate-100 text-slate-500',
                                             default => 'bg-slate-100 text-slate-700',
                                         };
                                         $solTypeLabel = match($sol->tipo) {

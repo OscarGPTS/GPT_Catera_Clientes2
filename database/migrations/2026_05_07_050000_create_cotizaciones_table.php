@@ -45,7 +45,7 @@ return new class extends Migration
             $table->foreignId('proyecto_id')->constrained('proyectos')->cascadeOnDelete();
             $table->string('cp_numero')->nullable();
             $table->string('codigo_formato')->nullable();
-            $table->enum('estado', ['pendiente', 'en_proceso', 'respondida', 'cancelada'])->default('pendiente');
+            $table->enum('estado', ['pendiente', 'en_proceso', 'respondida', 'Cerrada'])->default('pendiente');
             $table->foreignId('solicitante_id')->constrained('users');
             $table->foreignId('asignado_id')->nullable()->constrained('users');
             $table->date('fecha_solicitud');
