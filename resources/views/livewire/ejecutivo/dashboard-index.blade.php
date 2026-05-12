@@ -489,34 +489,16 @@
                     const evo = window._statusOfertas.carteraEvolucion;
                     const ctx = $el.querySelector('canvas').getContext('2d');
                     new Chart(ctx, {
-                        type: 'bar',
+                        type: 'line',
                         data: {
                             labels: evo.months,
                             datasets: [
-                                { label: '100% Contratada', data: evo.series.p100, backgroundColor: 'rgba(16,185,129,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '75% Probable', data: evo.series.p75, backgroundColor: 'rgba(6,182,212,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '25% Posible', data: evo.series.p25, backgroundColor: 'rgba(245,158,11,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '10% Remoto', data: evo.series.p10, backgroundColor: 'rgba(248,113,113,0.7)', stack: 's', borderRadius: 2 },
-                                { label: '0% Perdida', data: evo.series.p0, backgroundColor: 'rgba(148,163,184,0.5)', stack: 's', borderRadius: 2 },
-                                {
-                                    type: 'line',
-                                    label: 'Cartera esperada (ponderada)',
-                                    data: evo.ponderado,
-                                    borderColor: 'rgb(245,158,11)',
-                                    backgroundColor: 'transparent',
-                                    borderWidth: 2.5,
-                                    borderDash: [8, 4],
-                                    pointRadius: 4,
-                                    pointHoverRadius: 6,
-                                    pointStyle: 'circle',
-                                    pointBackgroundColor: 'rgb(245,158,11)',
-                                    pointBorderColor: '#fff',
-                                    pointBorderWidth: 2,
-                                    fill: false,
-                                    tension: 0.3,
-                                    yAxisID: 'y',
-                                    order: 0,
-                                },
+                                { label: '100% Contratada', data: evo.series.p100, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(16,185,129)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                { label: '75% Probable', data: evo.series.p75, borderColor: 'rgb(6,182,212)', backgroundColor: 'rgba(6,182,212,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(6,182,212)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                { label: '25% Posible', data: evo.series.p25, borderColor: 'rgb(245,158,11)', backgroundColor: 'rgba(245,158,11,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(245,158,11)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                { label: '10% Remoto', data: evo.series.p10, borderColor: 'rgb(248,113,113)', backgroundColor: 'rgba(248,113,113,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(248,113,113)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                { label: '0% Perdida', data: evo.series.p0, borderColor: 'rgb(148,163,184)', backgroundColor: 'rgba(148,163,184,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(148,163,184)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                { label: 'Cartera esperada (ponderada)', data: evo.ponderado, borderColor: 'rgb(139,92,246)', backgroundColor: 'rgba(139,92,246,0.06)', borderWidth: 3, pointRadius: 5, pointHoverRadius: 7, pointStyle: 'circle', pointBackgroundColor: 'rgb(139,92,246)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4, order: 0 },
                             ]
                         },
                         options: {
@@ -528,10 +510,9 @@
                                     display: true,
                                     position: 'bottom',
                                     labels: {
-                                        filter: function(item) { return !item.text.includes('(ponderada)'); },
                                         boxWidth: 12, boxHeight: 8,
                                         font: { size: 10 }, color: '#64748b', padding: 10,
-                                        usePointStyle: true,
+                                        usePointStyle: true, pointStyle: 'circle',
                                     },
                                 },
                                 tooltip: {
@@ -545,12 +526,10 @@
                             },
                             scales: {
                                 x: {
-                                    stacked: true,
                                     grid: { color: 'rgba(148,163,184,0.12)' },
                                     ticks: { font: { size: 12, weight: '500' }, color: '#374151' },
                                 },
                                 y: {
-                                    stacked: false,
                                     grid: { color: 'rgba(148,163,184,0.12)' },
                                     ticks: {
                                         font: { size: 11 }, color: '#94a3b8',
