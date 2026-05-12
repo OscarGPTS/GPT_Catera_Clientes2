@@ -125,26 +125,37 @@ class DashboardIndex extends Component
         $months = ['Nov', 'Dic', 'Ene', 'Feb', 'Mar', 'Abr', 'May'];
 
         $proyectos = [
-            ['nombre' => 'IGASAMEX HTS 30x4" Oleofinos',           'cp' => '152/25', 'monto' => 0.037,  'probs' => [75,  75, 100, 100, 100, 100, 100], 'resp' => 'Diego R'],
-            ['nombre' => 'ENGIE HTP 42x24" VDR',                  'cp' => '157/25', 'monto' => 0.933,  'probs' => [null, null, null, 25,  25,  50,  50], 'resp' => 'Kevin P'],
-            ['nombre' => 'PIR SYSTEM HT 30x20" Cactus',            'cp' => '1',      'monto' => 0.103,  'probs' => [null, null, 25,  25,  50,  25,   0], 'resp' => 'Diego R'],
-            ['nombre' => 'NATURGY Anillos separadores',            'cp' => '2',      'monto' => 0.064,  'probs' => [null, null, 25,  50,  75,  75, 100], 'resp' => 'Diego R'],
-            ['nombre' => 'IGASAMEX VCP Dif. Diámetros',            'cp' => '3',      'monto' => 0.029,  'probs' => [null, null, 25,  25,  50,  50,  75], 'resp' => 'Diego R'],
-            ['nombre' => 'PROTEXA Válvulas Cluster SEJKAN',       'cp' => '4',      'monto' => 1.721,  'probs' => [null, null, null, 25,  25,  25,  50], 'resp' => 'Diego R'],
-            ['nombre' => 'EUROINOVA DLS 6" 600#',                 'cp' => '5',      'monto' => 0.121,  'probs' => [null, null, 25,  25,  25,  50,  50], 'resp' => 'Diego R'],
-            ['nombre' => 'MOLPER DLS 6" 600# Hidalgo',             'cp' => '16',     'monto' => 2.977,  'probs' => [null, null, 25,  50,  50,  75, 100], 'resp' => 'Aquiles G'],
-            ['nombre' => 'SERPORT HTP 24x16" Submarino',           'cp' => '6',      'monto' => 0.352,  'probs' => [null, null, 25,  25,  25,  25,  50], 'resp' => 'Sergio O'],
-            ['nombre' => 'GCI HT 8x8" Nafta',                     'cp' => '7',      'monto' => 0.009,  'probs' => [null, null, 25,  50,  75,  75, 100], 'resp' => 'Diego R'],
-            ['nombre' => 'ICA HTSF 24x24" Naucalpan',              'cp' => '8',      'monto' => 1.045,  'probs' => [null, null, 25,  50,  75, 100, 100], 'resp' => 'Diego R'],
-            ['nombre' => 'SICIM HT 30x20 600# Ags',               'cp' => '9',      'monto' => 0.256,  'probs' => [null, null, null, 25,  25,  50,  50], 'resp' => 'Kevin P'],
-            ['nombre' => 'COPC Juntas dieléctricas',               'cp' => '10',     'monto' => 0.005,  'probs' => [null, null, 25,  50,  75, 100, 100], 'resp' => 'Kevin P'],
-            ['nombre' => 'INDHECA Separador Horiz. Bakte',         'cp' => '-',      'monto' => 0.376,  'probs' => [null, null, null, 25,  50,  50,  75], 'resp' => 'Guadalupe O'],
-            ['nombre' => 'SARREAL Drillings 2" Niple',             'cp' => '-',      'monto' => 0.045,  'probs' => [null, null, null, 25,  50,  75, 100], 'resp' => 'Sergio O'],
-            ['nombre' => 'ARSEAL Válvulas Trunnion 8y10',          'cp' => '11',     'monto' => 0.069,  'probs' => [null, null, null, 25,  25,  25,  25], 'resp' => 'Kevin P'],
-            ['nombre' => 'ESENTIA DLSS 36" Villa de Reyes',       'cp' => '12',     'monto' => 1.260,  'probs' => [null, null, null, 25,  50,  75,  75], 'resp' => 'Aquiles G'],
-            ['nombre' => 'ESENTIA HTP 8" y 2" Samalayuca',         'cp' => '13',     'monto' => 0.063,  'probs' => [null, null, null, 25,  25,  50,  75], 'resp' => 'Aquiles G'],
-            ['nombre' => 'SEDENA Frente 10 Tren Mx-Qro',          'cp' => '14',     'monto' => 8.892,  'probs' => [null, null, null, 25,  50,  50,  75], 'resp' => 'Aquiles G'],
-            ['nombre' => 'SEDENA Frente 11 Tren Mx-Qro',          'cp' => '15',     'monto' => 36.375, 'probs' => [null, null, null, 25,  25,  50,  75], 'resp' => 'Aquiles G'],
+            ['nombre' => 'IGASAMEX HTS 30x4" Oleofinos',             'cp' => '152/25',    'monto' => 0.037,  'probs' => [75,  75,  75,  75,  75,  75,  75],  'resp' => 'Fernando B'],
+            ['nombre' => 'ENGIE HTP 42x24" VDR',                     'cp' => '157/25',    'monto' => 0.933,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Kevin P'],
+            ['nombre' => 'PIR SYSTEM HT 30x20" Cactus',              'cp' => '001/26',    'monto' => 0.103,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Fernando B'],
+            ['nombre' => 'NATURGY Anillos separadores',               'cp' => '002/26',    'monto' => 0.064,  'probs' => [null, null, 25,  75, 100, 100, 100],  'resp' => 'Fernando B'],
+            ['nombre' => 'IGASAMEX VCP Dif. Diámetros',               'cp' => '003/26',    'monto' => 0.029,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Fernando B'],
+            ['nombre' => 'PROTEXA Válvulas Cluster SEJKAN',           'cp' => '004/26',    'monto' => 1.721,  'probs' => [null, null, null, 10,  10,  10,  10],  'resp' => 'Fernando B'],
+            ['nombre' => 'EUROINOVA DLS 6" 600#',                    'cp' => '005/26',    'monto' => 0.121,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Fernando B'],
+            ['nombre' => 'MOLPER DLS 6" 600# Hidalgo',                'cp' => '016/26',    'monto' => 2.977,  'probs' => [null, null, 10,  25,  25,  25,  25],  'resp' => 'Aquiles G'],
+            ['nombre' => 'SERPORT HTP 24x16" Submarino',              'cp' => '006/26',    'monto' => 0.352,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Sergio O'],
+            ['nombre' => 'GCI HT 8x8" Nafta',                        'cp' => '007/26',    'monto' => 0.009,  'probs' => [null, null, 25,  25,  25,  25,  25],  'resp' => 'Diego R'],
+            ['nombre' => 'ICA HTSF 24x24" Naucalpan',                 'cp' => '008/26',    'monto' => 1.602,  'probs' => [null, null, 25,  10,  10,  10,  10],  'resp' => 'Diego R'],
+            ['nombre' => 'SICIM HT 30x20 600# Ags',                  'cp' => '009/26',    'monto' => 0.256,  'probs' => [null, null, null, 10,  10,  10,  10],  'resp' => 'Fernando B'],
+            ['nombre' => 'COPC Juntas dieléctricas',                  'cp' => '010/26',    'monto' => 0.005,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Fernando B'],
+            ['nombre' => 'INDHECA Separador Horiz. Bakte',            'cp' => 'N/A',       'monto' => 0.376,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Guadalupe O'],
+            ['nombre' => 'SARREAL Drillings 2" Niple',                'cp' => 'N/A',       'monto' => 0.045,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Fernando B'],
+            ['nombre' => 'ARSEAL Válvulas Trunnion 8y10',             'cp' => '011/26',    'monto' => 0.069,  'probs' => [null, null, null, 10,  10,  10,  10],  'resp' => 'Fernando B'],
+            ['nombre' => 'ESENTIA DLSS 36" Villa de Reyes',           'cp' => '012/26',    'monto' => 1.260,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Fernando B'],
+            ['nombre' => 'ESENTIA HTP 8" y 2" Samalayuca',            'cp' => '013/26',    'monto' => 0.063,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Fernando B'],
+            ['nombre' => 'SEDENA Frente 10 Tren Mx-Qro',             'cp' => '-',         'monto' => 9.403,  'probs' => [null, null, null, 25,  75,  75,  75],  'resp' => 'Aquiles G'],
+            ['nombre' => 'SEDENA Frente 11 Tren Mx-Qro',             'cp' => '-',         'monto' => 15.079, 'probs' => [null, null, null, 25,  75,  75,  75],  'resp' => 'Aquiles G'],
+            ['nombre' => 'TC ENERGY VBT Dos Bocas',                   'cp' => '150/25',    'monto' => 0.060,  'probs' => [10,  10,  10,  25,  25,  25,  25],  'resp' => 'Fernando B'],
+            ['nombre' => 'IGASAMEX Revisión empate 6"',               'cp' => '014/26',    'monto' => 0.001,  'probs' => [null, null, null, 75,  75,  75,  75],  'resp' => 'Fernando B'],
+            ['nombre' => 'IGASAMEX PH VBT 4" Atlacomulco',            'cp' => '016/26',    'monto' => 0.007,  'probs' => [null, null, null, null, 100, 100, 100], 'resp' => 'Fernando B'],
+            ['nombre' => 'ENGIE HTS 16x6" Meprosa',                  'cp' => '-',         'monto' => 0.353,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Fernando B'],
+            ['nombre' => 'GRUPO 3VTA Válvula 24" 600#',              'cp' => '-',         'monto' => 0.223,  'probs' => [null, null, null, null, 10,  10,  10],  'resp' => 'Fernando B'],
+            ['nombre' => 'INDHECA Tubería AC 24"',                   'cp' => '-',         'monto' => 1.274,  'probs' => [null, null, null, null, 25,  25,  25],  'resp' => 'Guadalupe O'],
+            ['nombre' => 'GEOLIS HTP 16x12 600# RF',                 'cp' => '-',         'monto' => 0.147,  'probs' => [null, null, null, null, 75,  75,  75],  'resp' => 'Guadalupe O'],
+            ['nombre' => 'SARREAL Válvulas 4,8,20 900#',             'cp' => '-',         'monto' => 0.524,  'probs' => [null, null, null, null, 75,  75,  75],  'resp' => 'Guadalupe O'],
+            ['nombre' => 'PIFUSA Juntas Aislantes',                   'cp' => '022/26',    'monto' => 0.024,  'probs' => [null, null, null, null, null, 25,  25],  'resp' => 'Fernando B'],
+            ['nombre' => 'COCOMEX HTP 8x8 Veracruz',                 'cp' => 'CP-021/26', 'monto' => 0.070,  'probs' => [null, null, null, null, null, 25,  25],  'resp' => 'Sergio O'],
+            ['nombre' => 'MARABIS VBT 14 y 8',                       'cp' => 'CP-027/26', 'monto' => 0.031,  'probs' => [null, null, null, null, null, null, 25], 'resp' => 'Sergio O'],
         ];
 
         $numMonths = 7;
@@ -189,6 +200,17 @@ class DashboardIndex extends Component
             ['b' => 'rgb(244,114,182)',  'bg' => 'rgba(244,114,182,0.10)'],
             ['b' => 'rgb(45,212,191)',   'bg' => 'rgba(45,212,191,0.10)'],
             ['b' => 'rgb(250,204,21)',   'bg' => 'rgba(250,204,21,0.10)'],
+            ['b' => 'rgb(147,51,234)',   'bg' => 'rgba(147,51,234,0.10)'],
+            ['b' => 'rgb(14,165,233)',   'bg' => 'rgba(14,165,233,0.10)'],
+            ['b' => 'rgb(244,63,94)',    'bg' => 'rgba(244,63,94,0.10)'],
+            ['b' => 'rgb(132,204,22)',   'bg' => 'rgba(132,204,22,0.10)'],
+            ['b' => 'rgb(217,70,239)',   'bg' => 'rgba(217,70,239,0.10)'],
+            ['b' => 'rgb(251,191,36)',   'bg' => 'rgba(251,191,36,0.10)'],
+            ['b' => 'rgb(52,211,153)',   'bg' => 'rgba(52,211,153,0.10)'],
+            ['b' => 'rgb(248,113,113)',  'bg' => 'rgba(248,113,113,0.10)'],
+            ['b' => 'rgb(129,140,248)',  'bg' => 'rgba(129,140,248,0.10)'],
+            ['b' => 'rgb(232,121,249)',  'bg' => 'rgba(232,121,249,0.10)'],
+            ['b' => 'rgb(103,232,249)',  'bg' => 'rgba(103,232,249,0.10)'],
         ];
 
         foreach ($proyectos as $i => &$p) {
@@ -219,8 +241,8 @@ class DashboardIndex extends Component
             'eficiencia' => $eficiencia,
         ];
 
-        $thresholds = [0, 25, 50, 75, 100];
-        $carteraLabels = ['0% Cerrada', '25% Posible', '50% Probable', '75% Casi Probable', '100% Contratada'];
+        $thresholds = [0, 10, 25, 75, 100];
+        $carteraLabels = ['0% Perdida', '10% Remoto', '25% Posible', '75% Probable', '100% Contratada'];
         $carteraArr = [];
         foreach ($thresholds as $tidx => $t) {
             $tBruto = 0;
@@ -248,10 +270,10 @@ class DashboardIndex extends Component
 
         $bands = [
             ['key' => 'p100', 'min' => 100, 'max' => 100, 'label' => '100% Contratada'],
-            ['key' => 'p75',  'min' => 75,  'max' => 99,  'label' => '75% Casi Probable'],
-            ['key' => 'p50',  'min' => 50,  'max' => 74,  'label' => '50% Probable'],
-            ['key' => 'p25',  'min' => 25,  'max' => 49,  'label' => '25% Posible'],
-            ['key' => 'p0',   'min' => 0,   'max' => 0,   'label' => '0% Cerrada'],
+            ['key' => 'p75',  'min' => 75,  'max' => 99,  'label' => '75% Probable'],
+            ['key' => 'p25',  'min' => 25,  'max' => 74,  'label' => '25% Posible'],
+            ['key' => 'p10',  'min' => 10,  'max' => 24,  'label' => '10% Remoto'],
+            ['key' => 'p0',   'min' => 0,   'max' => 0,   'label' => '0% Perdida'],
         ];
 
         $evolucion = [];
@@ -326,7 +348,7 @@ class DashboardIndex extends Component
             ],
             'levelResumen'      => $levelResumen,
             'byResponsable'    => (function() use ($proyectos, $numMonths) {
-                $order = ['Aquiles G', 'Diego R', 'Kevin P', 'Sergio O', 'Guadalupe O'];
+                $order = ['Aquiles G', 'Fernando B', 'Guadalupe O', 'Diego R', 'Kevin P', 'Sergio O'];
                 $grouped = [];
                 foreach ($order as $r) { $grouped[$r] = ['bruto' => 0, 'pond' => 0, 'count' => 0]; }
                 foreach ($proyectos as $p) {
@@ -377,8 +399,8 @@ class DashboardIndex extends Component
         $byMonth = [
             'p100' => array_fill(0, 14, 0),
             'p75'  => array_fill(0, 14, 0),
-            'p50'  => array_fill(0, 14, 0),
             'p25'  => array_fill(0, 14, 0),
+            'p10'  => array_fill(0, 14, 0),
         ];
 
         foreach ($pipeline as $p) {

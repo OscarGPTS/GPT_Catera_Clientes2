@@ -27,19 +27,19 @@
             </div>
             <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-emerald-500/70"></span> (100%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-emerald-500/70"></span> Contratada (100%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-cyan-500/70"></span> (75%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-cyan-500/70"></span> Probable (75%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-blue-500/70"></span> (50%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-amber-500/70"></span> Posible (25%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-amber-500/70"></span> (25%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-red-400/70"></span> Remoto (10%)
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-red-400/70"></span>Cerrada (0%)
+                    <span class="inline-block h-3 w-5 rounded-sm bg-slate-400/70"></span> Perdida (0%)
                 </span>
             </div>
         </div>
@@ -51,7 +51,7 @@
                     <h4 class="text-sm font-semibold text-slate-800">Adjudicación por oferta · Nov 2025 – May 2026</h4>
                 </div>
                 <div class="text-xs text-slate-400 shrink-0">
-                    Total ofertas: <strong class="text-slate-600">$54.73M USD</strong>
+                    Total ofertas: <strong class="text-slate-600">${{ number_format(array_sum(array_column($statusOfertasData['proyectos'], 'monto')), 2) }}M USD</strong>
                 </div>
             </div>
             <div class="relative h-[520px] w-full" x-data x-init="
@@ -60,9 +60,9 @@
                 const refLines = [
                     { label: '_ref100', data: Array(7).fill(100), borderColor: 'rgba(34,197,94,0.25)', borderWidth: 1.5, borderDash: [6,4], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
                     { label: '_ref75',  data: Array(7).fill(75),  borderColor: 'rgba(6,182,212,0.2)',   borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
-                    { label: '_ref50',  data: Array(7).fill(50),  borderColor: 'rgba(59,130,246,0.2)',  borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
                     { label: '_ref25',  data: Array(7).fill(25),  borderColor: 'rgba(245,158,11,0.2)', borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
-                    { label: '_ref0',   data: Array(7).fill(0),   borderColor: 'rgba(239,68,68,0.15)',  borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref10',  data: Array(7).fill(10),  borderColor: 'rgba(239,68,68,0.15)', borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
+                    { label: '_ref0',   data: Array(7).fill(0),   borderColor: 'rgba(148,163,184,0.1)',borderWidth: 1,   borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, yAxisID: 'yProb', order: 99 },
                 ];
                 const projectLines = d.proyectos.map((p, i) => ({
                     label: p.nombre + ' (' + p.cp + ')',
@@ -157,8 +157,9 @@
                                     callback: function(v) {
                                         if (v === 100) return '100%';
                                         if (v === 75)  return '75%';
-                                        if (v === 50)  return '50%';
+                                        if (v === 50)  return '';
                                         if (v === 25)  return '25%';
+                                        if (v === 10)  return '10%';
                                         if (v === 0)   return '0%';
                                         return '';
                                     }
@@ -202,7 +203,7 @@
                    
                 </div>
                 <div class="text-xs text-slate-400">
-                    {{ count($statusOfertasData['proyectos']) }} ofertas · $54.73M total
+                    {{ count($statusOfertasData['proyectos']) }} ofertas · ${{ number_format(array_sum(array_column($statusOfertasData['proyectos'], 'monto')), 2) }}M total
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -224,8 +225,8 @@
                                 for ($i = 6; $i >= 0; $i--) {
                                     if ($p['probs'][$i] !== null) { $currentProb = $p['probs'][$i]; break; }
                                 }
-                                $probColor = $currentProb >= 75 ? 'text-green-600 bg-green-50' : ($currentProb >= 50 ? 'text-blue-600 bg-blue-50' : ($currentProb >= 25 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50'));
-                                $probLabel  = $currentProb >= 100 ? 'Contratada' : ($currentProb >= 75 ? 'Casi Probable' : ($currentProb >= 50 ? 'Probable' : ($currentProb >= 25 ? 'Posible' : 'Cerrada')));
+                                $probColor = $currentProb >= 75 ? 'text-green-600 bg-green-50' : ($currentProb >= 25 ? 'text-amber-600 bg-amber-50' : ($currentProb >= 10 ? 'text-red-600 bg-red-50' : 'text-slate-500 bg-slate-50'));
+                                $probLabel  = $currentProb >= 100 ? 'Contratada' : ($currentProb >= 75 ? 'Probable' : ($currentProb >= 25 ? 'Posible' : ($currentProb >= 10 ? 'Remoto' : 'Perdida')));
                             @endphp
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="px-2 py-1.5 font-medium text-slate-800 sticky left-0 bg-white z-10 whitespace-nowrap" style="border-right: 1px solid #e2e8f0;">
@@ -236,7 +237,7 @@
                                 <td class="px-2 py-1.5 text-right font-mono text-slate-700">${{ number_format($p['monto'] * 1000000, 0, '.', ',') }}</td>
                                 @foreach($p['probs'] as $prob)
                                     @php
-                                        $cellColor = $prob === null ? 'bg-transparent text-slate-300' : ($prob >= 100 ? 'bg-green-100 text-green-800 font-semibold' : ($prob >= 75 ? 'bg-teal-50 text-teal-700 font-medium' : ($prob >= 50 ? 'bg-blue-50 text-blue-700 font-medium' : ($prob >= 25 ? 'bg-amber-50 text-amber-700' : ($prob === 0 ? 'bg-red-50 text-red-700 font-medium' : 'bg-transparent text-slate-300')))));
+                                        $cellColor = $prob === null ? 'bg-transparent text-slate-300' : ($prob >= 100 ? 'bg-green-100 text-green-800 font-semibold' : ($prob >= 75 ? 'bg-teal-50 text-teal-700 font-medium' : ($prob >= 25 ? 'bg-amber-50 text-amber-700' : ($prob >= 10 ? 'bg-red-50 text-red-700' : ($prob === 0 ? 'bg-slate-50 text-slate-500 font-medium' : 'bg-transparent text-slate-300')))));
                                     @endphp
                                     <td class="px-1.5 py-1.5 text-center {{ $cellColor }}">{{ $prob !== null ? $prob . '%' : '—' }}</td>
                                 @endforeach
@@ -474,10 +475,10 @@
             </div>
             <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-emerald-500"></span>100% Contratada</span>
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-cyan-500"></span>75% Casi Probable</span>
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-blue-500"></span>50% Probable</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-cyan-500"></span>75% Probable</span>
                 <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-amber-500"></span>25% Posible</span>
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-red-400"></span>0% Cerrada</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-red-400"></span>10% Remoto</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-slate-400"></span>0% Perdida</span>
             </div>
         </div>
 
@@ -493,10 +494,10 @@
                             labels: evo.months,
                             datasets: [
                                 { label: '100% Contratada', data: evo.series.p100, backgroundColor: 'rgba(16,185,129,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '75% Casi Probable', data: evo.series.p75, backgroundColor: 'rgba(6,182,212,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '50% Probable', data: evo.series.p50, backgroundColor: 'rgba(59,130,246,0.8)', stack: 's', borderRadius: 2 },
+                                { label: '75% Probable', data: evo.series.p75, backgroundColor: 'rgba(6,182,212,0.8)', stack: 's', borderRadius: 2 },
                                 { label: '25% Posible', data: evo.series.p25, backgroundColor: 'rgba(245,158,11,0.8)', stack: 's', borderRadius: 2 },
-                                { label: '0% Cerrada', data: evo.series.p0, backgroundColor: 'rgba(248,113,113,0.7)', stack: 's', borderRadius: 2 },
+                                { label: '10% Remoto', data: evo.series.p10, backgroundColor: 'rgba(248,113,113,0.7)', stack: 's', borderRadius: 2 },
+                                { label: '0% Perdida', data: evo.series.p0, backgroundColor: 'rgba(148,163,184,0.5)', stack: 's', borderRadius: 2 },
                                 {
                                     type: 'line',
                                     label: 'Cartera esperada (ponderada)',
@@ -583,9 +584,9 @@
                             $bandColors = [
                                 'p100' => ['bg' => 'bg-emerald-500', 'text' => 'text-emerald-700', 'bar' => 'bg-emerald-400'],
                                 'p75'  => ['bg' => 'bg-cyan-500',    'text' => 'text-cyan-700',    'bar' => 'bg-cyan-400'],
-                                'p50'  => ['bg' => 'bg-blue-500',    'text' => 'text-blue-700',    'bar' => 'bg-blue-400'],
                                 'p25'  => ['bg' => 'bg-amber-500',   'text' => 'text-amber-700',   'bar' => 'bg-amber-400'],
-                                'p0'   => ['bg' => 'bg-red-400',     'text' => 'text-red-700',     'bar' => 'bg-red-300'],
+                                'p10'  => ['bg' => 'bg-red-400',     'text' => 'text-red-700',     'bar' => 'bg-red-300'],
+                                'p0'   => ['bg' => 'bg-slate-400',   'text' => 'text-slate-700',   'bar' => 'bg-slate-300'],
                             ];
                             $c = $bandColors[$lr['key']] ?? ['bg' => 'bg-gray-400', 'text' => 'text-gray-700', 'bar' => 'bg-gray-300'];
                             $maxBruto = $carteraKpis['bruto'] > 0 ? $carteraKpis['bruto'] : 1;
@@ -628,16 +629,14 @@
 
                 <div class="mt-4 pt-3 border-t border-slate-100">
                     <p class="text-[11px] text-slate-400 leading-relaxed">
-                        La mayor concentración de valor bruto está en el 50%
                         @foreach($levelResumen as $lr)
-                            @if($lr['key'] === 'p50' && $lr['bruto'] > 0)
-                                <strong>(${{ number_format($lr['bruto'], 1) }}M)</strong>
+                            @if($lr['key'] === 'p75' && $lr['bruto'] > 0)
+                                La mayor concentración de valor bruto está al <strong>{{ $lr['label'] }}</strong> (${{ number_format($lr['bruto'], 1) }}M).
                             @endif
                         @endforeach
-                        pero la Cartera esperada baja significativamente.
                         @foreach($levelResumen as $lr)
                             @if($lr['key'] === 'p25' && $lr['count'] > 0)
-                                Las ofertas al {{ $lr['label'] }} son las más numerosas (<strong>{{ $lr['count'] }}</strong> en total).
+                                Las ofertas al <strong>{{ $lr['label'] }}</strong> son las más numerosas (<strong>{{ $lr['count'] }}</strong> en total).
                             @endif
                         @endforeach
                         La eficiencia ponderada total es del <strong>{{ $carteraKpis['eficiencia'] }}%</strong>.
