@@ -80,7 +80,7 @@ class OportunidadesIndex extends Component
             $search = strtolower($this->search);
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(cp_numero) LIKE ?', ["%{$search}%"])
-                    ->orWhereRaw('LOWER(tech_reference) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(dn_numero) LIKE ?', ["%{$search}%"])
                     ->orWhereHas('cliente', fn($c) => $c->whereRaw('LOWER(razon_social) LIKE ?', ["%{$search}%"]))
                     ->orWhereRaw('LOWER(usuario_final) LIKE ?', ["%{$search}%"]);
             });

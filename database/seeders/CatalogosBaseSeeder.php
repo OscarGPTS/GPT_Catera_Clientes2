@@ -9,7 +9,37 @@ class CatalogosBaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Sublineas basadas en Core Business de Tech_Codification_v1.md
+        // ── Lugares geográficos (estados, ciudades, países) ──────────────────────
+        $lugares = [
+            // México - Estados
+            ['nombre' => 'Aguascalientes',   'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Campeche',         'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Chiapas',          'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Chihuahua',        'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'CDMX',             'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Edo. Mexico',      'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Guanajuato',       'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Hidalgo',          'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Jalisco',          'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Mexico',           'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Queretaro',        'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'San Luis Potosi',  'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Tabasco',          'tipo' => 'estado',    'pais' => 'México'],
+            ['nombre' => 'Veracruz',         'tipo' => 'estado',    'pais' => 'México'],
+            // México - Ciudades / Municipios
+            ['nombre' => 'Cd. Del Carmen',   'tipo' => 'ciudad',    'pais' => 'México'],
+            ['nombre' => 'Guadalajara',      'tipo' => 'ciudad',    'pais' => 'México'],
+            // Países extranjeros
+            ['nombre' => 'Colombia',         'tipo' => 'pais',      'pais' => 'Colombia'],
+        ];
+
+        foreach ($lugares as $lugar) {
+            DB::table('lugares')->insertOrIgnore(array_merge($lugar, [
+                'created_at' => now(), 'updated_at' => now(),
+            ]));
+        }
+
+
         $sublineas = [
             ['codigo' => 'HTS',  'nombre' => 'Hot Tapping Service',               'descripcion' => 'Servicio de Hot Tapping (Perforación en línea viva)'],
             ['codigo' => 'HTF',  'nombre' => 'Hot Tapping Fitting',               'descripcion' => 'Accesorios para Hot Tapping (Tees, conexiones)'],
@@ -78,6 +108,12 @@ class CatalogosBaseSeeder extends Seeder
             ['razon_social' => 'Arseal',                               'alias_3letras' => 'ARS', 'sector' => 'Gasoductos',    'segmento' => 'Privado'],
             ['razon_social' => 'Esentia Energy',                       'alias_3letras' => 'ESE', 'sector' => 'Gasoductos',    'segmento' => 'Privado'],
             ['razon_social' => 'SEDENA',                               'alias_3letras' => 'SDN', 'sector' => 'Infraestructura','segmento' => 'Gobierno'],
+            // Clientes 2026 adicionales del CSV
+            ['razon_social' => 'Grupo 3VTA',                           'alias_3letras' => 'G3V', 'sector' => 'Oil & Gas',     'segmento' => 'Privado'],
+            ['razon_social' => 'Geolis',                               'alias_3letras' => 'GSO', 'sector' => 'Oil & Gas',     'segmento' => 'Privado'],
+            ['razon_social' => 'PIFUSA',                               'alias_3letras' => 'PIF', 'sector' => 'Gasoductos',    'segmento' => 'Privado'],
+            ['razon_social' => 'Cocomex',                              'alias_3letras' => 'COC', 'sector' => 'Oil & Gas',     'segmento' => 'Privado'],
+            ['razon_social' => 'Marabis Energy',                       'alias_3letras' => 'ME',  'sector' => 'Gasoductos',    'segmento' => 'Privado'],
         ];
 
         foreach ($clientes as $cliente) {

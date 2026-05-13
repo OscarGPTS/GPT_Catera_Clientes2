@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Catalogos\CatalogosController;
 use App\Http\Controllers\Comercial\ClienteController;
 use App\Livewire\Finanzas\FinanzasIndex;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\Proyectos\AdjudicacionController;
 use App\Http\Controllers\Proyectos\MinutaController;
 use App\Http\Controllers\Proyectos\OportunidadController;
+use App\Http\Controllers\Proyectos\OportunidadesExportController;
 use App\Livewire\Chat\ChatDrawer;
 use App\Livewire\Comercial\ClientesIndex;
 use App\Livewire\Comercial\ClienteDetalle;
@@ -15,6 +17,7 @@ use App\Livewire\Ejecutivo\PipelineGlobal;
 use App\Livewire\Finanzas\CierresIndex;
 use App\Livewire\NuevaOportunidad;
 use App\Livewire\Proyectos\AdjudicacionForm;
+use App\Livewire\Proyectos\ImportarOportunidades;
 use App\Livewire\Notificaciones\NotificationsIndex;
 use App\Livewire\Proyectos\AsignacionesIndex;
 use App\Livewire\Proyectos\BitacoraForm;
@@ -38,6 +41,12 @@ Route::middleware(['auth'])->group(function () {
     // Oportunidades
     Route::get('/oportunidades', OportunidadesIndex::class)->name('oportunidades.index')->can('ver oportunidades');
     Route::get('/oportunidades/nueva', NuevaOportunidad::class)->name('oportunidades.create')->can('crear oportunidad');
+    Route::get('/oportunidades/importar', ImportarOportunidades::class)->name('oportunidades.importar')->can('crear oportunidad');
+    Route::get('/oportunidades/exportar', OportunidadesExportController::class)->name('oportunidades.exportar')->can('ver oportunidades');
+
+    // Catálogos externos
+    Route::get('/catalogos', [CatalogosController::class, 'index'])->name('catalogos.index');
+    Route::post('/catalogos/{catalog}/import', [CatalogosController::class, 'import'])->name('catalogos.import');
     Route::get('/oportunidades/{proyecto}', OportunidadDetalle::class)->name('oportunidades.show')->can('ver oportunidades');
     Route::post('/oportunidades/{proyecto}/aprobar', [OportunidadController::class, 'aprobar'])->name('oportunidades.aprobar')->can('aprobar cp');
     Route::post('/oportunidades/{proyecto}/rechazar', [OportunidadController::class, 'rechazar'])->name('oportunidades.rechazar')->can('aprobar cp');

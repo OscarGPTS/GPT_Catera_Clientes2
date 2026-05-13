@@ -91,6 +91,11 @@
         </x-sidebar-section>
         @endcanany
 
+        {{-- Catálogos --}}
+        <x-sidebar-section label="Catálogos">
+            <x-sidebar-item href="/catalogos" icon="circle-stack" label="Catálogos Ext." />
+        </x-sidebar-section>
+
         {{-- Admin --}}
         @canany(['ver admin usuarios'])
         <x-sidebar-section label="Admin" collapsible>

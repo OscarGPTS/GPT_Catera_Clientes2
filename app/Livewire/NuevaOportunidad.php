@@ -77,14 +77,15 @@ class NuevaOportunidad extends Component
             'cp_numero' => $cp,
             'anio' => now()->year,
             'cliente_id' => $this->cliente_id,
-            'sublinea_id' => $this->sublinea_id,
+            'sublinea_id' => $this->sublinea_id ?: null,
             'usuario_final' => $this->usuario_final ?: null,
             'sector' => $this->sector ?: null,
+            'alcance' => $this->alcance,
             'estado' => 'en_revision',
             'fecha_inicio_planeada' => $this->fecha_inicio_planeada ?: null,
             'fecha_fin_planeada' => $this->fecha_fin_planeada ?: null,
             'director_dn_id' => $this->director_dn_id ?: null,
-            'notas' => $this->alcance,
+            'notas' => null,
         ]);
 
         session()->flash('success', "Oportunidad creada: {$cp}");

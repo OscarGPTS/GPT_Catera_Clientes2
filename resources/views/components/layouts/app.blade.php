@@ -22,6 +22,11 @@
                 {{ $slot }}
             @else
                 <div class="mx-auto max-w-7xl">
+                    @if(!empty($header))
+                        <div class="mb-6 pb-4 border-b border-slate-200">
+                            {{ $header }}
+                        </div>
+                    @endif
                     {{ $slot }}
                 </div>
             @endif

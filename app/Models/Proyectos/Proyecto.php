@@ -16,12 +16,19 @@ class Proyecto extends Model
     protected $table = 'proyectos';
 
     protected $fillable = [
-        'tech_reference', 'cp_numero', 'dn_numero', 'anio',
-        'cliente_id', 'sublinea_id', 'usuario_final', 'sector',
-        'contacto', 'lugar', 'oferta_codigo',
-        'estado', 'ponderacion', 'fecha_inicio_planeada', 'fecha_fin_planeada',
+        // Campos del CSV / oportunidad
+        'cp_numero', 'dn_numero', 'tech_reference', 'anio',
+        'cliente_id', 'contacto', 'datos_contacto',
+        'lugar_id', 'alcance',
         'fecha_envio', 'fecha_modificacion_oferta',
-        'hitos_pago', 'archivo_oferta', 'elaboro_id',
+        'monto_usd', 'hitos_pago',
+        'elaboro_id',
+        'estado', 'ponderacion',
+        'archivo_oferta',
+        'concepto_adjudicacion', 'porcentaje_adjudicacion', 'cartera_esperada',
+        // Campos de proyecto (post-adjudicación)
+        'sublinea_id', 'usuario_final', 'sector',
+        'fecha_inicio_planeada', 'fecha_fin_planeada',
         'metodo_distribucion_plurianual',
         'director_dn_id', 'gerente_proyectos_id', 'gerente_operaciones_id',
         'ingeniero_costos_id', 'ingeniero_proyectos_id', 'trainee_id',
@@ -33,6 +40,9 @@ class Proyecto extends Model
         return [
             'anio' => 'integer',
             'ponderacion' => 'integer',
+            'monto_usd' => 'decimal:2',
+            'porcentaje_adjudicacion' => 'decimal:2',
+            'cartera_esperada' => 'decimal:2',
             'fecha_inicio_planeada' => 'date',
             'fecha_fin_planeada' => 'date',
             'fecha_envio' => 'date',
@@ -43,6 +53,11 @@ class Proyecto extends Model
     public function elaboro(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'elaboro_id');
+    }
+
+    public function lugar(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Lugar::class, 'lugar_id');
     }
 
     public function cliente(): BelongsTo
