@@ -74,7 +74,7 @@ class OportunidadesIndex extends Component
 
     public function getOportunidadesProperty()
     {
-        $query = Proyecto::with(['cliente', 'sublinea', 'gerenteProyectos', 'elaboro', 'cotizaciones']);
+        $query = Proyecto::with(['cliente', 'sublinea', 'lugar', 'gerenteProyectos', 'elaboro', 'cotizaciones']);
 
         if ($this->search) {
             $search = strtolower($this->search);

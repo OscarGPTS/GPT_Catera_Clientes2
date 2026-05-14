@@ -82,7 +82,7 @@ class ImportarOportunidades extends Component
         $sinResponsableId  = User::where('email', 'sin.responsable@system.gptservices.com')->value('id');
 
         $this->filas = [];
-        $rawRows     = $sheet->toArray(null, false, true, false);   // raw values (sin resolver) para fechas seriales
+        $rawRows     = $sheet->toArray(null, false, false, false);  // raw values SIN formatear: fechas llegan como serial numérico
 
         foreach (array_slice($rows, $headerRowIdx + 1) as $i => $row) {
             $rawRow = $rawRows[$headerRowIdx + 1 + $i] ?? [];
@@ -391,7 +391,8 @@ class ImportarOportunidades extends Component
     private function parseEstado(string $status): string
     {
         return match ($status) {
-            'ENVIADO', 'PRESENTADO'           => 'presentado',
+            'ENVIADO'                         => 'enviado',
+            'PRESENTADO'                      => 'presentado',
             'ADJUDICADO'                      => 'adjudicado_pendiente',
             'CANCELADO'                       => 'cancelado',
             'PERDIDO'                         => 'perdido',
@@ -424,6 +425,18 @@ class ImportarOportunidades extends Component
             $d = \DateTime::createFromFormat($fmt, $strVal);
             if ($d && $d->format($fmt) === $strVal) {
                 return $d->format('Y-m-d');
+            }
+        }
+
+        // Fecha larga en español: "martes, 18 de noviembre de 2025" o "18 de noviembre de 2025"
+        if (preg_match('/(?:\w+,?\s+)?(\d{1,2})\s+de\s+([a-záéíóúü]+)\s+de\s+(\d{4})/ui', $strVal, $m)) {
+            $meses = [
+                'enero'=>1,'febrero'=>2,'marzo'=>3,'abril'=>4,'mayo'=>5,'junio'=>6,
+                'julio'=>7,'agosto'=>8,'septiembre'=>9,'octubre'=>10,'noviembre'=>11,'diciembre'=>12,
+            ];
+            $mes = $meses[mb_strtolower($m[2])] ?? null;
+            if ($mes) {
+                return sprintf('%04d-%02d-%02d', (int) $m[3], $mes, (int) $m[1]);
             }
         }
 

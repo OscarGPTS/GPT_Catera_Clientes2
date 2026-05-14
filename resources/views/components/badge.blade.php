@@ -4,6 +4,7 @@
 $classes = match($status) {
     'cotizando' => 'bg-blue-100 text-blue-800',
     'cotizado' => 'bg-gpt-100 text-gpt-800',
+    'enviado' => 'bg-sky-100 text-sky-800',
     'presentado' => 'bg-gpt-100 text-gpt-800',
     'adjudicado_pendiente' => 'bg-amber-100 text-amber-800',
     'adjudicado_firmado' => 'bg-green-100 text-green-800',
@@ -21,6 +22,7 @@ $labelText = match($status) {
     'en_revision' => 'En revisión',
     'cotizando' => 'Cotizando',
     'cotizado' => 'Cotizado',
+    'enviado' => 'Enviado',
     'presentado' => 'Presentado',
     'adjudicado_pendiente' => 'Adjudicado pend.',
     'adjudicado_firmado' => 'Adjudicado',

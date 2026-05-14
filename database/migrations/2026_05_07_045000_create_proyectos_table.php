@@ -41,7 +41,7 @@ return new class extends Migration
 
             // ── Estado y ponderación ──────────────────────────────────────────
             $table->enum('estado', [
-                'en_revision', 'cotizando', 'cotizado', 'presentado',
+                'en_revision', 'cotizando', 'cotizado', 'enviado', 'presentado',
                 'adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion',
                 'en_cierre', 'cerrado', 'cancelado', 'perdido', 'archivado',
             ])->default('en_revision');
