@@ -17,8 +17,8 @@ class ClientesIndex extends Component
     public $showCreateModal = false;
 
     public $razon_social = '';
-    public $alias_3letras = '';
-    public $rfc = '';
+    public $alias = '';
+    public $rfc = ''; 
     public $nuevoSector = '';
     public $nuevoSegmento = '';
 
@@ -27,7 +27,7 @@ class ClientesIndex extends Component
 
     protected $rules = [
         'razon_social' => 'required|string|max:255',
-        'alias_3letras' => 'required|string|max:5|unique:clientes,alias_3letras',
+        'alias' => 'required|string|max:30|unique:clientes,alias',
         'rfc' => 'nullable|string|max:13|unique:clientes,rfc',
         'nuevoSector' => 'nullable|string|max:100',
         'nuevoSegmento' => 'nullable|string|max:100',
@@ -35,8 +35,8 @@ class ClientesIndex extends Component
 
     protected $messages = [
         'razon_social.required' => 'La razón social es obligatoria.',
-        'alias_3letras.required' => 'El alias es obligatorio.',
-        'alias_3letras.unique' => 'Este alias ya está en uso.',
+        'alias.required' => 'El alias es obligatorio.',
+        'alias.unique' => 'Este alias ya está en uso.',
         'rfc.unique' => 'Este RFC ya está registrado.',
     ];
 
@@ -82,7 +82,7 @@ class ClientesIndex extends Component
         try {
             Cliente::create([
                 'razon_social' => $this->razon_social,
-                'alias_3letras' => strtoupper($this->alias_3letras),
+                'alias' => strtoupper($this->alias),
                 'rfc' => $this->rfc ? strtoupper($this->rfc) : null,
                 'sector' => $this->nuevoSector,
                 'segmento' => $this->nuevoSegmento,
@@ -113,7 +113,7 @@ class ClientesIndex extends Component
         if ($this->buscar) {
             $query->where(function ($q) {
                 $q->whereRaw('LOWER(razon_social) LIKE ?', ["%".strtolower($this->buscar)."%"])
-                    ->orWhereRaw('LOWER(alias_3letras) LIKE ?', ["%".strtolower($this->buscar)."%"])
+                    ->orWhereRaw('LOWER(alias) LIKE ?', ["%".strtolower($this->buscar)."%"])
                     ->orWhereRaw('LOWER(rfc) LIKE ?', ["%".strtolower($this->buscar)."%"]);
             });
         }
@@ -139,7 +139,7 @@ class ClientesIndex extends Component
     protected function resetCreateForm()
     {
         $this->razon_social = '';
-        $this->alias_3letras = '';
+        $this->alias = '';
         $this->rfc = '';
         $this->nuevoSector = '';
         $this->nuevoSegmento = '';

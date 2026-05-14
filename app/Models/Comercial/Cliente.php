@@ -13,7 +13,7 @@ class Cliente extends Model
     protected $table = 'clientes';
 
     protected $fillable = [
-        'razon_social', 'alias_3letras', 'rfc', 'sector', 'segmento', 'activo',
+        'razon_social', 'alias', 'rfc', 'sector', 'segmento', 'activo',
     ];
 
     protected function casts(): array

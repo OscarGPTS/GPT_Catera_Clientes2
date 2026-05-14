@@ -43,7 +43,7 @@
                     <select wire:model="cliente_id" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
                         <option value="">Seleccionar cliente</option>
                         @foreach($clientes as $c)
-                            <option value="{{ $c->id }}">{{ $c->razon_social }} ({{ $c->alias_3letras }})</option>
+                            <option value="{{ $c->id }}">{{ $c->razon_social }} ({{ $c->alias }})</option>
                         @endforeach
                     </select>
                     @error('cliente_id') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror

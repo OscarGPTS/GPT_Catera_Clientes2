@@ -198,12 +198,22 @@
                                 100 => 'Contratado',
                                 default => $op->ponderacion . '%',
                             };
+                            $incompleto = ! $op->cliente_id || ! $fechaEnvio;
                         @endphp
-                        <tr class="hover:bg-slate-50 transition-colors">
+                        <tr class="hover:bg-slate-50 transition-colors {{ $incompleto ? 'border-l-2 border-l-amber-400' : '' }}">
                             <td class="whitespace-nowrap px-3 py-3 text-sm font-mono font-medium text-slate-900">
                                 <a href="{{ route('oportunidades.show', $op) }}" class="hover:text-gpt-600 transition-colors">{{ $op->cp_numero ?? '—' }}</a>
                             </td>
-                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-900">{{ $op->cliente->razon_social ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-900">
+                                @if($op->cliente_id)
+                                    {{ $op->cliente->razon_social ?? '—' }}
+                                @else
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                        <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                                        Sin cliente
+                                    </span>
+                                @endif
+                            </td>
                             <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{{ $op->contacto ?? '—' }}</td>
                             <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{{ $op->lugar ?? '—' }}</td>
                             <td class="px-3 py-3 text-sm text-slate-600 max-w-[220px] truncate" title="{{ $op->notas ?? '' }}">{{ $op->notas ?? '—' }}</td>
@@ -214,7 +224,13 @@
                                     {{ $op->oferta_codigo ?? $op->tech_reference ?? '—' }}
                                 @endif
                             </td>
-                            <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{{ $fechaEnvio?->format('Y-m-d') ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-3 py-3 text-sm {{ $fechaEnvio ? 'text-slate-600' : 'text-amber-500' }}">
+                                @if($fechaEnvio)
+                                    {{ $fechaEnvio->format('Y-m-d') }}
+                                @else
+                                    <span title="Fecha de envío no registrada">—</span>
+                                @endif
+                            </td>
                             <td class="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{{ $fechaModif?->format('Y-m-d') ?? '—' }}</td>
                             <td class="whitespace-nowrap px-3 py-3 text-right text-sm font-medium text-slate-900">
                                 @if($monto > 0)

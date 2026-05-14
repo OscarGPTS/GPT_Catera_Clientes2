@@ -22,13 +22,13 @@ return new class extends Migration
             $table->id();
 
             // ── Identificadores ───────────────────────────────────────────────
-            $table->string('cp_numero')->nullable()->unique();
+            $table->string('cp_numero')->nullable();
             $table->string('dn_numero')->nullable();        // Número interno DN (asignado post-adjudicación)
             $table->string('tech_reference')->nullable();   // Código técnico de la oferta (OFERTA en CSV)
             $table->year('anio');
 
             // ── Relaciones de catálogo ────────────────────────────────────────
-            $table->foreignId('cliente_id')->constrained('clientes');
+            $table->foreignId('cliente_id')->nullable()->constrained('clientes');
             $table->foreignId('sublinea_id')->nullable()->constrained('sublineas');
             $table->foreignId('lugar_id')->nullable()->constrained('lugares');
 

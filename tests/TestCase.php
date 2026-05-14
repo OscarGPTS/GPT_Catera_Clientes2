@@ -44,7 +44,7 @@ abstract class TestCase extends BaseTestCase
     {
         return Cliente::create(array_merge([
             'razon_social' => 'Cliente Test SA',
-            'alias_3letras' => 'CTE',
+            'alias' => 'CTE',
             'sector' => 'Gobierno',
             'activo' => true,
         ], $overrides));
@@ -62,7 +62,7 @@ abstract class TestCase extends BaseTestCase
     {
         $cliente = $overrides['cliente_id'] ?? Cliente::create([
             'razon_social' => 'Proyecto Test Cliente',
-            'alias_3letras' => 'PTC',
+            'alias' => 'PTC',
             'sector' => 'Energía',
             'activo' => true,
         ]);

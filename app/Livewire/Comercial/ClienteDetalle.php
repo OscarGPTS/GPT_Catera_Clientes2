@@ -19,7 +19,7 @@ class ClienteDetalle extends Component
     public $contacto_principal = false;
 
     public $edit_razon_social = '';
-    public $edit_alias_3letras = '';
+    public $edit_alias = '';
     public $edit_rfc = '';
     public $edit_sector = '';
     public $edit_segmento = '';
@@ -36,7 +36,7 @@ class ClienteDetalle extends Component
             'contacto_telefono' => 'nullable|string|max:50',
             'contacto_principal' => 'boolean',
             'edit_razon_social' => 'required|string|max:255',
-            'edit_alias_3letras' => 'required|string|max:5',
+            'edit_alias' => 'required|string|max:30',
             'edit_rfc' => 'nullable|string|max:13',
             'edit_sector' => 'nullable|string|max:100',
             'edit_segmento' => 'nullable|string|max:100',
@@ -52,7 +52,7 @@ class ClienteDetalle extends Component
     public function loadEditForm()
     {
         $this->edit_razon_social = $this->cliente->razon_social;
-        $this->edit_alias_3letras = $this->cliente->alias_3letras;
+        $this->edit_alias = $this->cliente->alias;
         $this->edit_rfc = $this->cliente->rfc ?? '';
         $this->edit_sector = $this->cliente->sector ?? '';
         $this->edit_segmento = $this->cliente->segmento ?? '';
@@ -115,7 +115,7 @@ class ClienteDetalle extends Component
 
         $this->validate([
             'edit_razon_social' => 'required|string|max:255',
-            'edit_alias_3letras' => 'required|string|max:5',
+            'edit_alias' => 'required|string|max:30',
             'edit_rfc' => 'nullable|string|max:13',
             'edit_sector' => 'nullable|string|max:100',
             'edit_segmento' => 'nullable|string|max:100',
@@ -124,7 +124,7 @@ class ClienteDetalle extends Component
         try {
             $this->cliente->update([
                 'razon_social' => $this->edit_razon_social,
-                'alias_3letras' => strtoupper($this->edit_alias_3letras),
+                'alias' => strtoupper($this->edit_alias),
                 'rfc' => $this->edit_rfc ? strtoupper($this->edit_rfc) : null,
                 'sector' => $this->edit_sector,
                 'segmento' => $this->edit_segmento,

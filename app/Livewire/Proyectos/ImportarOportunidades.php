@@ -57,8 +57,17 @@ class ImportarOportunidades extends Component
             return;
         }
 
-        // --- Detectar columnas por nombre de encabezado (fila 1) ----------------
-        $headers = array_map(fn($h) => mb_strtolower(trim((string) $h)), $rows[0]);
+        // --- Detectar fila de encabezado automáticamente (puede estar en fila 1 o 6+) ---
+        $headerRowIdx = 0;
+        foreach ($rows as $idx => $row) {
+            $cells = array_map(fn($c) => mb_strtolower(trim((string) $c)), $row);
+            if (in_array('cp', $cells) || in_array('cliente', $cells)) {
+                $headerRowIdx = $idx;
+                break;
+            }
+        }
+
+        $headers = array_map(fn($h) => mb_strtolower(trim((string) $h)), $rows[$headerRowIdx]);
         $col     = $this->buildColumnMap($headers);
 
         if (! isset($col['cliente_alias'])) {
@@ -67,15 +76,16 @@ class ImportarOportunidades extends Component
         }
 
         // --- Precargar catálogos para lookups -----------------------------------
-        $clientes = Cliente::pluck('id', 'alias_3letras')->all();   // ['IGA' => 5, ...]
-        $usuarios = User::pluck('id', 'name')->all();
-        $lugares  = Lugar::pluck('id', 'nombre')->all();
+        $clientes          = Cliente::pluck('id', 'alias')->all();
+        $usuarios          = User::pluck('id', 'name')->all();
+        $lugares           = Lugar::pluck('id', 'nombre')->all();
+        $sinResponsableId  = User::where('email', 'sin.responsable@system.gptservices.com')->value('id');
 
         $this->filas = [];
         $rawRows     = $sheet->toArray(null, false, true, false);   // raw values (sin resolver) para fechas seriales
 
-        foreach (array_slice($rows, 1) as $i => $row) {
-            $rawRow = $rawRows[$i + 1] ?? [];
+        foreach (array_slice($rows, $headerRowIdx + 1) as $i => $row) {
+            $rawRow = $rawRows[$headerRowIdx + 1 + $i] ?? [];
 
             $get = fn(string $key): string =>
                 isset($col[$key]) ? trim((string) ($row[$col[$key]] ?? '')) : '';
@@ -97,7 +107,10 @@ class ImportarOportunidades extends Component
             $lugarNombre    = $get('lugar');
             $lugarId        = $lugarNombre !== '' ? ($lugares[$lugarNombre] ?? null) : null;
             $responsableNom = $get('responsable');
-            $elaboroId      = $responsableNom !== '' ? ($usuarios[$responsableNom] ?? null) : null;
+            // Use the matched user, or fall back to the "Sin Responsable" system user
+            $elaboroId      = $responsableNom !== ''
+                ? ($usuarios[$responsableNom] ?? $sinResponsableId)
+                : $sinResponsableId;
 
             // --- Fechas ---------------------------------------------------------
             $fechaEnvio = $this->parseDate($get('fecha_envio'), $getRaw('fecha_envio'));
@@ -132,13 +145,13 @@ class ImportarOportunidades extends Component
             $advertencias = [];
 
             if (! $clienteId) {
-                $errores[] = "Cliente '{$clienteAlias}' no encontrado (alias inexistente).";
+                $advertencias[] = "Cliente '{$clienteAlias}' no existe en el catálogo — se creará como nuevo cliente al confirmar.";
             }
             if ($lugarNombre !== '' && ! $lugarId) {
                 $advertencias[] = "Lugar '{$lugarNombre}' no está en el catálogo — lugar_id quedará vacío.";
             }
-            if ($responsableNom !== '' && ! $elaboroId) {
-                $advertencias[] = "Responsable '{$responsableNom}' no encontrado — elaboro_id quedará nulo.";
+            if ($responsableNom !== '' && ! ($usuarios[$responsableNom] ?? null)) {
+                $advertencias[] = "Responsable '{$responsableNom}' no encontrado — se asignará 'Sin Responsable'.";
             }
             if (! $fechaEnvio) {
                 $advertencias[] = "Fecha de envío vacía o inválida.";
@@ -196,9 +209,17 @@ class ImportarOportunidades extends Component
             }
 
             foreach ($filasValidas as $fila) {
-                Proyecto::create([
-                    'cp_numero'                 => $fila['cp_numero'],
-                    'cliente_id'                => $fila['cliente_id'],
+                // Resolve cliente: use existing id or auto-create from alias
+                $clienteId = $fila['cliente_id'];
+                if (! $clienteId && ($fila['cliente_alias'] ?? '') !== '') {
+                    $clienteId = Cliente::firstOrCreate(
+                        ['alias' => $fila['cliente_alias']],
+                        ['razon_social'  => $fila['cliente_alias'], 'activo' => true]
+                    )->id;
+                }
+
+                $data = [
+                    'cliente_id'                => $clienteId,
                     'contacto'                  => $fila['contacto'],
                     'datos_contacto'            => $fila['datos_contacto'],
                     'lugar_id'                  => $fila['lugar_id'],
@@ -216,7 +237,14 @@ class ImportarOportunidades extends Component
                     'porcentaje_adjudicacion'   => $fila['porcentaje_adjudicacion'],
                     'cartera_esperada'          => $fila['cartera_esperada'],
                     'anio'                      => $fila['anio'],
-                ]);
+                ];
+
+                if ($fila['cp_numero']) {
+                    // Upsert: update if cp already exists, create otherwise
+                    Proyecto::updateOrCreate(['cp_numero' => $fila['cp_numero']], $data);
+                } else {
+                    Proyecto::create($data);
+                }
                 $this->insertados++;
             }
 

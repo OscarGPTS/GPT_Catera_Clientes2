@@ -61,7 +61,7 @@
                         @forelse($this->clientes as $cliente)
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="whitespace-nowrap px-4 py-3">
-                                    <span class="inline-flex items-center justify-center rounded-md bg-gpt-100 px-2 py-1 text-xs font-bold text-gpt-800 uppercase">{{ $cliente->alias_3letras }}</span>
+                                    <span class="inline-flex items-center justify-center rounded-md bg-gpt-100 px-2 py-1 text-xs font-bold text-gpt-800 uppercase">{{ $cliente->alias }}</span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-900">{{ $cliente->razon_social }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-sm font-mono text-slate-600">{{ $cliente->rfc ?? '—' }}</td>
@@ -113,9 +113,9 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label for="alias_3letras" class="block text-sm font-medium text-slate-700 mb-1">Alias (3 letras) *</label>
-                            <input type="text" wire:model="alias_3letras" id="alias_3letras" maxlength="5" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-gpt-600 uppercase @error('alias_3letras') border-red-300 @enderror" placeholder="SED">
-                            @error('alias_3letras') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            <label for="alias" class="block text-sm font-medium text-slate-700 mb-1">Alias *</label>
+                            <input type="text" wire:model="alias" id="alias" maxlength="30" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-gpt-600 uppercase @error('alias') border-red-300 @enderror" placeholder="EJ: IGASAMEX">
+                            @error('alias') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label for="rfc" class="block text-sm font-medium text-slate-700 mb-1">RFC</label>

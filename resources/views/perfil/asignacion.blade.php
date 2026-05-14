@@ -54,8 +54,8 @@
                                 </p>
                                 <p class="text-xs text-slate-500">
                                     {{ $proyecto->cliente?->razon_social ?? 'Sin cliente' }}
-                                    @if($proyecto->cliente?->alias_3letras)
-                                        ({{ $proyecto->cliente->alias_3letras }})
+                                    @if($proyecto->cliente?->alias)
+                                        ({{ $proyecto->cliente->alias }})
                                     @endif
                                 </p>
                             </div>

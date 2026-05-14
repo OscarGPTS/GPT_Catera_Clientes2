@@ -130,7 +130,7 @@ class OportunidadesExportController extends Controller
         $row = 7;
         foreach ($proyectos as $p) {
             $sheet->setCellValue("A{$row}", $p->cp_numero);
-            $sheet->setCellValue("B{$row}", $p->cliente?->alias_3letras ?? $p->cliente?->razon_social);
+            $sheet->setCellValue("B{$row}", $p->cliente?->alias ?? $p->cliente?->razon_social);
             $sheet->setCellValue("C{$row}", $p->contacto);
             $sheet->setCellValue("D{$row}", $p->datos_contacto);
             $sheet->setCellValue("E{$row}", $p->lugar?->nombre);

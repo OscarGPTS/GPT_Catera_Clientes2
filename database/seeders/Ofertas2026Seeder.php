@@ -13,13 +13,13 @@ class Ofertas2026Seeder extends Seeder
     public function run(): void
     {
         // ── Helpers ────────────────────────────────────────────────────────────────
-        $cli = fn(string $alias)  => Cliente::where('alias_3letras', $alias)->value('id');
+        $cli = fn(string $alias)  => Cliente::where('alias', $alias)->value('id');
         $usr = fn(?string $nombre) => $nombre ? User::where('name', $nombre)->value('id') : null;
         $lug = fn(?string $nombre) => $nombre ? Lugar::where('nombre', $nombre)->value('id') : null;
 
         // ── Datos del CSV — mapeo columna a columna ────────────────────────────────
         // CP            → cp_numero
-        // CLIENTE       → cliente_alias  (→ cliente_id via alias_3letras)
+        // CLIENTE       → cliente_alias  (→ cliente_id via alias)
         // CONTACTO      → contacto       (solo nombre de la persona)
         // DATOS CONTACTO→ datos_contacto (teléfono + correo)
         // LUGAR         → lugar          (→ lugar_id via nombre)

@@ -24,7 +24,7 @@ class CierreServiceTest extends TestCase
 
         $this->cliente = Cliente::create([
             'razon_social' => 'Test Cliente Cierre',
-            'alias_3letras' => 'TCC',
+            'alias' => 'TCC',
             'sector' => 'Energía',
             'activo' => true,
         ]);

@@ -18,7 +18,7 @@ class ClienteController extends Controller
 
         $validated = $request->validate([
             'razon_social' => 'required|string|max:255',
-            'alias_3letras' => 'required|string|max:5|unique:clientes,alias_3letras',
+            'alias' => 'required|string|max:30|unique:clientes,alias',
             'rfc' => 'nullable|string|max:13|unique:clientes,rfc',
             'sector' => 'nullable|string|max:100',
             'segmento' => 'nullable|string|max:100',
@@ -35,7 +35,7 @@ class ClienteController extends Controller
 
         $validated = $request->validate([
             'razon_social' => 'required|string|max:255',
-            'alias_3letras' => ['required', 'string', 'max:5', Rule::unique('clientes', 'alias_3letras')->ignore($cliente->id)],
+            'alias' => ['required', 'string', 'max:30', Rule::unique('clientes', 'alias')->ignore($cliente->id)],
             'rfc' => ['nullable', 'string', 'max:13', Rule::unique('clientes', 'rfc')->ignore($cliente->id)],
             'sector' => 'nullable|string|max:100',
             'segmento' => 'nullable|string|max:100',

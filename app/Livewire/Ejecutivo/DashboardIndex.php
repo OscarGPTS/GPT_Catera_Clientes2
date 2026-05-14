@@ -427,7 +427,7 @@ class DashboardIndex extends Component
             ->sortDesc()->take(10)->toArray();
 
         $byCliente = $pipeline
-            ->groupBy(fn ($p) => $p->cliente?->alias_3letras ?? 'N/A')
+            ->groupBy(fn ($p) => $p->cliente?->alias ?? 'N/A')
             ->map(fn ($g) => round($g->sum(fn ($p) => (float) ($p->cotizaciones->sortByDesc('version')->first()?->precio_venta_final ?? 0)) / 1_000_000, 3))
             ->sortDesc()->take(8)->toArray();
 

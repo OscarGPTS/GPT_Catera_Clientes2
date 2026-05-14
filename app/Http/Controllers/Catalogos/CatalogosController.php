@@ -101,7 +101,7 @@ class CatalogosController extends Controller
                 'cliente_acronym' => [
                     'target' => 'cliente_id',
                     'model'  => Cliente::class,
-                    'column' => 'alias_3letras',
+                    'column' => 'alias',
                 ],
             ],
             'display_fields'  => ['tech_reference', 'cp_numero', 'nombre_proyecto_cliente', 'amount_usd', 'account_manager'],
@@ -136,7 +136,7 @@ class CatalogosController extends Controller
                 'cliente_acronym' => [
                     'target' => 'cliente_id',
                     'model'  => Cliente::class,
-                    'column' => 'alias_3letras',
+                    'column' => 'alias',
                 ],
                 'lugar_nombre' => [
                     'target' => 'lugar_id',

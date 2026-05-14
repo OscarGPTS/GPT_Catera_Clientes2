@@ -194,8 +194,8 @@
                                     @if($fila['cliente_id'])
                                         <span class="font-medium text-slate-900">{{ $fila['cliente_alias'] }}</span>
                                     @else
-                                        <span class="font-medium text-red-700">{{ $fila['cliente_alias'] ?: '—' }}</span>
-                                        <span class="block text-[10px] text-red-500">No encontrado</span>
+                                        <span class="font-medium text-amber-700">{{ $fila['cliente_alias'] ?: '—' }}</span>
+                                        <span class="block text-[10px] text-amber-500">Nuevo cliente</span>
                                     @endif
                                 </td>
 
@@ -234,12 +234,13 @@
 
                                 <td class="px-3 py-2 text-xs whitespace-nowrap">
                                     @if($fila['elaboro_id'])
-                                        <span class="text-slate-700">{{ $fila['responsable_nombre'] }}</span>
-                                    @elseif($fila['responsable_nombre'])
-                                        <span class="text-amber-700">{{ $fila['responsable_nombre'] }}</span>
-                                        <span class="block text-[10px] text-amber-500">No encontrado</span>
+                                        @if($fila['responsable_nombre'] && $fila['responsable_nombre'] !== '')
+                                            <span class="text-slate-700">{{ $fila['responsable_nombre'] }}</span>
+                                        @else
+                                            <span class="text-slate-400 italic">Sin Responsable</span>
+                                        @endif
                                     @else
-                                        <span class="text-slate-400">—</span>
+                                        <span class="text-slate-400 italic">Sin Responsable</span>
                                     @endif
                                 </td>
 
