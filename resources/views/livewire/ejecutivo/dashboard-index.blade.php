@@ -1,56 +1,129 @@
 ﻿<script>window._dashData = @json($chartData); window._statusOfertas = @json($statusOfertasData);</script>
+<script>
+function initProjChart(idx) {
+    const p = window._statusOfertas.proyectos[idx];
+    const months = window._statusOfertas.months;
+    const canvas = document.getElementById('chart-proj-' + idx);
+    if (!canvas) return;
+    const pondData = p.probs.map(v => v !== null ? Math.round(p.monto * (v / 100) * 100) / 100 : null);
+    // p.bgColor is already a valid rgba(..., 0.10) string from the server
+    const fillColor = p.bgColor || p.borderColor.replace('rgb(', 'rgba(').replace(')', ',0.12)');
+    new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Probabilidad %',
+                    data: p.probs,
+                    borderColor: p.borderColor,
+                    backgroundColor: fillColor,
+                    borderWidth: 2.5,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: p.borderColor,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'yProb',
+                    spanGaps: false
+                },
+                {
+                    label: 'Pond. $M',
+                    data: pondData,
+                    borderColor: 'rgb(139,92,246)',
+                    backgroundColor: 'rgba(139,92,246,0.07)',
+                    borderWidth: 2,
+                    borderDash: [5, 3],
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgb(139,92,246)',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointStyle: 'rectRounded',
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'yMonto',
+                    spanGaps: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 10, family: 'Inter, sans-serif' },
+                        boxWidth: 12, boxHeight: 8,
+                        color: '#64748b',
+                        padding: 10,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15,23,42,0.85)',
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#cbd5e1',
+                    borderColor: 'rgba(148,163,184,0.2)',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: c => c.dataset.yAxisID === 'yProb'
+                            ? '  Prob: ' + (c.parsed.y !== null ? c.parsed.y + '%' : '\u2014')
+                            : '  Pond: $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) : '\u2014') + 'M'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    border: { display: false },
+                    grid: { color: 'rgba(148,163,184,0.10)', drawTicks: false },
+                    ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: '#94a3b8', padding: 6 }
+                },
+                yProb: {
+                    type: 'linear',
+                    position: 'left',
+                    min: 0,
+                    max: 100,
+                    border: { display: false },
+                    grid: { color: 'rgba(148,163,184,0.10)', drawTicks: false },
+                    ticks: { font: { size: 10 }, color: '#64748b', stepSize: 25, padding: 6, callback: v => v + '%' },
+                    title: { display: true, text: 'Prob %', font: { size: 9 }, color: '#94a3b8' }
+                },
+                yMonto: {
+                    type: 'linear',
+                    position: 'right',
+                    border: { display: false },
+                    grid: { display: false },
+                    ticks: { font: { size: 10 }, color: '#8b5cf6', padding: 6, callback: v => '$' + v + 'M' },
+                    title: { display: true, text: 'Pond $M', font: { size: 9 }, color: '#8b5cf6' }
+                }
+            }
+        }
+    });
+}
+</script>
 <div>
-    <x-slot name="header">
-        @php
-            $hora = (int) date('H');
-            $saludo = match(true) {
-                $hora < 12 => 'Buenos días',
-                $hora < 18 => 'Buenas tardes',
-                default => 'Buenas noches',
-            };
-        @endphp
-        <div>
-            <h2 class="text-2xl font-medium text-slate-900">{{ $saludo }}, {{ $nombre_usuario }}</h2>
-            <p class="mt-1 text-sm text-slate-500">Vista ejecutiva &middot; {{ $quarter_label }} &middot; Datos al {{ now()->format('d/m/Y H:i') }}</p>
-        </div>
-    </x-slot>
+      
+    <div>
+        <h2 class="text-2xl font-medium text-slate-900">Hola, {{ $nombre_usuario }}</h2>
+        <p class="mt-1 text-sm text-slate-500">Vista ejecutiva </p>
+    </div>
 
-    {{-- Global filters row (hidden — no dynamic filtering for Status Ofertas) --}}
-
-    {{-- ============================================================ --}}
-    {{-- SECCIÓN: Status Ofertas 2026 — Multi Axis Line Chart        --}}
-    {{-- ============================================================ --}}
-    <div class="mt-6">
-        <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>
-                <h3 class="text-base font-medium text-slate-900">Ofertas {{ \Carbon\Carbon::now()->year }}</h3>
-            </div>
-            {{--
-            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-emerald-500/70"></span> Contratada (100%)
-                </span>
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-cyan-500/70"></span> Probable (75%)
-                </span>
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-amber-500/70"></span> Posible (25%)
-                </span>
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-red-400/70"></span> Remoto (10%)
-                </span>
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-block h-3 w-5 rounded-sm bg-slate-400/70"></span> Perdida (0%)
-                </span>
-            </div> --}}
-        </div>
-
-
+    <div class="mt-2">
+        
         {{-- Data table: Status Ofertas 2026 --}}
         <div class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                    <h4 class="text-sm font-semibold text-slate-800">Detalle de ofertas — Status Ofertas 2026</h4>
+                    <h4 class="text-sm font-semibold text-slate-800">Detalle de Ofertas {{ \Carbon\Carbon::now()->year }}</h4>
                    
                 </div>
                 <div class="text-xs text-slate-400">
@@ -61,16 +134,13 @@
                 <table class="min-w-full text-xs">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-2 py-2 text-left font-semibold text-slate-600 sticky left-0 bg-slate-50 z-10 min-w-[180px]">Proyecto (CP)</th>
-                            <th class="px-2 py-2 text-right font-semibold text-slate-600">Monto USD</th>
-                            @foreach($statusOfertasData['months'] as $m)
-                                <th class="px-1.5 py-2 text-center font-semibold text-slate-600 whitespace-nowrap">{{ $m }}</th>
-                            @endforeach
+                            <th class="px-2 py-2 text-left font-semibold text-slate-600 sticky left-0 bg-slate-50 z-10 min-w-[220px]">Proyecto (CP)</th>
+                            <th class="px-2 py-2 text-right font-semibold text-slate-600 whitespace-nowrap">Monto USD</th>
                             <th class="px-2 py-2 text-center font-semibold text-slate-600">Actual</th>
+                            <th class="px-2 py-2 w-8"></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach($statusOfertasData['proyectos'] as $p)
+                        @foreach($statusOfertasData['proyectos'] as $pIdx => $p)
                             @php
                                 $currentProb = 0;
                                 for ($i = 6; $i >= 0; $i--) {
@@ -79,43 +149,94 @@
                                 $probColor = $currentProb >= 75 ? 'text-green-600 bg-green-50' : ($currentProb >= 25 ? 'text-amber-600 bg-amber-50' : ($currentProb >= 10 ? 'text-red-600 bg-red-50' : 'text-slate-500 bg-slate-50'));
                                 $probLabel  = $currentProb >= 100 ? 'Contratada' : ($currentProb >= 75 ? 'Probable' : ($currentProb >= 25 ? 'Posible' : ($currentProb >= 10 ? 'Remoto' : 'Perdida')));
                             @endphp
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-2 py-1.5 font-medium text-slate-800 sticky left-0 bg-white z-10 whitespace-nowrap" style="border-right: 1px solid #e2e8f0;">
-                                    <span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style="background-color: {{ $p['borderColor'] }}"></span>
-                                    {{ $p['nombre'] }}
-                                    <span class="text-slate-400 ml-1">{{ $p['cp'] }}</span>
-                                </td>
-                                <td class="px-2 py-1.5 text-right font-mono text-slate-700">${{ number_format($p['monto'] * 1000000, 0, '.', ',') }}</td>
-                                @foreach($p['probs'] as $prob)
-                                    @php
-                                        $cellColor = $prob === null ? 'bg-transparent text-slate-300' : ($prob >= 100 ? 'bg-green-100 text-green-800 font-semibold' : ($prob >= 75 ? 'bg-teal-50 text-teal-700 font-medium' : ($prob >= 25 ? 'bg-amber-50 text-amber-700' : ($prob >= 10 ? 'bg-red-50 text-red-700' : ($prob === 0 ? 'bg-slate-50 text-slate-500 font-medium' : 'bg-transparent text-slate-300')))));
-                                    @endphp
-                                    <td class="px-1.5 py-1.5 text-center {{ $cellColor }}">{{ $prob !== null ? $prob . '%' : '—' }}</td>
-                                @endforeach
-                                <td class="px-2 py-1.5 text-center">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $probColor }}">
-                                        {{ $currentProb }}% · {{ $probLabel }}
-                                    </span>
-                                </td>
-                            </tr>
+                            {{-- One <tbody> per project = shared Alpine scope for both rows --}}
+                            <tbody x-data="{ open: false, chartInited: false }"
+                                x-effect="if (open && !chartInited) { chartInited = true; $nextTick(() => initProjChart({{ $pIdx }})) }"
+                                class="border-b border-slate-100">
+                                {{-- Main row --}}
+                                <tr class="cursor-pointer hover:bg-slate-50 transition-colors"
+                                    @click="open = !open">
+                                    <td class="px-2 py-2 font-medium text-slate-800 sticky left-0 bg-white z-10 whitespace-nowrap" style="border-right: 1px solid #e2e8f0;">
+                                        <span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5 flex-shrink-0 align-middle" style="background-color: {{ $p['borderColor'] }}"></span>
+                                        {{ $p['nombre'] }}
+                                        <span class="text-slate-400 ml-1">{{ $p['cp'] }}</span>
+                                    </td>
+                                    <td class="px-2 py-2 text-right font-mono text-slate-700 whitespace-nowrap">${{ number_format($p['monto'] * 1000000, 0, '.', ',') }}</td>
+                                    <td class="px-2 py-2 text-center">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $probColor }}">
+                                            {{ $currentProb }}% · {{ $probLabel }}
+                                        </span>
+                                    </td>
+                                    <td class="px-2 py-2 text-center text-slate-400 w-8">
+                                        <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                        <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                                    </td>
+                                </tr>
+                                {{-- Expanded detail row --}}
+                                <tr x-show="open" x-cloak class="bg-slate-50/60">
+                                    <td colspan="4" class="px-4 pb-4 pt-3">
+                                        <div class="grid grid-cols-10 gap-3 items-start">
+
+                                            {{-- Months table: 70% --}}
+                                            <div class="col-span-10">
+                                                <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Detalle por mes</p>
+                                                <div class="rounded-lg border border-slate-200 bg-white shadow-inner overflow-x-auto">
+                                                    <table class="text-xs w-full">
+                                                        <thead>
+                                                            <tr class="border-b border-slate-100">
+                                                                @foreach($statusOfertasData['months'] as $m)
+                                                                    <th class="px-2 py-1.5 text-center font-semibold text-slate-500 whitespace-nowrap bg-slate-50">{{ $m }}</th>
+                                                                @endforeach
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                @foreach($p['probs'] as $prob)
+                                                                    @php
+                                                                        $cellColor = $prob === null ? 'bg-transparent text-slate-300' : ($prob >= 100 ? 'bg-green-100 text-green-800 font-semibold' : ($prob >= 75 ? 'bg-teal-50 text-teal-700 font-medium' : ($prob >= 25 ? 'bg-amber-50 text-amber-700' : ($prob >= 10 ? 'bg-red-50 text-red-700' : ($prob === 0 ? 'bg-slate-50 text-slate-500 font-medium' : 'bg-transparent text-slate-300')))));
+                                                                    @endphp
+                                                                    <td class="px-2 py-1.5 text-center {{ $cellColor }} whitespace-nowrap">{{ $prob !== null ? $prob . '%' : '—' }}</td>
+                                                                @endforeach
+                                                            </tr>
+                                                            <tr class="border-t border-slate-100">
+                                                                @foreach($statusOfertasData['months'] as $mIdx => $mLabel)
+                                                                    @php
+                                                                        $projProb = $p['probs'][$mIdx] ?? null;
+                                                                        $projPond = $projProb !== null ? round($p['monto'] * ($projProb / 100), 2) : null;
+                                                                    @endphp
+                                                                    <td class="px-2 py-1 text-center text-indigo-600 font-medium whitespace-nowrap text-[10px]">
+                                                                        {{ $projPond !== null ? '$' . number_format($projPond, 2) . 'M' : '—' }}
+                                                                    </td>
+                                                                @endforeach
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            {{-- Chart: 30% --}}
+                                            {{--<div class="col-span-3">
+                                                <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Evolución probabilidad &amp; ponderado</p>
+                                                <div class="rounded-lg border border-slate-200 bg-white shadow-inner p-3" style="height:176px;">
+                                                    <canvas id="chart-proj-{{ $pIdx }}"></canvas>
+                                                </div>
+                                            </div>--}}
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
                         @endforeach
-                    </tbody>
                     <tfoot class="bg-slate-50 border-t-2 border-slate-200">
                         <tr class="font-semibold text-slate-700">
                             <td class="px-2 py-2 sticky left-0 bg-slate-50 z-10" style="border-right: 1px solid #e2e8f0;">Total cartera activa</td>
-                            <td class="px-2 py-2 text-right">${{ number_format(array_sum(array_column($statusOfertasData['proyectos'], 'monto')) * 1000000, 0, '.', ',') }}</td>
-                            @foreach($statusOfertasData['ponderadoByMonth'] as $idx => $pond)
-                                @php $totalAct = $statusOfertasData['montoByMonth'][$idx]; @endphp
-                                <td class="px-1.5 py-2 text-center text-slate-500">
-                                    <span class="block text-indigo-600 font-medium">${{ number_format($pond, 2) }}M</span>
-                                    <span class="block text-[10px] text-slate-400">de ${{ number_format($totalAct, 1) }}M</span>
-                                </td>
-                            @endforeach
+                            <td class="px-2 py-2 text-right font-mono">${{ number_format(array_sum(array_column($statusOfertasData['proyectos'], 'monto')) * 1000000, 0, '.', ',') }}</td>
                             <td class="px-2 py-2 text-center">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold text-indigo-700 bg-indigo-50">
                                     Car. Ponderada
                                 </span>
                             </td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>

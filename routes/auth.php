@@ -10,9 +10,15 @@ Route::get('/login', [LoginController::class, 'show'])->name('login');
 Route::post('/login', [LoginController::class, 'authenticate'])->name('login.authenticate');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Google OAuth — callback path registered in Google Cloud Console
+Route::get('/login/google/callback', fn (SocialiteController $c) => $c->callback('google'))->name('google.callback');
+
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::get('/auth0/redirect', [Auth0Controller::class, 'redirect'])->name('auth0.redirect');
     Route::get('/auth0/callback', [Auth0Controller::class, 'callback'])->name('auth0.callback');
+
+    // Shortcut: /auth/google → redirect to Google OAuth
+    Route::get('/google', fn (SocialiteController $c) => $c->redirect('google'))->name('google');
 
     Route::get('/{provider}/redirect', [SocialiteController::class, 'redirect'])
         ->whereIn('provider', ['google', 'microsoft', 'apple'])
