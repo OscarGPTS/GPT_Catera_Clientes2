@@ -141,13 +141,13 @@ class ClienteDetalle extends Component
     public function render()
     {
         $proyectos = $this->cliente->proyectos()
-            ->with(['sublinea', 'cotizaciones'])
+            ->with(['sublinea', 'cotizaciones', 'lugar', 'gerenteProyectos', 'elaboro'])
             ->latest('updated_at')
             ->get();
 
-        $estadosOportunidad = ['en_revision', 'cotizando', 'cotizado', 'presentado', 'adjudicado_pendiente', 'adjudicado_firmado'];
+        $estadosTerminados = ['cancelado', 'perdido', 'archivado', 'en_ejecucion', 'en_cierre', 'cerrado'];
 
-        $oportunidades = $proyectos->whereIn('estado', $estadosOportunidad)->values();
+        $oportunidades = $proyectos->whereNotIn('estado', $estadosTerminados)->values();
 
         $facturadoTotal = $proyectos
             ->whereIn('estado', ['cerrado', 'en_cierre', 'adjudicado_firmado', 'en_ejecucion'])

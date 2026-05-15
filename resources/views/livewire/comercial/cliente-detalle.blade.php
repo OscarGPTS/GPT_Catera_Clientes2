@@ -299,11 +299,21 @@
 
         {{-- TAB: OPORTUNIDADES --}}
         <div x-show="tab === 'oportunidades'" x-cloak>
-            <div class="rounded-lg bg-white border border-slate-200 overflow-hidden">
+            <div class="rounded-lg border border-slate-200 bg-white overflow-hidden"
+                 x-data="{
+                     init() {
+                         const top = this.$refs.topBar;
+                         const body = this.$refs.tableWrap;
+                         top.addEventListener('scroll', () => { body.scrollLeft = top.scrollLeft; });
+                         body.addEventListener('scroll', () => { top.scrollLeft = body.scrollLeft; });
+                     }
+                 }">
+
+                {{-- Header --}}
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
                     <div>
                         <h3 class="text-sm font-medium text-slate-900">Oportunidades comerciales</h3>
-                        <p class="mt-0.5 text-xs text-slate-500">{{ $oportunidades->count() }} oportunidad(es) en proceso</p>
+                        <p class="mt-0.5 text-xs text-slate-500">{{ $oportunidades->count() }} oportunidad(es) en pipeline</p>
                     </div>
                     @can('crear oportunidad')
                     <a href="{{ route('oportunidades.create') }}"
@@ -315,53 +325,331 @@
                 </div>
 
                 @if($oportunidades->count() > 0)
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200">
+                {{-- Top scrollbar mirror --}}
+                <div x-ref="topBar" class="overflow-x-scroll border-b border-slate-100" style="height:10px">
+                    <div style="min-width:1922px;height:1px"></div>
+                </div>
+                <div x-ref="tableWrap" class="overflow-x-auto">
+                    {{-- cols: CP 90 | Contacto 130 | Datos 140 | Lugar 110 | Alcance 210 | Oferta 170 | FEnvío 100 | FModif 100 | Emitidas 120 | Hitos 140 | Resp 120 | Status 100 | Arch 110 | ConcAdj 150 | %Adj 90 | %Real 70 | Cartera 120 | Acc 52 = 1922 --}}
+                    <table class="w-full table-fixed divide-y divide-slate-200" style="min-width:1922px">
+                        <colgroup>
+                            <col style="width:90px">
+                            <col style="width:130px">
+                            <col style="width:140px">
+                            <col style="width:110px">
+                            <col style="width:210px">
+                            <col style="width:170px">
+                            <col style="width:100px">
+                            <col style="width:100px">
+                            <col style="width:120px">
+                            <col style="width:140px">
+                            <col style="width:120px">
+                            <col style="width:100px">
+                            <col style="width:110px">  {{-- Arch. Oferta --}}
+                            <col style="width:150px">  {{-- Concepto Adj. --}}
+                            <col style="width:90px">   {{-- % Adj. --}}
+                            <col style="width:70px">   {{-- % Real --}}
+                            <col style="width:120px">  {{-- Cartera Esp. --}}
+                            <col style="width:52px">   {{-- Actions --}}
+                        </colgroup>
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Referencia</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Sublinea</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">Monto cotizado</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Estado</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Cierre planeado</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-0 z-20 bg-slate-50">CP</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[90px] z-20 bg-slate-50">Contacto</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[220px] z-20 bg-slate-50">Datos de Contacto</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[360px] z-20 bg-slate-50 border-r border-slate-300">Lugar</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Alcance</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Oferta</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Fecha Envío</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Fecha Modif.</th>
+                                <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Ofertas Emitidas</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Hitos de Pago</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Responsable</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Arch. Oferta</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Concepto Adj.</th>
+                                <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">% Adj.</th>
+                                <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">% Real</th>
+                                <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Cartera Esp.</th>
+                                <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"></th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100 bg-white">
-                            @foreach($oportunidades as $p)
-                            @php
-                                $monto = $p->cotizaciones->max('precio_venta_final') ?? 0;
-                                $montoFmt = $monto >= 1_000_000
-                                    ? '$' . number_format($monto / 1_000_000, 1) . 'M'
-                                    : ($monto >= 1_000 ? '$' . number_format($monto / 1_000, 0) . 'k' : ($monto > 0 ? '$' . number_format($monto, 0) : '—'));
-                            @endphp
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-5 py-3.5">
-                                    <a href="{{ route('oportunidades.show', $p) }}" class="group">
-                                        <span class="block text-sm font-medium font-mono text-slate-900 group-hover:text-gpt-600 transition-colors">{{ $p->cp_numero ?? $p->dn_numero ?? '—' }}</span>
-                                        @if($p->tech_reference)
-                                            <span class="block text-xs text-slate-400 mt-0.5 truncate max-w-[220px]">{{ $p->tech_reference }}</span>
+
+                        @foreach($oportunidades as $op)
+                        @php
+                            $fechaEnvio = $op->fecha_envio
+                                ?? $op->cotizaciones->where('fecha_emision', '!=', null)->sortByDesc('version')->first()?->fecha_emision;
+                            $fechaModif = $op->fecha_modificacion_oferta;
+                            $ponderacionLabel = match((int) $op->ponderacion) {
+                                10  => 'Remoto',
+                                25  => 'Posible',
+                                50  => 'Probable',
+                                75  => 'Casi Probable',
+                                100 => 'Contratado',
+                                default => $op->ponderacion . '%',
+                            };
+                            $responsableNombre = $op->elaboro?->name ?? $op->gerenteProyectos?->name ?? '—';
+                            $incompleto = ! $fechaEnvio;
+                        @endphp
+                        <tbody x-data="{ expanded: false }" class="divide-y divide-slate-100">
+                            {{-- Main row --}}
+                            <tr class="bg-white hover:bg-slate-50/60 transition-colors cursor-pointer select-none group {{ $incompleto ? 'border-l-2 border-l-amber-400' : '' }}"
+                                @click="expanded = !expanded">
+
+                                {{-- CP + toggle --}}
+                                <td class="px-3 py-3 text-sm font-mono font-medium text-slate-900 sticky left-0 z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
+                                    <div class="flex items-center gap-1.5">
+                                        <svg class="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200"
+                                             :class="{ 'rotate-90': expanded }"
+                                             fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                                        </svg>
+                                        <a href="{{ route('oportunidades.show', $op) }}"
+                                           class="hover:text-gpt-600 transition-colors truncate"
+                                           @click.stop>{{ $op->cp_numero ?? '—' }}</a>
+                                    </div>
+                                </td>
+
+                                {{-- Contacto --}}
+                                <td class="px-3 py-3 text-sm text-slate-600 sticky left-[90px] z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
+                                    <div class="truncate">{{ $op->contacto ?? '—' }}</div>
+                                </td>
+
+                                {{-- Datos de Contacto --}}
+                                <td class="px-3 py-3 text-sm text-slate-600 sticky left-[220px] z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
+                                    <div class="truncate">{{ $op->datos_contacto ?? '—' }}</div>
+                                </td>
+
+                                {{-- Lugar --}}
+                                <td class="px-3 py-3 text-sm text-slate-600 sticky left-[360px] z-10 bg-white group-hover:bg-slate-50/60 border-r border-slate-200 overflow-hidden">
+                                    <div class="truncate">{{ $op->lugar?->nombre ?? '—' }}</div>
+                                </td>
+
+                                {{-- Alcance --}}
+                                <td class="px-3 py-3 text-sm text-slate-600 overflow-hidden">
+                                    <div class="truncate">{{ $op->alcance ?? '—' }}</div>
+                                </td>
+
+                                {{-- Oferta / tech_reference --}}
+                                <td class="px-3 py-3 text-sm text-slate-600 overflow-hidden">
+                                    <div class="truncate">{{ $op->tech_reference ?? '—' }}</div>
+                                </td>
+
+                                {{-- Fecha Envío --}}
+                                <td class="px-3 py-3 text-sm overflow-hidden {{ $fechaEnvio ? 'text-slate-600' : 'text-amber-500' }}">
+                                    <div class="truncate">{{ $fechaEnvio?->format('Y-m-d') ?? '—' }}</div>
+                                </td>
+
+                                {{-- Fecha Modif. --}}
+                                <td class="px-3 py-3 text-sm text-slate-600 overflow-hidden">
+                                    <div class="truncate">{{ $fechaModif?->format('Y-m-d') ?? '—' }}</div>
+                                </td>
+
+                                {{-- Ofertas Emitidas --}}
+                                <td class="px-3 py-3 text-right text-sm font-medium overflow-hidden {{ $op->monto_usd ? 'text-slate-900' : 'text-slate-400' }}">
+                                    <div class="truncate">{{ $op->monto_usd ? '$ ' . number_format($op->monto_usd, 0, '.', ',') : '—' }}</div>
+                                </td>
+
+                                {{-- Hitos de Pago --}}
+                                <td class="px-3 py-3 text-sm text-slate-600 overflow-hidden">
+                                    <div class="truncate">{{ $op->hitos_pago ?? '—' }}</div>
+                                </td>
+
+                                {{-- Responsable --}}
+                                <td class="px-3 py-3 text-sm text-slate-700 overflow-hidden">
+                                    <div class="truncate">{{ $responsableNombre }}</div>
+                                </td>
+
+                                {{-- Status --}}
+                                <td class="px-3 py-3 overflow-hidden">
+                                    <x-badge :status="$op->estado" />
+                                </td>
+
+                                {{-- Arch. Oferta --}}
+                                <td class="px-3 py-3 text-sm overflow-hidden">
+                                    <div class="truncate">
+                                        @if($op->archivo_oferta)
+                                            <a href="{{ Storage::url($op->archivo_oferta) }}" target="_blank"
+                                               class="text-gpt-600 hover:underline text-xs"
+                                               @click.stop>{{ basename($op->archivo_oferta) }}</a>
+                                        @else
+                                            <span class="text-slate-400">—</span>
                                         @endif
-                                    </a>
+                                    </div>
                                 </td>
-                                <td class="px-4 py-3.5">
-                                    @if($p->sublinea)
-                                        <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{{ $p->sublinea->nombre }}</span>
-                                    @else
-                                        <span class="text-xs text-slate-400">—</span>
-                                    @endif
+
+                                {{-- Concepto Adj. --}}
+                                <td class="px-3 py-3 text-sm text-slate-600 overflow-hidden">
+                                    <div class="truncate">{{ $op->concepto_adjudicacion ?? '—' }}</div>
                                 </td>
-                                <td class="px-4 py-3.5 text-right">
-                                    <span class="text-sm font-medium text-slate-900">{{ $montoFmt }}</span>
+
+                                {{-- % Adj. --}}
+                                <td class="px-3 py-3 text-right overflow-hidden">
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                                        {{ $op->ponderacion >= 75 ? 'bg-green-100 text-green-800' : ($op->ponderacion >= 50 ? 'bg-amber-100 text-amber-800' : ($op->ponderacion >= 25 ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700')) }}">
+                                        {{ $op->ponderacion }}%
+                                    </span>
+                                    <span class="block text-[10px] text-slate-400 text-center">{{ $ponderacionLabel }}</span>
                                 </td>
-                                <td class="px-4 py-3.5">
-                                    <x-badge :status="$p->estado" />
+
+                                {{-- % Real --}}
+                                <td class="px-3 py-3 text-right text-sm text-slate-700 overflow-hidden">
+                                    <div class="truncate">{{ $op->porcentaje_adjudicacion ? number_format($op->porcentaje_adjudicacion, 1) . '%' : '—' }}</div>
                                 </td>
-                                <td class="px-4 py-3.5 whitespace-nowrap">
-                                    <span class="text-sm text-slate-600">{{ $p->fecha_fin_planeada?->translatedFormat('d M Y') ?? '—' }}</span>
+
+                                {{-- Cartera Esperada --}}
+                                <td class="px-3 py-3 text-right text-sm font-medium overflow-hidden {{ $op->cartera_esperada ? 'text-slate-900' : 'text-slate-400' }}">
+                                    <div class="truncate">{{ $op->cartera_esperada ? '$ ' . number_format($op->cartera_esperada, 0, '.', ',') : '—' }}</div>
+                                </td>
+
+                                {{-- Actions --}}
+                                <td class="px-3 py-3 text-right relative" x-data="{ open: false }" @click.stop @click.outside="open = false">
+                                    <button @click="open = !open"
+                                            class="inline-flex items-center rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/>
+                                        </svg>
+                                    </button>
+                                    <div x-show="open" x-cloak x-transition
+                                         class="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-slate-200 bg-white shadow-lg">
+                                        <div class="py-1">
+                                            <a href="{{ route('oportunidades.show', $op) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                Ver
+                                            </a>
+                                            <a href="{{ route('proyectos.cotizacion', $op) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                Cotizar
+                                            </a>
+                                            @can('adjudicar proyecto')
+                                            <a href="{{ route('proyectos.adjudicar', $op) }}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                                                Adjudicar
+                                            </a>
+                                            @endcan
+                                            <hr class="my-1 border-slate-100">
+                                            <form method="POST" action="{{ route('oportunidades.cambiar-estado', $op) }}" class="inline"
+                                                  onsubmit="return confirm('¿Cancelar esta oportunidad?')">
+                                                @csrf
+                                                <input type="hidden" name="estado" value="cancelado">
+                                                <button type="submit" class="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    Cancelar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
-                            @endforeach
+
+                            {{-- Expandable detail panel --}}
+                            <tr x-show="expanded" x-cloak
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 -translate-y-1">
+                                <td colspan="18" class="bg-slate-50/80 px-6 py-4 border-b border-slate-200">
+                                    <div class="mb-3 flex items-center justify-between">
+                                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Detalle — {{ $op->cp_numero ?? 'sin CP' }}</span>
+                                        <button @click="expanded = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Contacto</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800 break-words">{{ $op->contacto ?? '—' }}</dd>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Datos de Contacto</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800 break-words whitespace-pre-wrap">{{ $op->datos_contacto ?? '—' }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Lugar</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800">{{ $op->lugar?->nombre ?? '—' }}</dd>
+                                        </div>
+                                        <div class="col-span-3">
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Alcance</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800 break-words whitespace-pre-wrap">{{ $op->alcance ?? '—' }}</dd>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Oferta / Tech. Ref.</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800 break-words">{{ $op->tech_reference ?? '—' }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Fecha Envío</dt>
+                                            <dd class="mt-0.5 text-sm {{ $fechaEnvio ? 'text-slate-800' : 'text-amber-600 font-medium' }}">
+                                                {{ $fechaEnvio?->format('d/m/Y') ?? 'Sin fecha' }}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Fecha Modif. Oferta</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800">{{ $fechaModif?->format('d/m/Y') ?? '—' }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Ofertas Emitidas</dt>
+                                            <dd class="mt-0.5 text-sm font-semibold text-slate-900">
+                                                {{ $op->monto_usd ? '$ ' . number_format($op->monto_usd, 2, '.', ',') : '—' }}
+                                            </dd>
+                                        </div>
+                                        <div class="col-span-3">
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Hitos de Pago</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800 break-words whitespace-pre-wrap">{{ $op->hitos_pago ?? '—' }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Responsable</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800">{{ $responsableNombre }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Status</dt>
+                                            <dd class="mt-0.5"><x-badge :status="$op->estado" /></dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Arch. Oferta</dt>
+                                            <dd class="mt-0.5 text-sm">
+                                                @if($op->archivo_oferta)
+                                                    <a href="{{ Storage::url($op->archivo_oferta) }}" target="_blank"
+                                                       class="inline-flex items-center gap-1 text-gpt-600 hover:underline break-all">
+                                                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"/></svg>
+                                                        {{ basename($op->archivo_oferta) }}
+                                                    </a>
+                                                @else
+                                                    <span class="text-slate-400">—</span>
+                                                @endif
+                                            </dd>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Concepto Adj.</dt>
+                                            <dd class="mt-0.5 text-sm text-slate-800 break-words whitespace-pre-wrap">{{ $op->concepto_adjudicacion ?? '—' }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">% Adjudicación</dt>
+                                            <dd class="mt-1">
+                                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                                    {{ $op->ponderacion >= 75 ? 'bg-green-100 text-green-800' : ($op->ponderacion >= 50 ? 'bg-amber-100 text-amber-800' : ($op->ponderacion >= 25 ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700')) }}">
+                                                    {{ $op->ponderacion }}% — {{ $ponderacionLabel }}
+                                                </span>
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">% Real</dt>
+                                            <dd class="mt-0.5 text-sm font-semibold text-slate-900">
+                                                {{ $op->porcentaje_adjudicacion ? number_format($op->porcentaje_adjudicacion, 1) . '%' : '—' }}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Cartera Esperada</dt>
+                                            <dd class="mt-0.5 text-sm font-semibold text-slate-900">
+                                                {{ $op->cartera_esperada ? '$ ' . number_format($op->cartera_esperada, 2, '.', ',') : '—' }}
+                                            </dd>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
+                        @endforeach
                     </table>
                 </div>
                 @else

@@ -205,7 +205,51 @@ class ImportarOportunidades extends Component
 
         DB::transaction(function () use ($filasValidas) {
             if ($this->modo === 'reemplazar') {
-                Proyecto::whereIn('estado', ['presentado', 'cotizando', 'cotizado', 'en_revision'])->delete();
+                // Desactivar FK checks para poder truncar en cualquier orden
+                DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+                // ── Tablas hijo de proyectos ───────────────────────────────────
+                DB::table('cotizacion_partidas')->truncate();
+                DB::table('cotizaciones')->truncate();
+                DB::table('bitacora_diaria')->truncate();
+                DB::table('bom_boe_items')->truncate();
+                DB::table('cartas_finiquito')->truncate();
+                DB::table('cierres_mensuales')->truncate();
+                DB::table('cierres_secciones')->truncate();
+                DB::table('cierres_lineas')->truncate();
+                DB::table('cronograma_actividades')->truncate();
+                DB::table('cronogramas')->truncate();
+                DB::table('kick_off_meetings')->truncate();
+                DB::table('libro_seccion_checklist')->truncate();
+                DB::table('libro_secciones')->truncate();
+                DB::table('libro_documentos')->truncate();
+                DB::table('libros_proyecto')->truncate();
+                DB::table('listados_suministros_items')->truncate();
+                DB::table('listados_suministros')->truncate();
+                DB::table('minuta_entrega_participantes')->truncate();
+                DB::table('minutas_entrega')->truncate();
+                DB::table('post_mortem')->truncate();
+                DB::table('asignaciones_personas')->truncate();
+                DB::table('proyecto_asignaciones')->truncate();
+                DB::table('proyecto_eventos')->truncate();
+                DB::table('reportes_semanales')->truncate();
+                DB::table('solicitudes_internas_items')->truncate();
+                DB::table('solicitudes_internas')->truncate();
+                DB::table('viaticos_partidas')->truncate();
+                DB::table('viaticos_personal')->truncate();
+                DB::table('solicitudes_viaticos')->truncate();
+
+                // Movimientos bancarios: solo nullificar la referencia, no borrar registros financieros
+                DB::table('movimientos_bancarios')->update(['conciliado_con_proyecto_id' => null]);
+
+                DB::table('proyectos')->truncate();
+
+                // ── Tablas hijo de clientes ────────────────────────────────────
+                DB::table('contactos_cliente')->truncate();
+                DB::table('tech_references')->truncate();
+                DB::table('clientes')->truncate();
+
+                DB::statement('SET FOREIGN_KEY_CHECKS=1');
             }
 
             foreach ($filasValidas as $fila) {
