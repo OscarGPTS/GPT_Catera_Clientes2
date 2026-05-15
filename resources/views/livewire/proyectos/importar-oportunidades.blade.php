@@ -41,7 +41,7 @@
                         <div x-data="{ dragging: false }"
                              @dragover.prevent="dragging = true"
                              @dragleave.prevent="dragging = false"
-                             @drop.prevent="dragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change'))"
+                             @drop.prevent="dragging = false; if ($event.dataTransfer.files.length) { $wire.upload('archivo', $event.dataTransfer.files[0]) }"
                              :class="dragging ? 'border-gpt-500 bg-gpt-50' : 'border-slate-300 bg-slate-50 hover:border-slate-400'"
                              class="relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors">
 

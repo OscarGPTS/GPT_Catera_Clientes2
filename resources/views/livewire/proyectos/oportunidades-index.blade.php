@@ -160,8 +160,20 @@
     </div>
 
     {{-- Data table --}}
-    <div class="mt-6 rounded-lg border border-slate-200 bg-white overflow-hidden">
-        <div class="overflow-x-auto">
+    <div class="mt-6 rounded-lg border border-slate-200 bg-white overflow-hidden"
+         x-data="{
+             init() {
+                 const top = this.$refs.topBar;
+                 const body = this.$refs.tableWrap;
+                 top.addEventListener('scroll', () => { body.scrollLeft = top.scrollLeft; });
+                 body.addEventListener('scroll', () => { top.scrollLeft = body.scrollLeft; });
+             }
+         }">
+        {{-- Top scrollbar mirror (synced with table) --}}
+        <div x-ref="topBar" class="overflow-x-scroll border-b border-slate-100" style="height:10px">
+            <div style="min-width:2082px;height:1px"></div>
+        </div>
+        <div x-ref="tableWrap" class="overflow-x-auto">
             {{-- ── width budget: 90+160+130+140+110+210+170+100+100+120+140+120+100+110+150+90+70+120+52 = 2082px ── --}}
             <table class="w-full table-fixed divide-y divide-slate-200" style="min-width:2082px">
                 <colgroup>
@@ -187,11 +199,11 @@
                 </colgroup>
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-0 bg-slate-50">CP</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Cliente</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Contacto</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Datos de Contacto</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Lugar</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-0 z-20 bg-slate-50">CP</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[90px] z-20 bg-slate-50">Cliente</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[250px] z-20 bg-slate-50">Contacto</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[380px] z-20 bg-slate-50">Datos de Contacto</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[520px] z-20 bg-slate-50 border-r border-slate-300">Lugar</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Alcance</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Oferta</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Fecha Envío</th>
@@ -231,11 +243,11 @@
                     <tbody x-data="{ expanded: false }" class="divide-y divide-slate-100">
 
                         {{-- ── Main data row ──────────────────────────────────── --}}
-                        <tr class="bg-white hover:bg-slate-50/60 transition-colors cursor-pointer select-none {{ $incompleto ? 'border-l-2 border-l-amber-400' : '' }}"
+                        <tr class="bg-white hover:bg-slate-50/60 transition-colors cursor-pointer select-none group {{ $incompleto ? 'border-l-2 border-l-amber-400' : '' }}"
                             @click="expanded = !expanded">
 
                             {{-- CP + chevron toggle --}}
-                            <td class="px-3 py-3 text-sm font-mono font-medium text-slate-900 sticky left-0 bg-white overflow-hidden">
+                            <td class="px-3 py-3 text-sm font-mono font-medium text-slate-900 sticky left-0 z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
                                 <div class="flex items-center gap-1.5">
                                     <svg class="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200"
                                          :class="{ 'rotate-90': expanded }"
@@ -249,7 +261,7 @@
                             </td>
 
                             {{-- Cliente --}}
-                            <td class="px-3 py-3 text-sm text-slate-900 overflow-hidden">
+                            <td class="px-3 py-3 text-sm text-slate-900 sticky left-[90px] z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
                                 @if($op->cliente_id)
                                     <div class="truncate">{{ $clienteNombre }}</div>
                                 @else
@@ -261,17 +273,17 @@
                             </td>
 
                             {{-- Contacto --}}
-                            <td class="px-3 py-3 text-sm text-slate-600 overflow-hidden">
+                            <td class="px-3 py-3 text-sm text-slate-600 sticky left-[250px] z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
                                 <div class="truncate">{{ $op->contacto ?? '—' }}</div>
                             </td>
 
                             {{-- Datos de Contacto --}}
-                            <td class="px-3 py-3 text-sm text-slate-600 overflow-hidden">
+                            <td class="px-3 py-3 text-sm text-slate-600 sticky left-[380px] z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
                                 <div class="truncate">{{ $op->datos_contacto ?? '—' }}</div>
                             </td>
 
                             {{-- Lugar --}}
-                            <td class="px-3 py-3 text-sm text-slate-600 overflow-hidden">
+                            <td class="px-3 py-3 text-sm text-slate-600 sticky left-[520px] z-10 bg-white group-hover:bg-slate-50/60 border-r border-slate-200 overflow-hidden">
                                 <div class="truncate">{{ $op->lugar?->nombre ?? '—' }}</div>
                             </td>
 

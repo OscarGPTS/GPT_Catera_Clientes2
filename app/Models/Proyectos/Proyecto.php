@@ -28,6 +28,7 @@ class Proyecto extends Model
         'concepto_adjudicacion', 'porcentaje_adjudicacion', 'cartera_esperada',
         // Campos de proyecto (post-adjudicación)
         'sublinea_id', 'usuario_final', 'sector',
+        'plazo_estimado',
         'fecha_inicio_planeada', 'fecha_fin_planeada',
         'metodo_distribucion_plurianual',
         'director_dn_id', 'gerente_proyectos_id', 'gerente_operaciones_id',

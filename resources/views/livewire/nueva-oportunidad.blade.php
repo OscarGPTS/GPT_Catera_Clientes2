@@ -59,12 +59,32 @@
                     @error('sublinea_id') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-slate-700">Lugar</label>
+                    <select wire:model="lugar_id" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
+                        <option value="">Seleccionar lugar</option>
+                        @foreach($lugares as $l)
+                            <option value="{{ $l->id }}">{{ $l->nombre }} ({{ $l->tipo }})</option>
+                        @endforeach
+                    </select>
+                    @error('lugar_id') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-slate-700">Usuario final</label>
                     <input type="text" wire:model="usuario_final" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Sector</label>
                     <input type="text" wire:model="sector" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Contacto</label>
+                    <input type="text" wire:model="contacto" placeholder="Nombre del contacto" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
+                    @error('contacto') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700">Datos de contacto</label>
+                    <textarea wire:model="datos_contacto" rows="2" placeholder="Email, teléfono, cargo..." class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200"></textarea>
+                    @error('datos_contacto') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -73,13 +93,36 @@
             <h3 class="mb-4 text-lg font-medium text-slate-900">Resumen ejecutivo</h3>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700">Alcance del proyecto</label>
+                    <label class="block text-sm font-medium text-slate-700">Alcance del proyecto <span class="text-gpt-red-600">*</span></label>
                     <textarea wire:model="alcance" rows="5" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200" placeholder="Describe el alcance del proyecto..."></textarea>
                     @error('alcance') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700">Plazo estimado</label>
-                    <input type="text" wire:model="plazo_estimado" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200" placeholder="Ej: 3 meses">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Monto estimado (USD)</label>
+                        <input type="number" wire:model="monto_usd" min="0" step="0.01" placeholder="0.00" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
+                        @error('monto_usd') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Ponderación</label>
+                        <select wire:model="ponderacion" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
+                            <option value="10">10 — Remoto</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="40">40</option>
+                            <option value="50">50</option>
+                            <option value="60">60</option>
+                            <option value="70">70</option>
+                            <option value="80">80</option>
+                            <option value="90">90</option>
+                            <option value="100">100 — Contratado</option>
+                        </select>
+                        @error('ponderacion') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Plazo estimado</label>
+                        <input type="text" wire:model="plazo_estimado" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200" placeholder="Ej: 3 meses">
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
