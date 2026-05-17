@@ -99,7 +99,8 @@ class OportunidadesIndex extends Component
         }
 
         if ($this->soloMios) {
-            $query->where('gerente_proyectos_id', auth()->id());
+            $query->whereHas('miembros', fn($q) => $q->where('user_id', auth()->id())
+                ->where('rol', 'gerente_proyectos'));
         }
 
         return $query->orderByRaw('fecha_envio IS NULL, fecha_envio DESC')->paginate($this->perPage);

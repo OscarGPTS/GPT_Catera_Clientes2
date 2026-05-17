@@ -1,4 +1,46 @@
 <div>
+    {{-- DM creation modal --}}
+    @if($showNewDm)
+    <div class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50" wire:click.self="$set('showNewDm', false)">
+        <div class="w-72 rounded-xl bg-white shadow-2xl" wire:click.stop>
+            <div class="border-b border-slate-200 px-3 py-2.5">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-[13px] font-semibold text-slate-800">Nuevo mensaje directo</h3>
+                    <button wire:click="$set('showNewDm', false)" class="text-slate-400 hover:text-slate-600">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="px-3 py-2.5">
+                <div class="relative">
+                    <svg class="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input
+                        wire:model.live.debounce.300ms="dmSearch"
+                        wire:change="searchDmUsers"
+                        type="text"
+                        placeholder="Buscar persona..."
+                        class="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-7 pr-3 text-[12px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:outline-none"
+                        autofocus
+                    >
+                </div>
+                <div class="mt-2 max-h-40 overflow-y-auto">
+                    @foreach($dmUsers as $user)
+                    <button wire:click="startDm({{ $user['id'] }})" class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-gpt-50 transition-colors">
+                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gpt-600 text-[8px] font-semibold text-white">
+                            {{ strtoupper(substr($user['name'], 0, 2)) }}
+                        </span>
+                        <span class="text-[12px] font-medium text-slate-700">{{ $user['name'] }}</span>
+                    </button>
+                    @endforeach
+                    @if(strlen($dmSearch) >= 2 && empty($dmUsers))
+                    <p class="py-2 text-center text-[11px] text-slate-400">Sin resultados</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Overlay backdrop --}}
     <div
         class="fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 {{ $open ? 'bg-slate-900/40 opacity-100' : 'bg-slate-900/0 opacity-0 pointer-events-none' }}"
@@ -65,8 +107,20 @@
                 <div
                     class="flex-1 overflow-y-auto px-3 py-2 space-y-1"
                     id="chat-messages-drawer"
-                    wire:init="$nextTick(() => { const el = document.getElementById('chat-messages-drawer'); if (el) el.scrollTop = el.scrollHeight; })"
+                    x-data
+                    x-init="$nextTick(() => { $el.scrollTop = $el.scrollHeight; })"
                 >
+                    {{-- Load more button --}}
+                    @if($hasMoreMessages)
+                    <div class="flex justify-center py-1 mb-1">
+                        <button
+                            wire:click="loadMoreMessages"
+                            class="text-[11px] text-gpt-600 hover:text-gpt-700 hover:underline"
+                        >
+                            Cargar mensajes anteriores
+                        </button>
+                    </div>
+                    @endif
                     @php
                         $lastDate = null;
                         $lastUserId = null;
@@ -81,6 +135,8 @@
                             $isGrouped = !$showDate && $lastUserId === $msg['user_id'] && $lastTimestamp && (now()->parse($msg['created_at'])->diffInMinutes($lastTimestamp) < 5);
                             $lastUserId = $msg['user_id'];
                             $lastTimestamp = now()->parse($msg['created_at']);
+                            $canEdit = $msg['is_mine'] || auth()->user()->esAdmin();
+                            $isDeleted = $msg['contenido'] === 'Este mensaje fue eliminado';
                         @endphp
 
                         @if($showDate)
@@ -98,6 +154,19 @@
 
                         @if($isGrouped)
                         <div class="group ml-7">
+                            @if($editingMessageId === $msg['id'])
+                            <div class="mb-1">
+                                <form wire:submit="updateMessage" class="flex items-end gap-1">
+                                    <div class="flex-1">
+                                        <textarea wire:model.live="editingContent" rows="2" class="w-full resize-none rounded-md border border-gpt-600 bg-white px-2 py-1.5 text-[13px] text-slate-900 focus:outline-none focus:ring-1 focus:ring-gpt-600">{{ $editingContent }}</textarea>
+                                    </div>
+                                    <button type="submit" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gpt-600 text-white text-xs hover:bg-gpt-700">✓</button>
+                                    <button type="button" wire:click="cancelEdit" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-slate-300 text-slate-500 text-xs hover:bg-slate-50">✕</button>
+                                </form>
+                            </div>
+                            @elseif($isDeleted)
+                            <p class="text-[12px] italic text-slate-400 px-2.5 py-1">Este mensaje fue eliminado</p>
+                            @else
                             <div class="flex items-start gap-2 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
                                 <div class="max-w-[85%]">
                                     <div class="rounded-lg px-2.5 py-1 {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-slate-100 text-slate-700' }}">
@@ -134,13 +203,49 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
                             <div class="ml-7 mt-0.5 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                @if(!$isDeleted)
                                 <span class="text-[10px] text-slate-400">{{ $msg['created_at'] }}</span>
                                 <button wire:click="$set('replyingTo', {{ $msg['id'] }})" class="text-[10px] text-slate-400 hover:text-gpt-600">Responder</button>
+                                @if($canEdit)
+                                <button wire:click="editMessage({{ $msg['id'] }})" class="text-[10px] text-slate-400 hover:text-gpt-600">Editar</button>
+                                <button wire:click="deleteMessage({{ $msg['id'] }})" wire:confirm="Eliminar este mensaje?" class="text-[10px] text-slate-400 hover:text-red-500">Eliminar</button>
+                                @endif
+                                @endif
                             </div>
                         </div>
                         @else
                         <div class="group mt-3 first:mt-0">
+                            @if($editingMessageId === $msg['id'])
+                            <div class="flex items-start gap-2 mb-1">
+                                <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-slate-200 text-slate-600' }} text-[9px] font-semibold">
+                                    {{ $msg['user_avatar'] }}
+                                </span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[11px] font-semibold {{ $msg['is_mine'] ? 'text-gpt-600' : 'text-slate-700' }}">{{ $msg['user_name'] }}</span>
+                                    </div>
+                                    <form wire:submit="updateMessage" class="mt-0.5 flex items-end gap-1">
+                                        <div class="flex-1">
+                                            <textarea wire:model.live="editingContent" rows="2" class="w-full resize-none rounded-md border border-gpt-600 bg-white px-2 py-1.5 text-[13px] text-slate-900 focus:outline-none focus:ring-1 focus:ring-gpt-600">{{ $editingContent }}</textarea>
+                                        </div>
+                                        <button type="submit" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gpt-600 text-white text-xs hover:bg-gpt-700">✓</button>
+                                        <button type="button" wire:click="cancelEdit" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-slate-300 text-slate-500 text-xs hover:bg-slate-50">✕</button>
+                                    </form>
+                                </div>
+                            </div>
+                            @elseif($isDeleted)
+                            <div class="flex items-start gap-2">
+                                <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-slate-200 text-slate-600' }} text-[9px] font-semibold">
+                                    {{ $msg['user_avatar'] }}
+                                </span>
+                                <div>
+                                    <span class="text-[11px] font-semibold {{ $msg['is_mine'] ? 'text-gpt-600' : 'text-slate-700' }}">{{ $msg['user_name'] }}</span>
+                                    <p class="text-[12px] italic text-slate-400">Este mensaje fue eliminado</p>
+                                </div>
+                            </div>
+                            @else
                             <div class="flex items-start gap-2 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
                                 <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-slate-200 text-slate-600' }} text-[9px] font-semibold">
                                     {{ $msg['user_avatar'] }}
@@ -195,8 +300,15 @@
                                     @endif
                                 </div>
                             </div>
+                            @endif
                             <div class="ml-8 mt-0.5 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                @if(!$isDeleted)
                                 <button wire:click="$set('replyingTo', {{ $msg['id'] }})" class="text-[10px] text-slate-400 hover:text-gpt-600">Responder</button>
+                                @if($canEdit)
+                                <button wire:click="editMessage({{ $msg['id'] }})" class="text-[10px] text-slate-400 hover:text-gpt-600">Editar</button>
+                                <button wire:click="deleteMessage({{ $msg['id'] }})" wire:confirm="Eliminar este mensaje?" class="text-[10px] text-slate-400 hover:text-red-500">Eliminar</button>
+                                @endif
+                                @endif
                             </div>
                         </div>
                         @endif
@@ -255,7 +367,7 @@
                 @endif
 
                 {{-- Input --}}
-                <div class="border-t border-slate-200 px-3 py-2">
+                <div class="relative border-t border-slate-200 px-3 py-2">
                     @if(count($attachments))
                     <div class="mb-2 flex flex-wrap gap-2">
                         @foreach($attachments as $i => $file)
@@ -275,19 +387,57 @@
                         @endforeach
                     </div>
                     @endif
-                    <form wire:submit="sendMessage" class="flex items-end gap-2">
+                    <form wire:submit="sendMessage" class="flex items-end gap-2" x-data="{ dragOver: false }"
+                         x-on:dragover.prevent="dragOver = true"
+                         x-on:dragleave.prevent="dragOver = false"
+                         x-on:drop.prevent="dragOver = false; $el.closest('form').querySelector('input[type=file]').files = $event.dataTransfer.files; $el.closest('form').querySelector('input[type=file]').dispatchEvent(new Event('change'))"
+                    >
+                        <div x-show="dragOver" x-transition class="absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-gpt-500 bg-gpt-50/80 pointer-events-none">
+                            <div class="text-center">
+                                <svg class="mx-auto h-6 w-6 text-gpt-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                                <p class="mt-0.5 text-[11px] font-medium text-gpt-700">Soltar archivos</p>
+                            </div>
+                        </div>
                         <label class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                             <input type="file" wire:model="attachments" multiple id="chat-file-input-drawer" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
                         </label>
-                        <div class="flex-1">
+                        <div class="flex-1" x-data="mentionAutocomplete()">
                             <textarea
+                                id="chat-input-drawer"
+                                x-ref="chatInput"
                                 wire:model.live.debounce.200ms="newMessage"
                                 wire:keydown.enter.prevent="sendMessage"
+                                x-on:input="handleInput($event)"
+                                x-on:keydown.down.prevent="navigateDown"
+                                x-on:keydown.up.prevent="navigateUp"
+                                x-on:keydown.enter.prevent="selectMention($event)"
                                 rows="1"
                                 placeholder="Escribe un mensaje..."
                                 class="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gpt-200 transition-colors"
                             ></textarea>
+                            <div
+                                x-show="showDropdown && members.length > 0"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute bottom-full left-0 mb-1 z-50 w-48 rounded-lg border border-slate-200 bg-white shadow-lg max-h-32 overflow-y-auto"
+                                @click.outside="showDropdown = false"
+                            >
+                                <template x-for="(member, idx) in members" :key="member.id">
+                                    <button
+                                        x-on:click="insertMention(member.name)"
+                                        :class="idx === selectedIndex ? 'bg-gpt-50 text-gpt-700' : 'text-slate-700 hover:bg-slate-50'"
+                                        class="flex w-full items-center gap-1.5 px-2.5 py-1 text-[11px]"
+                                    >
+                                        <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gpt-600 text-[7px] font-semibold text-white" x-text="member.name.substring(0, 2).toUpperCase()"></span>
+                                        <span x-text="member.name"></span>
+                                    </button>
+                                </template>
+                            </div>
                         </div>
                         <button
                             type="submit"
@@ -304,6 +454,9 @@
                 <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                     <h2 class="text-sm font-semibold text-slate-800">Chat</h2>
                     <div class="flex items-center gap-1">
+                        <button wire:click="$set('showNewDm', true)" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors" title="Nuevo mensaje directo">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        </button>
                         <a href="/chat" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors" title="Abrir chat completo">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/></svg>
                         </a>
@@ -361,10 +514,22 @@
     </div>
 
     <script>
-        window.addEventListener('scroll-chat-to-bottom', () => {
-            requestAnimationFrame(() => {
-                const el = document.getElementById('chat-messages-drawer');
-                if (el) el.scrollTop = el.scrollHeight;
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('scroll-chat-to-bottom', () => {
+                requestAnimationFrame(() => {
+                    const el = document.getElementById('chat-messages-drawer') || document.getElementById('chat-messages-page');
+                    if (el) el.scrollTop = el.scrollHeight;
+                });
+            });
+
+            Livewire.on('preserve-scroll-position', () => {
+                const el = document.getElementById('chat-messages-drawer') || document.getElementById('chat-messages-page');
+                if (el) {
+                    const prevHeight = el.scrollHeight;
+                    requestAnimationFrame(() => {
+                        el.scrollTop = el.scrollHeight - prevHeight + el.clientHeight;
+                    });
+                }
             });
         });
     </script>

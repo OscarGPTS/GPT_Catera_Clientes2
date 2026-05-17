@@ -26,10 +26,11 @@ class AdjudicacionController extends Controller
             'fecha_inicio_planeada' => $validated['fecha_inicio_planeada'],
             'fecha_fin_planeada' => $validated['fecha_fin_planeada'],
             'metodo_distribucion_plurianual' => $validated['metodo_distribucion_plurianual'],
-            'gerente_proyectos_id' => $validated['gerente_proyectos_id'],
-            'gerente_operaciones_id' => $validated['gerente_operaciones_id'],
             'notas' => ($proyecto->notas ? $proyecto->notas . "\n" : '') . 'Adjudicado: ' . ($validated['notas'] ?? ''),
         ]);
+
+        $proyecto->setMiembroPorRol((int) $validated['gerente_proyectos_id'], 'gerente_proyectos');
+        $proyecto->setMiembroPorRol($validated['gerente_operaciones_id'] ? (int)$validated['gerente_operaciones_id'] : null, 'gerente_operaciones');
 
         $proyecto->eventos()->create([
             'tipo' => 'adjudicado',

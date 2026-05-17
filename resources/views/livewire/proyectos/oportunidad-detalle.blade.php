@@ -43,6 +43,11 @@
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                 Cambiar estado
             </button>
+            <button type="button" wire:click="abrirPonderacionModal"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                Ponderación
+            </button>
             <a href="{{ route('proyectos.cotizacion', $proyecto) }}" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Cotización
@@ -611,6 +616,91 @@
                         <button type="submit" class="rounded-lg bg-gpt-600 px-4 py-2 text-sm font-medium text-white hover:bg-gpt-700">Guardar</button>
                     </form>
                 </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ───────────────────────── Modal: actualizar ponderación ───────────────────────── --}}
+    @if($showPonderacionModal)
+        @php
+            $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            $historialMostrar = $proyecto->historialPonderacion()
+                ->with('ponderacion', 'user')
+                ->orderByDesc('anio')->orderByDesc('mes')
+                ->limit(8)->get();
+        @endphp
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50" wire:click.self="$set('showPonderacionModal', false)">
+            <div class="w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-white shadow-2xl">
+                <div class="flex items-start justify-between border-b border-slate-100 px-6 py-4">
+                    <div>
+                        <h3 class="text-base font-semibold text-slate-900">Actualizar ponderación</h3>
+                        <p class="mt-0.5 text-xs text-slate-500">Registra un snapshot mensual para esta oportunidad.</p>
+                    </div>
+                    <button type="button" wire:click="$set('showPonderacionModal', false)" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <form wire:submit.prevent="guardarPonderacion" class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Ponderación <span class="text-red-500">*</span></label>
+                        <select wire:model="pond_ponderacion_id" class="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-gpt-500 focus:outline-none focus:ring-1 focus:ring-gpt-500">
+                            <option value="">— selecciona —</option>
+                            @foreach($ponderacionesCatalogo as $p)
+                                <option value="{{ $p->id }}">{{ $p->concepto }} ({{ $p->porcentaje }}%)</option>
+                            @endforeach
+                        </select>
+                        @error('pond_ponderacion_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Mes <span class="text-red-500">*</span></label>
+                            <select wire:model="pond_mes" class="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-gpt-500 focus:outline-none focus:ring-1 focus:ring-gpt-500">
+                                @foreach($meses as $idx => $nombreMes)
+                                    <option value="{{ $idx + 1 }}">{{ $nombreMes }}</option>
+                                @endforeach
+                            </select>
+                            @error('pond_mes') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Año <span class="text-red-500">*</span></label>
+                            <input type="number" wire:model="pond_anio" min="2020" max="2099" class="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-gpt-500 focus:outline-none focus:ring-1 focus:ring-gpt-500">
+                            @error('pond_anio') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Notas (opcional)</label>
+                        <textarea wire:model="pond_notas" rows="2" class="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-gpt-500 focus:outline-none focus:ring-1 focus:ring-gpt-500" placeholder="Motivo del cambio, contexto, etc."></textarea>
+                        @error('pond_notas') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
+                        <svg class="h-4 w-4 shrink-0 mt-0.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                        Si ya existe un snapshot para el mes/año seleccionado, se actualizará en lugar de duplicar.
+                    </div>
+
+                    @if($historialMostrar->isNotEmpty())
+                        <div class="border-t border-slate-100 pt-4">
+                            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">Historial reciente</p>
+                            <div class="space-y-1.5 max-h-40 overflow-y-auto">
+                                @foreach($historialMostrar as $h)
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-slate-600">{{ $meses[$h->mes - 1] ?? '?' }} {{ $h->anio }}</span>
+                                        <span class="font-medium text-slate-800">{{ $h->ponderacion->concepto }} ({{ $h->ponderacion->porcentaje }}%)</span>
+                                        <span class="text-slate-400 text-[10px]">{{ $h->user?->name ?? 'Sistema' }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="flex justify-end gap-2 border-t border-slate-100 pt-4">
+                        <button type="button" wire:click="$set('showPonderacionModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
+                        <button type="submit" class="rounded-lg bg-gpt-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gpt-700">Guardar snapshot</button>
+                    </div>
+                </form>
             </div>
         </div>
     @endif

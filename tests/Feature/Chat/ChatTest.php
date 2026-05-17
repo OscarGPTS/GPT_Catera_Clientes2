@@ -48,17 +48,25 @@ class ChatTest extends TestCase
         ]);
     }
 
+    private function createChannelWithMembers(string $tipo = 'privado', string $nombre = 'Test Channel', array $memberIds = []): ChatCanal
+    {
+        $canal = ChatCanal::create([
+            'tipo' => $tipo,
+            'nombre' => $nombre,
+            'creado_por_id' => $memberIds[0] ?? $this->user1->id,
+        ]);
+        foreach ($memberIds as $uid) {
+            $canal->miembros()->create(['user_id' => $uid]);
+        }
+        return $canal;
+    }
+
+    // ---- Channel CRUD ----
+
     /** @test */
     public function can_create_chat_channel()
     {
-        $canal = ChatCanal::create([
-            'tipo' => 'privado',
-            'nombre' => 'Chat privado',
-            'creado_por_id' => $this->user1->id,
-        ]);
-
-        $canal->miembros()->create(['user_id' => $this->user1->id]);
-        $canal->miembros()->create(['user_id' => $this->user2->id]);
+        $canal = $this->createChannelWithMembers('privado', 'Chat privado', [$this->user1->id, $this->user2->id]);
 
         $this->assertDatabaseHas('chat_canales', ['nombre' => 'Chat privado']);
         $this->assertEquals(2, $canal->miembros()->count());
@@ -67,8 +75,7 @@ class ChatTest extends TestCase
     /** @test */
     public function can_send_message_to_channel()
     {
-        $canal = ChatCanal::create(['tipo' => 'privado', 'nombre' => 'Test']);
-        $canal->miembros()->create(['user_id' => $this->user1->id]);
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
 
         $mensaje = ChatMensaje::create([
             'canal_id' => $canal->id,
@@ -83,8 +90,7 @@ class ChatTest extends TestCase
     /** @test */
     public function can_create_mention()
     {
-        $canal = ChatCanal::create(['tipo' => 'privado', 'nombre' => 'Test']);
-        $canal->miembros()->create(['user_id' => $this->user1->id]);
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
 
         $mensaje = ChatMensaje::create([
             'canal_id' => $canal->id,
@@ -101,8 +107,7 @@ class ChatTest extends TestCase
     /** @test */
     public function can_mark_channel_as_read()
     {
-        $canal = ChatCanal::create(['tipo' => 'privado', 'nombre' => 'Test']);
-        $canal->miembros()->create(['user_id' => $this->user1->id]);
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
 
         $msg = ChatMensaje::create([
             'canal_id' => $canal->id,
@@ -124,11 +129,8 @@ class ChatTest extends TestCase
     /** @test */
     public function user_can_see_own_channels()
     {
-        $canal = ChatCanal::create(['tipo' => 'privado', 'nombre' => 'Canal 1']);
-        $canal->miembros()->create(['user_id' => $this->user1->id]);
-
-        $canal2 = ChatCanal::create(['tipo' => 'privado', 'nombre' => 'Canal 2']);
-        $canal2->miembros()->create(['user_id' => $this->user2->id]);
+        $canal = $this->createChannelWithMembers('privado', 'Canal 1', [$this->user1->id]);
+        $canal2 = $this->createChannelWithMembers('privado', 'Canal 2', [$this->user2->id]);
 
         $this->assertEquals(1, $this->user1->chatCanales()->count());
         $this->assertEquals(1, $this->user2->chatCanales()->count());
@@ -137,15 +139,13 @@ class ChatTest extends TestCase
     /** @test */
     public function admin_can_see_all_channels()
     {
-        $canal = ChatCanal::create(['tipo' => 'privado', 'nombre' => 'Canal A']);
-        $canal->miembros()->create(['user_id' => $this->user1->id]);
+        $this->createChannelWithMembers('privado', 'Canal A', [$this->user1->id]);
+        $this->createChannelWithMembers('privado', 'Canal B', [$this->user2->id]);
 
-        $canal2 = ChatCanal::create(['tipo' => 'privado', 'nombre' => 'Canal B']);
-        $canal2->miembros()->create(['user_id' => $this->user2->id]);
-
-        // Admin bypass via policy, not via query
         $this->assertTrue($this->admin->esAdmin());
     }
+
+    // ---- Page Access ----
 
     /** @test */
     public function chat_page_requires_auth()
@@ -162,9 +162,10 @@ class ChatTest extends TestCase
     }
 
     /** @test */
-    public function notifications_page_renders_for_authenticated_user()
+    public function chat_page_with_canal_query_param()
     {
-        $response = $this->actingAs($this->user1)->get('/notificaciones');
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $response = $this->actingAs($this->user1)->get('/chat?canal=' . $canal->id);
         $response->assertStatus(200);
     }
 
@@ -174,6 +175,134 @@ class ChatTest extends TestCase
         $response = $this->actingAs($this->admin)->get('/admin/chat');
         $response->assertStatus(200);
     }
+
+    /** @test */
+    public function notifications_page_renders_for_authenticated_user()
+    {
+        $response = $this->actingAs($this->user1)->get('/notificaciones');
+        $response->assertStatus(200);
+    }
+
+    // ---- ChatCanalPolicy ----
+
+    /** @test */
+    public function member_can_view_channel()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $this->assertTrue($this->user1->can('view', $canal));
+    }
+
+    /** @test */
+    public function non_member_cannot_view_channel()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $this->assertFalse($this->user2->can('view', $canal));
+    }
+
+    /** @test */
+    public function admin_can_view_any_channel()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $this->assertTrue($this->admin->can('view', $canal));
+    }
+
+    /** @test */
+    public function creator_can_update_channel()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $this->assertTrue($this->user1->can('update', $canal));
+    }
+
+    /** @test */
+    public function non_creator_cannot_update_channel()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $this->assertFalse($this->user2->can('update', $canal));
+    }
+
+    /** @test */
+    public function admin_can_update_any_channel()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $this->assertTrue($this->admin->can('update', $canal));
+    }
+
+    /** @test */
+    public function only_admin_can_delete_channel()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $this->assertFalse($this->user1->can('delete', $canal));
+        $this->assertTrue($this->admin->can('delete', $canal));
+    }
+
+    // ---- ChatMensajePolicy ----
+
+    /** @test */
+    public function message_owner_can_update_message()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $msg = ChatMensaje::create([
+            'canal_id' => $canal->id,
+            'user_id' => $this->user1->id,
+            'contenido' => 'Original',
+        ]);
+
+        $this->assertTrue($this->user1->can('update', $msg));
+    }
+
+    /** @test */
+    public function non_owner_cannot_update_message()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $msg = ChatMensaje::create([
+            'canal_id' => $canal->id,
+            'user_id' => $this->user1->id,
+            'contenido' => 'Original',
+        ]);
+
+        $this->assertFalse($this->user2->can('update', $msg));
+    }
+
+    /** @test */
+    public function admin_can_update_any_message()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $msg = ChatMensaje::create([
+            'canal_id' => $canal->id,
+            'user_id' => $this->user1->id,
+            'contenido' => 'Original',
+        ]);
+
+        $this->assertTrue($this->admin->can('update', $msg));
+    }
+
+    /** @test */
+    public function message_owner_can_delete_message()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $msg = ChatMensaje::create([
+            'canal_id' => $canal->id,
+            'user_id' => $this->user1->id,
+            'contenido' => 'Original',
+        ]);
+
+        $this->assertTrue($this->user1->can('delete', $msg));
+    }
+
+    /** @test */
+    public function admin_can_delete_any_message()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $msg = ChatMensaje::create([
+            'canal_id' => $canal->id,
+            'user_id' => $this->user1->id,
+            'contenido' => 'Original',
+        ]);
+
+        $this->assertTrue($this->admin->can('delete', $msg));
+    }
+
+    // ---- ChatService ----
 
     /** @test */
     public function department_channel_creation_works()
@@ -201,9 +330,69 @@ class ChatTest extends TestCase
     }
 
     /** @test */
+    public function private_channel_creation_prevents_duplicates()
+    {
+        $service = app(\App\Services\Chat\ChatService::class);
+        $canal1 = $service->createPrivateChannel($this->user1->id, $this->user2->id);
+        $canal2 = $service->createPrivateChannel($this->user1->id, $this->user2->id);
+
+        $this->assertEquals($canal1->id, $canal2->id);
+    }
+
+    /** @test */
+    public function private_channel_creation_reverse_order_prevents_duplicates()
+    {
+        $service = app(\App\Services\Chat\ChatService::class);
+        $canal1 = $service->createPrivateChannel($this->user1->id, $this->user2->id);
+        $canal2 = $service->createPrivateChannel($this->user2->id, $this->user1->id);
+
+        $this->assertEquals($canal1->id, $canal2->id);
+    }
+
+    // ---- Soft-delete (content replacement) ----
+
+    /** @test */
+    public function soft_delete_replaces_message_content()
+    {
+        $canal = $this->createChannelWithMembers('privado', 'Test', [$this->user1->id]);
+        $msg = ChatMensaje::create([
+            'canal_id' => $canal->id,
+            'user_id' => $this->user1->id,
+            'contenido' => 'Original message',
+        ]);
+
+        $msg->update(['contenido' => 'Este mensaje fue eliminado', 'edited_at' => null]);
+
+        $this->assertEquals('Este mensaje fue eliminado', $msg->fresh()->contenido);
+        $this->assertNull($msg->fresh()->edited_at);
+    }
+
+    // ---- Read receipts ----
+
+    /** @test */
+    public function unread_count_is_correct()
+    {
+        $canal = $this->createChannelWithMembers('departamento', 'Test', [$this->user1->id, $this->user2->id]);
+
+        $msg1 = ChatMensaje::create(['canal_id' => $canal->id, 'user_id' => $this->user2->id, 'contenido' => 'Msg 1']);
+        $msg2 = ChatMensaje::create(['canal_id' => $canal->id, 'user_id' => $this->user2->id, 'contenido' => 'Msg 2']);
+
+        ChatLectura::updateOrCreate(
+            ['canal_id' => $canal->id, 'user_id' => $this->user1->id],
+            ['ultimo_mensaje_leido_id' => $msg1->id]
+        );
+
+        $ultimoLeidoId = ChatLectura::where('canal_id', $canal->id)->where('user_id', $this->user1->id)->value('ultimo_mensaje_leido_id');
+        $unread = ChatMensaje::where('canal_id', $canal->id)->where('id', '>', $ultimoLeidoId)->count();
+
+        $this->assertEquals(1, $unread);
+    }
+
+    // ---- Project observer ----
+
+    /** @test */
     public function project_observer_creates_channel_on_project_creation()
     {
-        // Create a client and sublinea required for project creation
         $cliente = \App\Models\Comercial\Cliente::create([
             'razon_social' => 'Test Client',
             'alias_3letras' => 'TST',
@@ -226,7 +415,6 @@ class ChatTest extends TestCase
             'gerente_proyectos_id' => $this->user2->id,
         ]);
 
-        // The observer should have created a channel
         $canal = ChatCanal::where('tipo', 'proyecto')
             ->where('contexto_id', $proyecto->id)
             ->first();

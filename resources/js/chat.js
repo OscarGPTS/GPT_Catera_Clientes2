@@ -1,36 +1,48 @@
 let chatChannel = null;
+let chatChannelId = null;
 let typingTimer = null;
 
 function subscribeToChannel(channelId) {
-    if (chatChannel) {
-        window.Echo.leave('chat.canal.' + chatChannel);
-    }
+    if (chatChannelId && chatChannelId === channelId) return;
+
+    leaveChannel();
 
     if (!channelId || !window.Echo) return;
 
-    chatChannel = channelId;
+    chatChannelId = channelId;
 
-    window.Echo.channel('chat.canal.' + channelId)
+    window.Echo.private('chat.canal.' + channelId)
         .listen('.message.sent', (data) => {
-            Livewire.dispatch('echoMessageSent', data);
+            const component = Livewire.getByName('chat.chat-drawer')[0]
+                || Livewire.getByName('chat.chat-panel')[0];
+            if (component) {
+                component.handleIncomingMessage(data);
+            }
         })
         .listen('.message.read', (data) => {
-            Livewire.dispatch('echoMessageRead', data);
+            const component = Livewire.getByName('chat.chat-drawer')[0]
+                || Livewire.getByName('chat.chat-panel')[0];
+            if (component) {
+                component.handleReadReceipt(data);
+            }
         })
         .listen('.typing', (data) => {
+            const component = Livewire.getByName('chat.chat-drawer')[0]
+                || Livewire.getByName('chat.chat-panel')[0];
+            if (!component) return;
             if (data.typing) {
-                Livewire.dispatch('echoTyping', data);
+                component.handleTyping(data);
             } else {
-                Livewire.dispatch('echoStopTyping', data);
+                component.handleStopTyping(data);
             }
         });
 }
 
 function leaveChannel() {
-    if (chatChannel) {
-        window.Echo.leave('chat.canal.' + chatChannel);
+    if (chatChannelId && window.Echo) {
+        window.Echo.leave('chat.canal.' + chatChannelId);
     }
-    chatChannel = null;
+    chatChannelId = null;
 }
 
 document.addEventListener('livewire:initialized', () => {
@@ -43,17 +55,24 @@ document.addEventListener('livewire:initialized', () => {
     });
 });
 
-// Typing indicator debounce
 document.addEventListener('input', (e) => {
-    const textarea = e.target.closest('#chat-input');
+    const textarea = e.target.closest('#chat-input, #chat-input-drawer');
     if (!textarea) return;
 
     clearTimeout(typingTimer);
 
-    Livewire.dispatch('typing');
+    const component = Livewire.getByName('chat.chat-drawer')[0]
+        || Livewire.getByName('chat.chat-panel')[0];
+    if (component) {
+        component.typing();
+    }
 
     typingTimer = setTimeout(() => {
-        Livewire.dispatch('stop-typing');
+        const comp = Livewire.getByName('chat.chat-drawer')[0]
+            || Livewire.getByName('chat.chat-panel')[0];
+        if (comp) {
+            comp.stopTyping();
+        }
     }, 1500);
 });
 

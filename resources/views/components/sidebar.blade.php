@@ -39,6 +39,15 @@
             <x-sidebar-item href="/clientes" icon="building-office" label="Clientes" />
         </x-sidebar-section>
 
+        {{-- Catálogos --}}
+        @php
+        $catalogosItems = ['/catalogos-admin', '/catalogos'];
+        @endphp
+        <x-sidebar-section label="Catálogos" collapsible>
+            <x-sidebar-item href="/catalogos-admin" icon="clipboard-document-list" label="Administrar" :siblingHrefs="$catalogosItems" />
+            <x-sidebar-item href="/catalogos" icon="circle-stack" label="Importar Ext." :siblingHrefs="$catalogosItems" />
+        </x-sidebar-section>
+
         {{-- Proyectos --}}
         @canany(['ver proyectos', 'ver libro proyecto'])
         @php
@@ -81,7 +90,7 @@
 
         {{-- Chat --}}
         <x-sidebar-section label="Chat">
-            <livewire:chat.chat-sidebar-channels />
+            <x-sidebar-item href="/chat" icon="chat-bubble-left-right" label="Chat" :badge="\App\Livewire\Chat\ChatSidebarChannels::getUnreadCount()" />
         </x-sidebar-section>
 
         {{-- Ejecutivo --}}
@@ -90,11 +99,6 @@
             <x-sidebar-item href="/ejecutivo" icon="presentation-chart-line" label="Dashboard Ejecutivo" />
         </x-sidebar-section>
         @endcanany
-
-        {{-- Catálogos --}}
-        <x-sidebar-section label="Catálogos">
-            <x-sidebar-item href="/catalogos" icon="circle-stack" label="Catálogos Ext." />
-        </x-sidebar-section>
 
         {{-- Admin --}}
         @canany(['ver admin usuarios'])

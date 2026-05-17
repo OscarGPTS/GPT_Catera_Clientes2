@@ -68,7 +68,7 @@ class DashboardIndex extends Component
 
         $oportunidadesAtencion = Proyecto::whereIn('estado', ['en_revision', 'cotizando', 'presentado'])
             ->where('updated_at', '<', now()->subDays(7))
-            ->with(['cliente', 'sublinea', 'gerenteProyectos', 'cotizaciones'])
+            ->with(['cliente', 'sublinea', 'gerenteProyectos', 'directorDn', 'cotizaciones', 'miembros'])
             ->orderBy('updated_at')
             ->take(5)
             ->get()
@@ -84,7 +84,9 @@ class DashboardIndex extends Component
                 'accion_sugerida' => match($p->estado) { 'cotizando' => 'Cotizar', 'presentado' => 'Presentar', default => 'Dar seguimiento' },
             ]);
 
-        $gerentes = $pipeline->whereNotNull('gerente_proyectos_id')->groupBy('gerente_proyectos_id');
+        $gerentes = $pipeline
+            ->filter(fn($p) => $p->miembros->firstWhere('rol', 'gerente_proyectos') !== null)
+            ->groupBy(fn($p) => $p->miembros->firstWhere('rol', 'gerente_proyectos')?->user_id);
         $cargaEquipo = [
             'avg' => $gerentes->count() > 0 ? round($gerentes->map->count()->avg(), 1) : 0,
             'sobrecarga' => $gerentes->map->count()->filter(fn($c) => $c > 6)->count(),
@@ -122,43 +124,81 @@ class DashboardIndex extends Component
 
     public function getStatusOfertasDataProperty(): array
     {
-        $months = ['Nov', 'Dic', 'Ene', 'Feb', 'Mar', 'Abr', 'May'];
+        // ── Datos reales: oportunidades + historial de ponderación por mes ──
+        // Las columnas son los meses presentes en proyecto_ponderacion_historial.
+        // Si solo hay un snapshot, se muestra esa única columna.
+        $oportunidades = Proyecto::oportunidades()
+            ->with([
+                'cliente:id,alias,razon_social',
+                'gerenteProyectos',
+                'elaboro',
+                'historialPonderacion.ponderacion',
+            ])
+            ->orderBy('cp_numero')
+            ->get();
 
-        $proyectos = [
-            ['nombre' => 'IGASAMEX HTS 30x4" Oleofinos',             'cp' => '152/25',    'monto' => 0.036566,  'probs' => [75,  75,  75,  75,  75,  75,  75],  'resp' => 'Fernando B'],
-            ['nombre' => 'ENGIE HTP 42x24" VDR',                     'cp' => '157/25',    'monto' => 0.933232,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Kevin P'],
-            ['nombre' => 'PIR SYSTEM HT 30x20" Cactus',              'cp' => '001/26',    'monto' => 0.103000,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Fernando B'],
-            ['nombre' => 'NATURGY Anillos separadores',               'cp' => '002/26',    'monto' => 0.063500,  'probs' => [null, null, 25,  75, 100, 100, 100],  'resp' => 'Fernando B'],
-            ['nombre' => 'IGASAMEX VCP Dif. Diámetros',               'cp' => '003/26',    'monto' => 0.029154,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Fernando B'],
-            ['nombre' => 'PROTEXA Válvulas Cluster SEJKAN',           'cp' => '004/26',    'monto' => 1.721419,  'probs' => [null, null, null, 10,  10,  10,  10],  'resp' => 'Fernando B'],
-            ['nombre' => 'EUROINOVA DLS 6" 600#',                    'cp' => '005/26',    'monto' => 0.121162,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Fernando B'],
-            ['nombre' => 'MOLPER DLS 6" 600# Hidalgo',                'cp' => '016/26',    'monto' => 2.976741,  'probs' => [null, null, 10,  25,  25,  25,  25],  'resp' => 'Aquiles G'],
-            ['nombre' => 'SERPORT HTP 24x16" Submarino',              'cp' => '006/26',    'monto' => 0.351900,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Sergio O'],
-            ['nombre' => 'GCI HT 8x8" Nafta',                        'cp' => '007/26',    'monto' => 0.009004,  'probs' => [null, null, 25,  25,  25,  25,  25],  'resp' => 'Diego R'],
-            ['nombre' => 'ICA HTSF 24x24" Naucalpan',                 'cp' => '008/26',    'monto' => 1.602421,  'probs' => [null, null, 25,  10,  10,  10,  10],  'resp' => 'Diego R'],
-            ['nombre' => 'SICIM HT 30x20 600# Ags',                  'cp' => '009/26',    'monto' => 0.256170,  'probs' => [null, null, null, 10,  10,  10,  10],  'resp' => 'Fernando B'],
-            ['nombre' => 'COPC Juntas dieléctricas',                  'cp' => '010/26',    'monto' => 0.005000,  'probs' => [null, null, 10,  10,  10,  10,  10],  'resp' => 'Fernando B'],
-            ['nombre' => 'INDHECA Separador Horiz. Bakte',            'cp' => 'N/A',       'monto' => 0.375793,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Guadalupe O'],
-            ['nombre' => 'SARREAL Drillings 2" Niple',                'cp' => 'N/A',       'monto' => 0.044615,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Fernando B'],
-            ['nombre' => 'ARSEAL Válvulas Trunnion 8y10',             'cp' => '011/26',    'monto' => 0.068542,  'probs' => [null, null, null, 10,  10,  10,  10],  'resp' => 'Fernando B'],
-            ['nombre' => 'ESENTIA DLSS 36" Villa de Reyes',           'cp' => '012/26',    'monto' => 1.260000,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Fernando B'],
-            ['nombre' => 'ESENTIA HTP 8" y 2" Samalayuca',            'cp' => '013/26',    'monto' => 0.063191,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Fernando B'],
-            ['nombre' => 'SEDENA Frente 10 Tren Mx-Qro',             'cp' => '-',         'monto' => 9.403052,  'probs' => [null, null, null, 25,  75,  75,  75],  'resp' => 'Aquiles G'],
-            ['nombre' => 'SEDENA Frente 11 Tren Mx-Qro',             'cp' => '-',         'monto' => 15.078458, 'probs' => [null, null, null, 25,  75,  75,  75],  'resp' => 'Aquiles G'],
-            ['nombre' => 'TC ENERGY VBT Dos Bocas',                   'cp' => '150/25',    'monto' => 0.059603,  'probs' => [10,  10,  10,  25,  25,  25,  25],  'resp' => 'Fernando B'],
-            ['nombre' => 'IGASAMEX Revisión empate 6"',               'cp' => '014/26',    'monto' => 0.001400,  'probs' => [null, null, null, 75,  75,  75,  75],  'resp' => 'Fernando B'],
-            ['nombre' => 'IGASAMEX PH VBT 4" Atlacomulco',            'cp' => '016/26',    'monto' => 0.007431,  'probs' => [null, null, null, null, 100, 100, 100], 'resp' => 'Fernando B'],
-            ['nombre' => 'ENGIE HTS 16x6" Meprosa',                  'cp' => '-',         'monto' => 0.352716,  'probs' => [null, null, null, 25,  25,  25,  25],  'resp' => 'Fernando B'],
-            ['nombre' => 'GRUPO 3VTA Válvula 24" 600#',              'cp' => '-',         'monto' => 0.223441,  'probs' => [null, null, null, null, 10,  10,  10],  'resp' => 'Sin asignar'],
-            ['nombre' => 'INDHECA Tubería AC 24"',                   'cp' => '-',         'monto' => 1.274125,  'probs' => [null, null, null, null, 25,  25,  25],  'resp' => 'Sin asignar'],
-            ['nombre' => 'GEOLIS HTP 16x12 600# RF',                 'cp' => '-',         'monto' => 0.147279,  'probs' => [null, null, null, null, 75,  75,  75],  'resp' => 'Guadalupe O'],
-            ['nombre' => 'SARREAL Válvulas 4,8,20 900#',             'cp' => '-',         'monto' => 0.524423,  'probs' => [null, null, null, null, 75,  75,  75],  'resp' => 'Guadalupe O'],
-            ['nombre' => 'PIFUSA Juntas Aislantes',                   'cp' => '022/26',    'monto' => 0.023527,  'probs' => [null, null, null, null, null, 25,  25],  'resp' => 'Fernando B'],
-            ['nombre' => 'COCOMEX HTP 8x8 Veracruz',                 'cp' => 'CP-021/26', 'monto' => 0.070125,  'probs' => [null, null, null, null, null, 25,  25],  'resp' => 'Sergio O'],
-            ['nombre' => 'MARABIS VBT 14 y 8',                       'cp' => 'CP-027/26', 'monto' => 0.031409,  'probs' => [null, null, null, null, null, null, 25], 'resp' => 'Sergio O'],
-        ];
+        // Construir lista cronológica de meses distintos (anio*100+mes) con etiquetas tipo "Ene 26"
+        $mesesLabels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        $monthKeys = $oportunidades
+            ->flatMap(fn($o) => $o->historialPonderacion)
+            ->map(fn($h) => $h->anio * 100 + $h->mes)
+            ->unique()
+            ->sort()
+            ->values();
 
-        $numMonths = 7;
+        // Fallback: si no hay historial todavía, una sola columna "Actual"
+        if ($monthKeys->isEmpty()) {
+            $months    = ['Actual'];
+            $monthKeys = collect([null]);
+        } else {
+            $months = $monthKeys->map(function ($k) use ($mesesLabels) {
+                $anio = intdiv($k, 100);
+                $mes  = $k % 100;
+                return $mesesLabels[$mes - 1] . ' ' . substr((string) $anio, -2);
+            })->all();
+        }
+        $numMonths = count($months);
+
+        $abreviaResponsable = function (?string $full): string {
+            if (!$full) return 'Sin asignar';
+            $parts = preg_split('/\s+/', trim($full));
+            if (count($parts) === 1) return $parts[0];
+            return $parts[0] . ' ' . mb_substr($parts[1], 0, 1);
+        };
+
+        $proyectos = [];
+        foreach ($oportunidades as $o) {
+            $pondActual = (int) ($o->ponderacion ?? 0);
+
+            // Indexar el historial del proyecto por monthKey
+            $historialByKey = $o->historialPonderacion->keyBy(fn($h) => $h->anio * 100 + $h->mes);
+
+            // Construir el array probs[] siguiendo los meses globales
+            $probs = [];
+            foreach ($monthKeys as $k) {
+                if ($k === null) {
+                    $probs[] = $pondActual;
+                } elseif ($historialByKey->has($k)) {
+                    $probs[] = (int) $historialByKey[$k]->ponderacion?->porcentaje;
+                } else {
+                    $probs[] = null;
+                }
+            }
+
+            $nombreCliente = $o->cliente?->alias ?? $o->cliente?->razon_social ?? 'Sin cliente';
+            $nombreProyecto = trim($nombreCliente . ' ' . ($o->tech_reference ?? $o->cp_numero ?? '—'));
+
+            $proyectos[] = [
+                'nombre'      => $nombreProyecto,
+                'cp'          => $o->cp_numero ?? '—',
+                'monto'       => round(((float) $o->monto_usd) / 1_000_000, 6),
+                'probs'       => $probs,
+                'resp'        => $abreviaResponsable($o->gerenteProyectos?->name ?? $o->elaboro?->name ?? null),
+                'estado'      => $o->estado,
+                'monto_usd'   => (float) $o->monto_usd,
+                'plazo_meses' => (int) ($o->plazo_estimado ?? 0),
+            ];
+        }
         $montoByMonth      = array_fill(0, $numMonths, 0.0);
         $ponderadoByMonth   = array_fill(0, $numMonths, 0.0);
         $contratadoByMonth  = array_fill(0, $numMonths, 0.0);
@@ -226,8 +266,8 @@ class DashboardIndex extends Component
         foreach ($proyectos as $item) {
             $bruto += $item['monto'];
             $lastProb = 0;
-            for ($i = 6; $i >= 0; $i--) {
-                if ($item['probs'][$i] !== null) { $lastProb = $item['probs'][$i]; break; }
+            for ($i = $numMonths - 1; $i >= 0; $i--) {
+                if (($item['probs'][$i] ?? null) !== null) { $lastProb = $item['probs'][$i]; break; }
             }
             $esperado += $item['monto'] * $lastProb / 100;
             if ($item['monto'] > 0) $count++;
@@ -250,8 +290,8 @@ class DashboardIndex extends Component
             $tCount = 0;
             foreach ($proyectos as $p) {
                 $lp = 0;
-                for ($i = 6; $i >= 0; $i--) {
-                    if ($p['probs'][$i] !== null) { $lp = $p['probs'][$i]; break; }
+                for ($i = $numMonths - 1; $i >= 0; $i--) {
+                    if (($p['probs'][$i] ?? null) !== null) { $lp = $p['probs'][$i]; break; }
                 }
                 if ($p['monto'] > 0 && $lp >= $t) {
                     $tBruto += $p['monto'];
@@ -348,29 +388,137 @@ class DashboardIndex extends Component
             ],
             'levelResumen'      => $levelResumen,
             'byResponsable'    => (function() use ($proyectos, $numMonths) {
-                $order = ['Aquiles G', 'Fernando B', 'Guadalupe O', 'Diego R', 'Kevin P', 'Sergio O', 'Sin asignar'];
                 $grouped = [];
-                foreach ($order as $r) { $grouped[$r] = ['bruto' => 0, 'pond' => 0, 'count' => 0]; }
                 foreach ($proyectos as $p) {
-                    $r = $p['resp'];
+                    $r = $p['resp'] ?: 'Sin asignar';
                     if (!isset($grouped[$r])) { $grouped[$r] = ['bruto' => 0, 'pond' => 0, 'count' => 0]; }
                     $lp = 0;
                     for ($i = $numMonths - 1; $i >= 0; $i--) {
-                        if ($p['probs'][$i] !== null) { $lp = $p['probs'][$i]; break; }
+                        if (($p['probs'][$i] ?? null) !== null) { $lp = $p['probs'][$i]; break; }
                     }
                     $grouped[$r]['bruto'] += $p['monto'];
-                    $grouped[$r]['pond'] += $p['monto'] * $lp / 100;
+                    $grouped[$r]['pond']  += $p['monto'] * $lp / 100;
                     $grouped[$r]['count']++;
                 }
+                // Orden descendente por bruto, "Sin asignar" siempre al final
+                uksort($grouped, function($a, $b) use ($grouped) {
+                    if ($a === 'Sin asignar') return 1;
+                    if ($b === 'Sin asignar') return -1;
+                    return $grouped[$b]['bruto'] <=> $grouped[$a]['bruto'];
+                });
                 $labels = []; $brutos = []; $ponds = []; $counts = [];
-                foreach ($order as $r) {
+                foreach ($grouped as $r => $g) {
                     $labels[] = $r;
-                    $brutos[] = round($grouped[$r]['bruto'], 3);
-                    $ponds[] = round($grouped[$r]['pond'], 3);
-                    $counts[] = $grouped[$r]['count'];
+                    $brutos[] = round($g['bruto'], 3);
+                    $ponds[]  = round($g['pond'], 3);
+                    $counts[] = $g['count'];
                 }
                 return ['labels' => $labels, 'bruto' => $brutos, 'pond' => $ponds, 'counts' => $counts];
             })(),
+        ];
+    }
+
+    /**
+     * KPI "Meses de trabajo sin contratación" (a.k.a. Backlog Months / Backlog Runway).
+     *
+     * Indicador clásico de carga contratada: cuánto trabajo quedaría por delante
+     * — medido en meses — si la empresa no firmara un solo contrato nuevo a partir
+     * de hoy. Se calcula como Cartera Contratada por Ejecutar / Producción Mensual.
+     *
+     *   meses_sin_contratacion = backlog_contratado / produccion_mensual_promedio
+     *
+     * - Backlog contratado: suma de monto_usd de oportunidades con ponderación = 100
+     *   o cuyo estado ya esté en la cadena de adjudicación/ejecución.
+     * - Producción mensual: derivada del propio backlog distribuyendo cada proyecto
+     *   sobre su plazo_estimado (meses). Si el proyecto no tiene plazo, se usa el
+     *   plazo promedio del resto; si nadie lo tiene, se asume 6 meses por defecto.
+     */
+    public function getMesesSinContratacionDataProperty(): array
+    {
+        $estadosContratados = ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion', 'en_cierre'];
+
+        $contratados = Proyecto::oportunidades()
+            ->with('cliente:id,alias,razon_social')
+            ->where(function ($q) use ($estadosContratados) {
+                $q->where('ponderacion', '>=', 100)
+                  ->orWhereIn('estado', $estadosContratados);
+            })
+            ->get();
+
+        $plazoDefault = 6;
+        $plazosConocidos = $contratados->pluck('plazo_estimado')->filter(fn($v) => (int) $v > 0);
+        $plazoPromedio = $plazosConocidos->count() > 0
+            ? (int) round($plazosConocidos->avg())
+            : $plazoDefault;
+
+        $backlogUsd = 0.0;
+        $produccionMensualUsd = 0.0;
+        $proyectosDetalle = [];
+
+        foreach ($contratados as $p) {
+            $monto = (float) ($p->monto_usd ?? 0);
+            if ($monto <= 0) continue;
+
+            $plazo = (int) $p->plazo_estimado;
+            $plazoUsado = $plazo > 0 ? $plazo : $plazoPromedio;
+            $produccionProyecto = $monto / max($plazoUsado, 1);
+
+            $backlogUsd          += $monto;
+            $produccionMensualUsd += $produccionProyecto;
+
+            $proyectosDetalle[] = [
+                'nombre'      => $p->cliente?->alias ?? $p->cliente?->razon_social ?? '—',
+                'cp'          => $p->cp_numero ?? '—',
+                'tech_ref'    => $p->tech_reference,
+                'estado'      => $p->estado,
+                'monto_usd'   => $monto,
+                'monto_m'     => round($monto / 1_000_000, 3),
+                'plazo'       => $plazoUsado,
+                'plazo_real'  => $plazo > 0,
+                'mensual_m'   => round($produccionProyecto / 1_000_000, 3),
+            ];
+        }
+
+        // Ordena por aporte mensual desc (los que más consumen capacidad arriba)
+        usort($proyectosDetalle, fn($a, $b) => $b['mensual_m'] <=> $a['mensual_m']);
+
+        $mesesSinContratacion = $produccionMensualUsd > 0
+            ? round($backlogUsd / $produccionMensualUsd, 1)
+            : 0.0;
+
+        // Burn-down: backlog restante después de cada mes a la producción actual
+        $burnMonths = (int) max(1, ceil($mesesSinContratacion + 2));
+        $burnLabels = [];
+        $burnSerie  = [];
+        $restante   = $backlogUsd;
+        for ($i = 0; $i <= $burnMonths; $i++) {
+            $burnLabels[] = $i === 0 ? 'Hoy' : ('Mes ' . $i);
+            $burnSerie[]  = round(max(0, $restante) / 1_000_000, 3);
+            $restante     -= $produccionMensualUsd;
+        }
+
+        // Clasificación de la salud del runway (rangos típicos para industria de proyectos)
+        $semaforo = match (true) {
+            $mesesSinContratacion >= 9 => ['color' => 'emerald', 'label' => 'Saludable',   'desc' => 'Backlog cubre más de 9 meses de operación.'],
+            $mesesSinContratacion >= 6 => ['color' => 'cyan',    'label' => 'Estable',     'desc' => 'Backlog entre 6 y 9 meses: sostenible a corto plazo.'],
+            $mesesSinContratacion >= 3 => ['color' => 'amber',   'label' => 'En atención', 'desc' => 'Backlog 3-6 meses: priorizar nuevas adjudicaciones.'],
+            $mesesSinContratacion >  0 => ['color' => 'red',     'label' => 'Crítico',     'desc' => 'Menos de 3 meses de carga contratada.'],
+            default                    => ['color' => 'slate',   'label' => 'Sin datos',   'desc' => 'No hay backlog contratado registrado.'],
+        };
+
+        return [
+            'meses'                  => $mesesSinContratacion,
+            'backlog_usd'            => round($backlogUsd, 2),
+            'backlog_m'              => round($backlogUsd / 1_000_000, 3),
+            'produccion_mensual_usd' => round($produccionMensualUsd, 2),
+            'produccion_mensual_m'   => round($produccionMensualUsd / 1_000_000, 3),
+            'count_contratados'      => count($proyectosDetalle),
+            'plazo_promedio'         => $plazoPromedio,
+            'tiene_plazo_real'       => $plazosConocidos->count() > 0,
+            'proyectos'              => $proyectosDetalle,
+            'burn_labels'            => $burnLabels,
+            'burn_serie'             => $burnSerie,
+            'semaforo'               => $semaforo,
         ];
     }
 
@@ -471,6 +619,7 @@ class DashboardIndex extends Component
             'carteraEvolucion' => $this->statusOfertasData['carteraEvolucion'],
             'levelResumen' => $this->statusOfertasData['levelResumen'],
             'byResponsable' => $this->statusOfertasData['byResponsable'],
+            'mesesSinContratacion' => $this->mesesSinContratacionData,
         ])->layout('components.layouts.app');
     }
 }

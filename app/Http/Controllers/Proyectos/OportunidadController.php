@@ -19,9 +19,10 @@ class OportunidadController extends Controller
 
         $proyecto->update([
             'estado' => 'cotizando',
-            'gerente_proyectos_id' => $validated['gerente_proyectos_id'],
             'notas' => ($proyecto->notas ? $proyecto->notas . "\n" : '') . 'CP aprobado: ' . ($validated['notas'] ?? ''),
         ]);
+
+        $proyecto->setMiembroPorRol((int) $validated['gerente_proyectos_id'], 'gerente_proyectos');
 
         $proyecto->eventos()->create([
             'tipo' => 'cp_aprobado',
@@ -59,14 +60,24 @@ class OportunidadController extends Controller
         $this->authorize('asignar cp');
 
         $validated = $request->validate([
-            'gerente_proyectos_id' => 'nullable|exists:users,id',
-            'ingeniero_costos_id' => 'nullable|exists:users,id',
+            'gerente_proyectos_id'   => 'nullable|exists:users,id',
+            'ingeniero_costos_id'    => 'nullable|exists:users,id',
             'ingeniero_proyectos_id' => 'nullable|exists:users,id',
-            'trainee_id' => 'nullable|exists:users,id',
+            'trainee_id'             => 'nullable|exists:users,id',
             'gerente_operaciones_id' => 'nullable|exists:users,id',
         ]);
 
-        $proyecto->update($validated);
+        $mapa = [
+            'gerente_proyectos_id'   => 'gerente_proyectos',
+            'ingeniero_costos_id'    => 'ingeniero_costos',
+            'ingeniero_proyectos_id' => 'ingeniero_proyectos',
+            'trainee_id'             => 'trainee',
+            'gerente_operaciones_id' => 'gerente_operaciones',
+        ];
+
+        foreach ($mapa as $campo => $rol) {
+            $proyecto->setMiembroPorRol($validated[$campo] ? (int)$validated[$campo] : null, $rol);
+        }
 
         $proyecto->eventos()->create([
             'tipo' => 'equipo_asignado',

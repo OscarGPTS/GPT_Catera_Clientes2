@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Catalogos\CatalogosController;
+use App\Http\Controllers\Catalogos\CatalogosCrudController;
 use App\Http\Controllers\Comercial\ClienteController;
 use App\Livewire\Finanzas\FinanzasIndex;
 use App\Http\Controllers\PerfilController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Proyectos\AdjudicacionController;
 use App\Http\Controllers\Proyectos\MinutaController;
 use App\Http\Controllers\Proyectos\OportunidadController;
 use App\Http\Controllers\Proyectos\OportunidadesExportController;
+use App\Livewire\Chat\ChatIndex;
 use App\Livewire\Chat\ChatDrawer;
 use App\Livewire\Comercial\ClientesIndex;
 use App\Livewire\Comercial\ClienteDetalle;
@@ -47,6 +49,12 @@ Route::middleware(['auth'])->group(function () {
     // Catálogos externos
     Route::get('/catalogos', [CatalogosController::class, 'index'])->name('catalogos.index');
     Route::post('/catalogos/{catalog}/import', [CatalogosController::class, 'import'])->name('catalogos.import');
+
+    // Catálogos – CRUD por pestañas
+    Route::get('/catalogos-admin', [CatalogosCrudController::class, 'index'])->name('catalogos.crud.index');
+    Route::post('/catalogos-admin/{catalog}', [CatalogosCrudController::class, 'store'])->name('catalogos.crud.store');
+    Route::put('/catalogos-admin/{catalog}/{id}', [CatalogosCrudController::class, 'update'])->name('catalogos.crud.update');
+    Route::delete('/catalogos-admin/{catalog}/{id}', [CatalogosCrudController::class, 'destroy'])->name('catalogos.crud.destroy');
     Route::get('/oportunidades/{proyecto}', OportunidadDetalle::class)->name('oportunidades.show')->can('ver oportunidades');
     Route::post('/oportunidades/{proyecto}/aprobar', [OportunidadController::class, 'aprobar'])->name('oportunidades.aprobar')->can('aprobar cp');
     Route::post('/oportunidades/{proyecto}/rechazar', [OportunidadController::class, 'rechazar'])->name('oportunidades.rechazar')->can('aprobar cp');
@@ -116,7 +124,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notificaciones', NotificationsIndex::class)->name('notificaciones.index');
 
     // Chat
-    Route::get('/chat', ChatDrawer::class)->middleware('auth')->name('chat.index');
+    Route::get('/chat', ChatIndex::class)->middleware('auth')->name('chat.index');
 
     
 });

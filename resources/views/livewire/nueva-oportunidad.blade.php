@@ -105,19 +105,12 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Ponderación</label>
-                        <select wire:model="ponderacion" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
-                            <option value="10">10 — Remoto</option>
-                            <option value="20">20</option>
-                            <option value="30">30</option>
-                            <option value="40">40</option>
-                            <option value="50">50</option>
-                            <option value="60">60</option>
-                            <option value="70">70</option>
-                            <option value="80">80</option>
-                            <option value="90">90</option>
-                            <option value="100">100 — Contratado</option>
+                        <select wire:model="ponderacion_id" class="mt-1 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:outline-none focus:ring-2 focus:ring-gpt-200">
+                            @foreach($ponderacionesCatalogo as $p)
+                                <option value="{{ $p->id }}">{{ $p->porcentaje }}% — {{ $p->concepto }}</option>
+                            @endforeach
                         </select>
-                        @error('ponderacion') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
+                        @error('ponderacion_id') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Plazo estimado</label>

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Proyectos;
 
+use App\Models\Ponderacion;
 use App\Models\Proyectos\Proyecto;
 use App\Models\User;
 use Livewire\Component;
@@ -14,12 +15,19 @@ class OportunidadDetalle extends Component
     public $showRechazarModal = false;
     public $showEquipoModal = false;
     public $showEstadoModal = false;
+    public $showPonderacionModal = false;
 
     public $gerente_proyectos_id = '';
     public $notas_aprobar = '';
     public $notas_rechazar = '';
     public $cambiar_estado = '';
     public $cambiar_notas = '';
+
+    // ── Modal: actualizar ponderación por mes ───────────────────────────────
+    public ?int $pond_ponderacion_id = null;
+    public ?int $pond_anio           = null;
+    public ?int $pond_mes            = null;
+    public ?string $pond_notas       = null;
 
     public $director_dn_id = '';
     public $gerente_proyectos_id_equipo = '';
@@ -33,16 +41,59 @@ class OportunidadDetalle extends Component
         $this->proyecto = $proyecto;
         $this->cambiar_estado = $proyecto->estado;
         $this->fillTeamFromProyecto();
+
+        // Default modal de ponderación: mes/año actual + ponderación vigente
+        $this->pond_anio = (int) now()->year;
+        $this->pond_mes  = (int) now()->month;
+        $this->pond_ponderacion_id = Ponderacion::porPorcentaje((int) $proyecto->ponderacion)?->id;
+    }
+
+    public function abrirPonderacionModal(): void
+    {
+        // Si ya hay un snapshot para el mes actual, precarga su valor
+        $this->pond_anio = (int) now()->year;
+        $this->pond_mes  = (int) now()->month;
+        $snap = $this->proyecto->historialPonderacion()
+            ->where('anio', $this->pond_anio)
+            ->where('mes', $this->pond_mes)
+            ->first();
+        $this->pond_ponderacion_id = $snap?->ponderacion_id
+            ?? Ponderacion::porPorcentaje((int) $this->proyecto->ponderacion)?->id;
+        $this->pond_notas = null;
+        $this->showPonderacionModal = true;
+    }
+
+    public function guardarPonderacion(): void
+    {
+        $this->validate([
+            'pond_ponderacion_id' => 'required|integer|exists:ponderaciones,id',
+            'pond_anio'           => 'required|integer|min:2020|max:2099',
+            'pond_mes'            => 'required|integer|min:1|max:12',
+            'pond_notas'          => 'nullable|string|max:500',
+        ]);
+
+        $this->proyecto->registrarPonderacion(
+            (int) $this->pond_ponderacion_id,
+            (int) $this->pond_anio,
+            (int) $this->pond_mes,
+            $this->pond_notas ?: null
+        );
+
+        $this->proyecto->refresh();
+        $this->showPonderacionModal = false;
+        $this->pond_notas = null;
+
+        session()->flash('success', 'Ponderación registrada correctamente.');
     }
 
     protected function fillTeamFromProyecto()
     {
-        $this->director_dn_id = $this->proyecto->director_dn_id ?? '';
-        $this->gerente_proyectos_id_equipo = $this->proyecto->gerente_proyectos_id ?? '';
-        $this->gerente_operaciones_id = $this->proyecto->gerente_operaciones_id ?? '';
-        $this->ingeniero_costos_id = $this->proyecto->ingeniero_costos_id ?? '';
-        $this->ingeniero_proyectos_id = $this->proyecto->ingeniero_proyectos_id ?? '';
-        $this->trainee_id = $this->proyecto->trainee_id ?? '';
+        $this->director_dn_id              = $this->proyecto->getMiembroIdPorRol('director_dn') ?? '';
+        $this->gerente_proyectos_id_equipo = $this->proyecto->getMiembroIdPorRol('gerente_proyectos') ?? '';
+        $this->gerente_operaciones_id      = $this->proyecto->getMiembroIdPorRol('gerente_operaciones') ?? '';
+        $this->ingeniero_costos_id         = $this->proyecto->getMiembroIdPorRol('ingeniero_costos') ?? '';
+        $this->ingeniero_proyectos_id      = $this->proyecto->getMiembroIdPorRol('ingeniero_proyectos') ?? '';
+        $this->trainee_id                  = $this->proyecto->getMiembroIdPorRol('trainee') ?? '';
     }
 
     public function aprobarCp()
@@ -56,9 +107,10 @@ class OportunidadDetalle extends Component
 
         $this->proyecto->update([
             'estado' => 'cotizando',
-            'gerente_proyectos_id' => $this->gerente_proyectos_id,
             'notas' => ($this->proyecto->notas ? $this->proyecto->notas . "\n" : '') . 'CP aprobado: ' . ($this->notas_aprobar ?? ''),
         ]);
+
+        $this->proyecto->setMiembroPorRol((int) $this->gerente_proyectos_id, 'gerente_proyectos');
 
         $this->proyecto->eventos()->create([
             'tipo' => 'cp_aprobado',
@@ -109,14 +161,14 @@ class OportunidadDetalle extends Component
             'trainee_id' => 'nullable|exists:users,id',
         ]);
 
-        $this->proyecto->update([
-            'director_dn_id' => $this->director_dn_id ?: null,
-            'gerente_proyectos_id' => $this->gerente_proyectos_id_equipo ?: null,
-            'gerente_operaciones_id' => $this->gerente_operaciones_id ?: null,
-            'ingeniero_costos_id' => $this->ingeniero_costos_id ?: null,
-            'ingeniero_proyectos_id' => $this->ingeniero_proyectos_id ?: null,
-            'trainee_id' => $this->trainee_id ?: null,
-        ]);
+        $this->proyecto->update([/* no hay campos de equipo directos */]);
+
+        $this->proyecto->setMiembroPorRol($this->director_dn_id ? (int)$this->director_dn_id : null, 'director_dn');
+        $this->proyecto->setMiembroPorRol($this->gerente_proyectos_id_equipo ? (int)$this->gerente_proyectos_id_equipo : null, 'gerente_proyectos');
+        $this->proyecto->setMiembroPorRol($this->gerente_operaciones_id ? (int)$this->gerente_operaciones_id : null, 'gerente_operaciones');
+        $this->proyecto->setMiembroPorRol($this->ingeniero_costos_id ? (int)$this->ingeniero_costos_id : null, 'ingeniero_costos');
+        $this->proyecto->setMiembroPorRol($this->ingeniero_proyectos_id ? (int)$this->ingeniero_proyectos_id : null, 'ingeniero_proyectos');
+        $this->proyecto->setMiembroPorRol($this->trainee_id ? (int)$this->trainee_id : null, 'trainee');
 
         $this->proyecto->eventos()->create([
             'tipo' => 'equipo_asignado',
@@ -152,10 +204,13 @@ class OportunidadDetalle extends Component
             'eventos.user',
             'cotizaciones.partidas',
             'solicitudesInterna.items',
+            'historialPonderacion.ponderacion',
+            'historialPonderacion.user',
         ]);
 
         return view('livewire.proyectos.oportunidad-detalle', [
             'equipoDisponible' => $this->equipoDisponible,
+            'ponderacionesCatalogo' => Ponderacion::active()->orderBy('orden')->orderBy('porcentaje')->get(),
         ])->layout('components.layouts.app');
     }
 }

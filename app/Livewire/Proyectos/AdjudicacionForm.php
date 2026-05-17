@@ -44,8 +44,8 @@ class AdjudicacionForm extends Component
         $this->fecha_inicio_planeada = $this->proyecto->fecha_inicio_planeada?->format('Y-m-d');
         $this->fecha_fin_planeada = $this->proyecto->fecha_fin_planeada?->format('Y-m-d');
         $this->metodo_distribucion_plurianual = $this->proyecto->metodo_distribucion_plurianual ?? 'dias_naturales';
-        $this->gerente_proyectos_id = $this->proyecto->gerente_proyectos_id ?? '';
-        $this->gerente_operaciones_id = $this->proyecto->gerente_operaciones_id ?? '';
+        $this->gerente_proyectos_id = $this->proyecto->getMiembroIdPorRol('gerente_proyectos') ?? '';
+        $this->gerente_operaciones_id = $this->proyecto->getMiembroIdPorRol('gerente_operaciones') ?? '';
     }
 
     public function getGerentesProperty()
@@ -69,10 +69,11 @@ class AdjudicacionForm extends Component
             'fecha_inicio_planeada' => $validated['fecha_inicio_planeada'],
             'fecha_fin_planeada' => $validated['fecha_fin_planeada'],
             'metodo_distribucion_plurianual' => $validated['metodo_distribucion_plurianual'],
-            'gerente_proyectos_id' => $validated['gerente_proyectos_id'],
-            'gerente_operaciones_id' => $validated['gerente_operaciones_id'] ?: null,
             'notas' => ($this->proyecto->notas ? $this->proyecto->notas . "\n" : '') . 'Adjudicado: ' . ($validated['notas'] ?? ''),
         ]);
+
+        $this->proyecto->setMiembroPorRol((int) $validated['gerente_proyectos_id'], 'gerente_proyectos');
+        $this->proyecto->setMiembroPorRol($validated['gerente_operaciones_id'] ? (int)$validated['gerente_operaciones_id'] : null, 'gerente_operaciones');
 
         $this->proyecto->eventos()->create([
             'tipo' => 'adjudicado',

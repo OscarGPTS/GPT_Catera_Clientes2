@@ -12,5 +12,18 @@ class CoreBusiness extends Model
         'core_business',
         'acronym',
         'description',
+        'status',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => 'boolean',
+        ];
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
+    }
 }

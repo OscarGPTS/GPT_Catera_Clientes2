@@ -1,9 +1,10 @@
-@props(['href' => '#', 'icon' => 'square-2-stack', 'label' => '', 'siblingHrefs' => []])
+@props(['href' => '#', 'icon' => 'square-2-stack', 'label' => '', 'siblingHrefs' => [], 'badge' => null])
 
 @php
 $cleanHref = trim($href, '/');
-$exactMatch = request()->is($cleanHref);
-$wildcardMatch = $cleanHref !== '' && request()->is($cleanHref . '/*');
+$isRoot = $cleanHref === '';
+$exactMatch = $isRoot ? (request()->path() === '/' || request()->path() === '') : request()->is($cleanHref);
+$wildcardMatch = !$isRoot && request()->is($cleanHref . '/*');
 
 // If another sibling item matches the current URL exactly,
 // skip wildcard matching to avoid parent/prefix items staying highlighted.
@@ -23,7 +24,7 @@ $isActive = $exactMatch || ($wildcardMatch && !$siblingExact);
     href="{{ $href }}"
     class="group relative flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 ease-out select-none
         {{ $isActive 
-            ? 'bg-slate-800 text-white shadow-sm shadow-black/20' 
+            ? 'bg-gpt-600/20 text-white ring-1 ring-inset ring-gpt-600/30 shadow-sm shadow-black/20' 
             : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' }}"
     :class="{
         'justify-center p-2.5': !sidebarOpen && !sidebarMobileOpen,
@@ -50,6 +51,12 @@ $isActive = $exactMatch || ($wildcardMatch && !$siblingExact);
     <span class="truncate leading-tight" :class="{ 'hidden': !sidebarOpen && !sidebarMobileOpen, 'inline': sidebarOpen || sidebarMobileOpen }">
         {{ $label }}
     </span>
+
+    {{-- Badge --}}
+    @if($badge && $badge > 0)
+    <span class="absolute top-0.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-gpt-600 px-1 text-[9px] font-semibold text-white" :class="{ 'hidden': !sidebarOpen && !sidebarMobileOpen, 'flex': sidebarOpen || sidebarMobileOpen }">{{ $badge > 99 ? '99+' : $badge }}</span>
+    <span class="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-gpt-500" :class="{ 'hidden': sidebarOpen || sidebarMobileOpen, 'flex': !sidebarOpen && !sidebarMobileOpen }"></span>
+    @endif
 
     {{-- Active dot for collapsed state --}}
     @if($isActive)

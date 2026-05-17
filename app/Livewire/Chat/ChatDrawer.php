@@ -8,6 +8,11 @@ use App\Events\ChatTyping;
 use App\Models\Chat\ChatCanal;
 use App\Models\Chat\ChatLectura;
 use App\Models\Chat\ChatMensaje;
+use App\Notifications\Chat\NewChatMentionNotification;
+use App\Notifications\Chat\NewChatMessageNotification;
+use App\Notifications\Chat\NewChatReplyNotification;
+use App\Services\Chat\ChatService;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -30,6 +35,9 @@ class ChatDrawer extends Component
     public $replyingTo = null;
     public $expandedSections = ['proyecto', 'departamento', 'direccion', 'privado'];
     public $showNewChannel = false;
+    public $showNewDm = false;
+    public $dmSearch = '';
+    public $dmUsers = [];
 
     protected $listeners = [
         'openChatDrawer' => 'openDrawer',
@@ -69,7 +77,7 @@ class ChatDrawer extends Component
     {
         $user = auth()->user();
 
-        $this->canales = ChatCanal::query()
+        $canales = ChatCanal::query()
             ->whereHas('miembros', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
@@ -83,42 +91,66 @@ class ChatDrawer extends Component
                     ->latest()
                     ->take(1)
             )
-            ->get()
-            ->map(function ($canal) use ($user) {
-                $lectura = $canal->lecturas()->where('user_id', $user->id)->first();
-                $ultimoLeidoId = $lectura ? $lectura->ultimo_mensaje_leido_id : 0;
-                $ultimoMensajeId = $canal->ultimoMensaje ? $canal->ultimoMensaje->id : 0;
-                $noLeidos = $ultimoMensajeId > $ultimoLeidoId
-                    ? $canal->mensajes()->where('id', '>', $ultimoLeidoId)->count()
-                    : 0;
+            ->get();
 
-                return [
-                    'id' => $canal->id,
-                    'nombre' => $canal->nombre,
-                    'tipo' => $canal->tipo,
-                    'descripcion' => $canal->descripcion,
-                    'ultimo_mensaje' => $canal->ultimoMensaje ? [
-                        'contenido' => \Illuminate\Support\Str::limit($canal->ultimoMensaje->contenido, 50),
-                        'user_name' => $canal->ultimoMensaje->user->name ?? '',
-                        'created_at' => $canal->ultimoMensaje->created_at->diffForHumans(),
-                    ] : null,
-                    'no_leidos' => $noLeidos,
-                    'miembros' => $canal->miembros->map(fn ($m) => [
-                        'id' => $m->user->id,
-                        'name' => $m->user->name,
-                        'avatar' => strtoupper(substr($m->user->name ?? 'U', 0, 2)),
-                    ]),
-                ];
-            })
-            ->toArray();
+        $canalIds = $canales->pluck('id');
+        $lecturas = ChatLectura::where('user_id', $user->id)
+            ->whereIn('canal_id', $canalIds)
+            ->pluck('ultimo_mensaje_leido_id', 'canal_id');
+
+        $ultimoMensajeIds = ChatMensaje::whereIn('canal_id', $canalIds)
+            ->selectRaw('canal_id, MAX(id) as max_id')
+            ->groupBy('canal_id')
+            ->pluck('max_id', 'canal_id');
+
+        $noLeidosByCanal = [];
+        foreach ($canalIds as $canalId) {
+            $ultimoLeidoId = $lecturas->get($canalId, 0);
+            $ultimoId = $ultimoMensajeIds->get($canalId, 0);
+            if ($ultimoId > $ultimoLeidoId) {
+                $noLeidosByCanal[$canalId] = ChatMensaje::where('canal_id', $canalId)
+                    ->where('id', '>', $ultimoLeidoId)
+                    ->count();
+            } else {
+                $noLeidosByCanal[$canalId] = 0;
+            }
+        }
+
+        $this->canales = $canales->map(function ($canal) use ($user, $noLeidosByCanal) {
+            return [
+                'id' => $canal->id,
+                'nombre' => $canal->nombre,
+                'tipo' => $canal->tipo,
+                'descripcion' => $canal->descripcion,
+                'ultimo_mensaje' => $canal->ultimoMensaje ? [
+                    'contenido' => \Illuminate\Support\Str::limit($canal->ultimoMensaje->contenido, 50),
+                    'user_name' => $canal->ultimoMensaje->user->name ?? '',
+                    'created_at' => $canal->ultimoMensaje->created_at->diffForHumans(),
+                ] : null,
+                'no_leidos' => $noLeidosByCanal[$canal->id] ?? 0,
+                'miembros' => $canal->miembros->map(fn ($m) => [
+                    'id' => $m->user->id,
+                    'name' => $m->user->name,
+                    'avatar' => strtoupper(substr($m->user->name ?? 'U', 0, 2)),
+                ]),
+            ];
+        })->toArray();
     }
 
     public function selectChannel($channelId)
     {
+        $canal = ChatCanal::find($channelId);
+        if (! $canal || ! Gate::allows('view', $canal)) {
+            $this->activeChannelId = null;
+            return;
+        }
+
         $this->activeChannelId = (int) $channelId;
         $this->typingUsers = [];
         $this->replyingTo = null;
         $this->highlight = '';
+        $this->editingMessageId = null;
+        $this->editingContent = '';
         $this->loadMensajes();
         $this->marcarLeido();
 
@@ -136,7 +168,53 @@ class ChatDrawer extends Component
     {
         if (! $this->activeChannelId) return;
 
-        $this->mensajes = ChatMensaje::where('canal_id', $this->activeChannelId)
+        $messages = ChatMensaje::where('canal_id', $this->activeChannelId)
+            ->when($this->highlight, function ($q) {
+                $q->where('contenido', 'like', "%{$this->highlight}%");
+            })
+            ->with(['user', 'menciones.user', 'replies.user', 'replies.menciones.user'])
+            ->latest()
+            ->take(51)
+            ->get();
+
+        $this->hasMoreMessages = $messages->count() > 50;
+        $messages = $messages->take(50);
+
+        $this->mensajes = $messages->reverse()->map(function ($msg) {
+            return [
+                'id' => $msg->id,
+                'user_id' => $msg->user_id,
+                'user_name' => $msg->user->name,
+                'user_avatar' => strtoupper(substr($msg->user->name ?? 'U', 0, 2)),
+                'contenido' => $msg->contenido,
+                'created_at' => $msg->created_at->format('H:i'),
+                'created_at_full' => $msg->created_at->diffForHumans(),
+                'created_at_full_raw' => $msg->created_at->toIso8601String(),
+                'parent_id' => $msg->parent_message_id,
+                'replies' => $msg->replies->map(fn ($r) => [
+                    'id' => $r->id,
+                    'user_name' => $r->user->name,
+                    'user_avatar' => strtoupper(substr($r->user->name ?? 'U', 0, 2)),
+                    'contenido' => $r->contenido,
+                    'created_at' => $r->created_at->format('H:i'),
+                ])->toArray(),
+                'attachments' => $msg->attachments,
+                'edited' => ! is_null($msg->edited_at),
+                'is_mine' => $msg->user_id === auth()->id(),
+            ];
+        })->values()->toArray();
+
+        $this->loadChannelMembers();
+    }
+
+    public function loadMoreMessages()
+    {
+        if (! $this->activeChannelId || empty($this->mensajes)) return;
+
+        $firstMessageId = $this->mensajes[0]['id'];
+
+        $olderMessages = ChatMensaje::where('canal_id', $this->activeChannelId)
+            ->where('id', '<', $firstMessageId)
             ->when($this->highlight, function ($q) {
                 $q->where('contenido', 'like', "%{$this->highlight}%");
             })
@@ -167,9 +245,46 @@ class ChatDrawer extends Component
                     'edited' => ! is_null($msg->edited_at),
                     'is_mine' => $msg->user_id === auth()->id(),
                 ];
-            })
-            ->values()
+            })->values()->toArray();
+
+        $this->mensajes = array_merge($olderMessages, $this->mensajes);
+        $this->hasMoreMessages = count($olderMessages) >= 50;
+
+        $this->dispatch('preserve-scroll-position');
+    }
+
+    public function loadChannelMembers()
+    {
+        if (! $this->activeChannelId) {
+            $this->channelMembers = [];
+            return;
+        }
+
+        $canal = ChatCanal::find($this->activeChannelId);
+        if (! $canal) {
+            $this->channelMembers = [];
+            return;
+        }
+
+        $this->channelMembers = $canal->miembros()
+            ->with('user')
+            ->get()
+            ->map(fn ($m) => [
+                'id' => $m->user->id,
+                'name' => $m->user->name,
+            ])
             ->toArray();
+    }
+
+    public function searchMembers($query)
+    {
+        if (strlen($query) < 1) {
+            $this->loadChannelMembers();
+            return;
+        }
+
+        $q = strtolower($query);
+        $this->channelMembers = array_values(array_filter($this->channelMembers, fn ($m) => str_contains(strtolower($m['name']), $q)));
     }
 
     public function updatedAttachments()
@@ -192,6 +307,11 @@ class ChatDrawer extends Component
         }
     }
 
+    public $editingMessageId = null;
+    public $editingContent = '';
+    public $hasMoreMessages = false;
+    public $channelMembers = [];
+
     public function toggleChannelSection($tipo)
     {
         $index = array_search($tipo, $this->expandedSections);
@@ -206,6 +326,9 @@ class ChatDrawer extends Component
     public function sendMessage()
     {
         if ((empty(trim($this->newMessage)) && empty($this->attachments)) || ! $this->activeChannelId) return;
+
+        $canal = ChatCanal::find($this->activeChannelId);
+        if (! $canal || ! Gate::allows('view', $canal)) return;
 
         $attachmentData = [];
         foreach ($this->attachments as $file) {
@@ -233,8 +356,40 @@ class ChatDrawer extends Component
             $mentionedUsers = \App\Models\User::whereIn('name', $matches[1])->get();
             foreach ($mentionedUsers as $user) {
                 $mensaje->menciones()->create(['user_id' => $user->id]);
+
+                if ($user->id !== auth()->id()) {
+                    $user->notify(new NewChatMentionNotification(
+                        $this->activeChannelId,
+                        $canal->nombre,
+                        auth()->user()->name,
+                        $mensaje->id,
+                    ));
+                }
             }
         }
+
+        if ($this->replyingTo) {
+            $parentMensaje = ChatMensaje::find($this->replyingTo);
+            if ($parentMensaje && $parentMensaje->user_id !== auth()->id()) {
+                $parentMensaje->user->notify(new NewChatReplyNotification(
+                    $this->activeChannelId,
+                    $canal->nombre,
+                    auth()->user()->name,
+                    $mensaje->id,
+                ));
+            }
+        }
+
+        $canal->miembros()
+            ->where('user_id', '!=', auth()->id())
+            ->each(function ($miembro) use ($canal, $mensaje) {
+                $miembro->user->notify(new NewChatMessageNotification(
+                    $canal->id,
+                    $canal->nombre,
+                    auth()->user()->name,
+                    $mensaje->id,
+                ));
+            });
 
         try {
             ChatMessageSent::dispatch($mensaje->load('user'));
@@ -259,7 +414,22 @@ class ChatDrawer extends Component
                 $this->activeChannelId,
                 auth()->id(),
                 auth()->user()->name,
-                ! empty($this->newMessage)
+                true
+            );
+        } catch (\Exception $e) {
+        }
+    }
+
+    public function stopTyping()
+    {
+        if (! $this->activeChannelId) return;
+
+        try {
+            ChatTyping::dispatch(
+                $this->activeChannelId,
+                auth()->id(),
+                auth()->user()->name,
+                false
             );
         } catch (\Exception $e) {
         }
@@ -277,6 +447,13 @@ class ChatDrawer extends Component
             ['ultimo_mensaje_leido_id' => $ultimo->id]
         );
 
+        \App\Models\Chat\ChatMencion::where('user_id', auth()->id())
+            ->whereHas('mensaje', function ($q) {
+                $q->where('canal_id', $this->activeChannelId);
+            })
+            ->whereNull('leido_at')
+            ->update(['leido_at' => now()]);
+
         try {
             ChatMessageRead::dispatch(
                 $this->activeChannelId,
@@ -293,9 +470,11 @@ class ChatDrawer extends Component
     public function handleIncomingMessage($data)
     {
         if (! isset($data['canal_id']) || ! $this->activeChannelId) return;
-        if ((int) $data['canal_id'] !== (int) $this->activeChannelId) return;
 
-        $this->loadMensajes();
+        if ((int) $data['canal_id'] === (int) $this->activeChannelId) {
+            $this->loadMensajes();
+        }
+
         $this->loadCanales();
     }
 
@@ -318,6 +497,94 @@ class ChatDrawer extends Component
         if (isset($data['userId'])) {
             unset($this->typingUsers[$data['userId']]);
         }
+    }
+
+    public function editMessage($messageId)
+    {
+        $mensaje = ChatMensaje::find($messageId);
+        if (! $mensaje) return;
+
+        if ($mensaje->user_id !== auth()->id() && ! auth()->user()->esAdmin()) {
+            return;
+        }
+
+        $this->editingMessageId = $messageId;
+        $this->editingContent = $mensaje->contenido;
+    }
+
+    public function updateMessage()
+    {
+        if (! $this->editingMessageId) return;
+
+        $mensaje = ChatMensaje::find($this->editingMessageId);
+        if (! $mensaje) return;
+
+        if ($mensaje->user_id !== auth()->id() && ! auth()->user()->esAdmin()) {
+            return;
+        }
+
+        $trimmed = trim($this->editingContent);
+        if (empty($trimmed)) return;
+
+        $mensaje->update([
+            'contenido' => $trimmed,
+            'edited_at' => now(),
+        ]);
+
+        $this->editingMessageId = null;
+        $this->editingContent = '';
+        $this->loadMensajes();
+    }
+
+    public function cancelEdit()
+    {
+        $this->editingMessageId = null;
+        $this->editingContent = '';
+    }
+
+    public function deleteMessage($messageId)
+    {
+        $mensaje = ChatMensaje::find($messageId);
+        if (! $mensaje) return;
+
+        if ($mensaje->user_id !== auth()->id() && ! auth()->user()->esAdmin()) {
+            return;
+        }
+
+        $mensaje->update(['contenido' => 'Este mensaje fue eliminado', 'edited_at' => null]);
+
+        $this->loadMensajes();
+        $this->loadCanales();
+    }
+
+    public function searchDmUsers()
+    {
+        if (strlen($this->dmSearch) < 2) {
+            $this->dmUsers = [];
+            return;
+        }
+
+        $this->dmUsers = \App\Models\User::where('status', 'active')
+            ->where('id', '!=', auth()->id())
+            ->where('name', 'like', "%{$this->dmSearch}%")
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])
+            ->toArray();
+    }
+
+    public function startDm($userId)
+    {
+        $chatService = new ChatService();
+        $canal = $chatService->createPrivateChannel(auth()->id(), (int) $userId);
+
+        $this->showNewDm = false;
+        $this->dmSearch = '';
+        $this->dmUsers = [];
+        $this->loadCanales();
+        $this->selectChannel($canal->id);
+        $this->open = true;
     }
 
     public function render()

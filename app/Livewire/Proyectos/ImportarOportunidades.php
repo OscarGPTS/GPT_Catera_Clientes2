@@ -4,6 +4,7 @@ namespace App\Livewire\Proyectos;
 
 use App\Models\Comercial\Cliente;
 use App\Models\Lugar;
+use App\Models\Ponderacion;
 use App\Models\Proyectos\Proyecto;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -119,7 +120,8 @@ class ImportarOportunidades extends Component
                 : null;
 
             // --- Ponderacion ----------------------------------------------------
-            $ponderacion = $this->parsePonderacion($get('ponderacion'), $get('ponderacion_num'));
+            $ponderacion   = $this->parsePonderacion($get('ponderacion'), $get('ponderacion_num'));
+            $ponderacionId = $this->resolverPonderacionId($get('ponderacion'), $ponderacion);
 
             // --- Estado ---------------------------------------------------------
             $estado = $this->parseEstado(strtoupper($get('status')));
@@ -177,6 +179,7 @@ class ImportarOportunidades extends Component
                 'estado'                    => $estado,
                 'archivo_oferta'            => $get('archivo_oferta') ?: null,
                 'ponderacion'               => $ponderacion,
+                'ponderacion_id'            => $ponderacionId,
                 'concepto_adjudicacion'     => $conceptoAdj,
                 'porcentaje_adjudicacion'   => $porcentajeAdj,
                 'cartera_esperada'          => $cartera,
@@ -231,6 +234,7 @@ class ImportarOportunidades extends Component
                 DB::table('post_mortem')->truncate();
                 DB::table('asignaciones_personas')->truncate();
                 DB::table('proyecto_asignaciones')->truncate();
+                DB::table('proyecto_miembros')->truncate();
                 DB::table('proyecto_eventos')->truncate();
                 DB::table('reportes_semanales')->truncate();
                 DB::table('solicitudes_internas_items')->truncate();
@@ -285,10 +289,27 @@ class ImportarOportunidades extends Component
 
                 if ($fila['cp_numero']) {
                     // Upsert: update if cp already exists, create otherwise
-                    Proyecto::updateOrCreate(['cp_numero' => $fila['cp_numero']], $data);
+                    $proyecto = Proyecto::updateOrCreate(['cp_numero' => $fila['cp_numero']], $data);
                 } else {
-                    Proyecto::create($data);
+                    $proyecto = Proyecto::create($data);
                 }
+
+                // Registrar al elaborador como creador en proyecto_miembros
+                if ($fila['elaboro_id']) {
+                    $proyecto->miembros()->updateOrCreate(
+                        ['rol' => 'creador'],
+                        ['user_id' => $fila['elaboro_id']]
+                    );
+                }
+
+                // Snapshot de ponderación para el mes vigente
+                if ($fila['ponderacion_id'] ?? null) {
+                    $proyecto->registrarPonderacion(
+                        (int) $fila['ponderacion_id'],
+                        notas: 'Importado desde Excel (' . $fila['fila'] . ').'
+                    );
+                }
+
                 $this->insertados++;
             }
 
@@ -425,10 +446,41 @@ class ImportarOportunidades extends Component
             str_contains($label, 'PROBABLE')   => 75,
             str_contains($label, 'POSIBLE')    => 25,
             str_contains($label, 'REMOTO')     => 10,
+            str_contains($label, 'PERDIDA')    => 0,
+            str_contains($label, 'PRESUPUESTAL') => 0,
             is_numeric($label)                 => (int) $label,
             is_numeric($num)                   => (int) $num,
             default                            => 10,
         };
+    }
+
+    /**
+     * Resuelve el id de la fila en el catálogo `ponderaciones`.
+     * Prioriza el matching por texto (CONTRATADO, PROBABLE…); si no, cae al porcentaje.
+     */
+    private function resolverPonderacionId(string $label, int $porcentaje): ?int
+    {
+        static $cache = null;
+        if ($cache === null) {
+            $cache = Ponderacion::active()->orderBy('orden')->get();
+        }
+        if ($cache->isEmpty()) return null;
+
+        $label = strtoupper(trim($label));
+        if ($label !== '') {
+            foreach ($cache as $p) {
+                if (str_contains($label, strtoupper($p->concepto))) {
+                    return $p->id;
+                }
+            }
+        }
+
+        // Match por porcentaje exacto
+        $exact = $cache->firstWhere('porcentaje', $porcentaje);
+        if ($exact) return $exact->id;
+
+        // Fallback: el más cercano
+        return $cache->sortBy(fn($p) => abs($p->porcentaje - $porcentaje))->first()?->id;
     }
 
     /** Convierte el STATUS del CSV al valor del enum `estado` de la BD. */

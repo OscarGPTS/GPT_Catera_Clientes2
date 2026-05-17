@@ -29,6 +29,7 @@ class TechReference extends Model
         'amount_mxn',
         'quotation_personnel',
         'account_manager',
+        'status',
     ];
 
     protected function casts(): array
@@ -39,7 +40,13 @@ class TechReference extends Model
             'branch_in'  => 'decimal:2',
             'amount_usd' => 'decimal:2',
             'amount_mxn' => 'decimal:2',
+            'status'     => 'boolean',
         ];
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
     }
 
     public function cliente(): BelongsTo

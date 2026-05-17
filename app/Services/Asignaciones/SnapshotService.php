@@ -15,12 +15,8 @@ class SnapshotService
             ->get();
 
         foreach ($equipo as $persona) {
-            $asignacionesProyecto = Proyecto::where(function ($q) use ($persona) {
-                $q->where('gerente_proyectos_id', $persona->id)
-                    ->orWhere('ingeniero_proyectos_id', $persona->id)
-                    ->orWhere('ingeniero_costos_id', $persona->id)
-                    ->orWhere('director_dn_id', $persona->id)
-                    ->orWhere('trainee_id', $persona->id);
+            $asignacionesProyecto = Proyecto::whereHas('miembros', function ($q) use ($persona) {
+                $q->where('user_id', $persona->id);
             })
                 ->whereIn('estado', ['en_ejecucion', 'en_cierre', 'adjudicado_firmado'])
                 ->get();

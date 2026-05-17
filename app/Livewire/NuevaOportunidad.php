@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Comercial\Cliente;
 use App\Models\Comercial\Sublinea;
 use App\Models\Lugar;
+use App\Models\Ponderacion;
 use App\Models\Proyectos\Proyecto;
 use App\Models\User;
 use App\Notifications\CpAsignadoNotification;
@@ -26,7 +27,7 @@ class NuevaOportunidad extends Component
     public string $alcance = '';
     public string $plazo_estimado = '';
     public string $monto_usd = '';
-    public int $ponderacion = 10;
+    public ?int $ponderacion_id = null;
     public string $fecha_inicio_planeada = '';
     public string $fecha_fin_planeada = '';
 
@@ -36,6 +37,8 @@ class NuevaOportunidad extends Component
     public function mount()
     {
         $this->fecha_inicio_planeada = now()->format('Y-m-d');
+        $this->ponderacion_id = Ponderacion::active()->where('porcentaje', 10)->value('id')
+            ?? Ponderacion::active()->orderBy('porcentaje')->value('id');
     }
 
     public function nextStep()
@@ -65,7 +68,7 @@ class NuevaOportunidad extends Component
                 'alcance' => 'required|string|max:5000',
                 'plazo_estimado' => 'nullable|string|max:255',
                 'monto_usd' => 'nullable|numeric|min:0',
-                'ponderacion' => 'required|integer|min:10|max:100',
+                'ponderacion_id' => 'required|integer|exists:ponderaciones,id',
                 'fecha_inicio_planeada' => 'nullable|date',
                 'fecha_fin_planeada' => 'nullable|date',
             ]),
@@ -80,8 +83,10 @@ class NuevaOportunidad extends Component
             'sublinea_id' => 'required|exists:sublineas,id',
             'alcance' => 'required|string|max:5000',
             'monto_usd' => 'nullable|numeric|min:0',
-            'ponderacion' => 'required|integer|min:10|max:100',
+            'ponderacion_id' => 'required|integer|exists:ponderaciones,id',
         ]);
+
+        $ponderacion = Ponderacion::findOrFail($this->ponderacion_id);
 
         $secuencias = app(SecuenciasService::class);
         $cp = $secuencias->asignarCp(now()->year);
@@ -99,14 +104,30 @@ class NuevaOportunidad extends Component
             'alcance' => $this->alcance,
             'plazo_estimado' => $this->plazo_estimado ?: null,
             'monto_usd' => $this->monto_usd ?: null,
-            'ponderacion' => $this->ponderacion,
+            'ponderacion' => $ponderacion->porcentaje,
             'estado' => 'en_revision',
             'fecha_inicio_planeada' => $this->fecha_inicio_planeada ?: null,
             'fecha_fin_planeada' => $this->fecha_fin_planeada ?: null,
             'elaboro_id' => auth()->id(),
-            'director_dn_id' => $this->director_dn_id ?: null,
             'notas' => $this->notas ?: null,
         ]);
+
+        // Snapshot del mes actual en el historial
+        $proyecto->registrarPonderacion($ponderacion->id, notas: 'Alta de la oportunidad.');
+
+        // ── Registrar al creador en proyecto_miembros ──────────────────
+        $proyecto->miembros()->create([
+            'user_id' => auth()->id(),
+            'rol'     => 'creador',
+        ]);
+
+        // Si se asignó director DN, añadirlo también como miembro
+        if ($this->director_dn_id) {
+            $proyecto->miembros()->create([
+                'user_id' => (int) $this->director_dn_id,
+                'rol'     => 'director_dn',
+            ]);
+        }
 
         session()->flash('success', "Oportunidad creada: {$cp}");
 
@@ -131,6 +152,7 @@ class NuevaOportunidad extends Component
             'sublineas' => Sublinea::all(),
             'lugares' => Lugar::orderBy('nombre')->get(),
             'directores' => User::role(['director_dn', 'direccion_general', 'gerente_proyectos'])->get(),
+            'ponderacionesCatalogo' => Ponderacion::active()->orderBy('orden')->orderBy('porcentaje')->get(),
         ])->layout('components.layouts.app');
     }
 }

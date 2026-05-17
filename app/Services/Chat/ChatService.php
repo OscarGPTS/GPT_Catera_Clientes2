@@ -74,4 +74,31 @@ class ChatService
 
         return $canal;
     }
+
+    public function createPrivateChannel(int $userId1, int $userId2): ChatCanal
+    {
+        $existing = ChatCanal::where('tipo', 'privado')
+            ->whereHas('miembros', fn ($q) => $q->where('user_id', $userId1))
+            ->whereHas('miembros', fn ($q) => $q->where('user_id', $userId2))
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $otherUser = User::find($userId2);
+
+        $canal = ChatCanal::create([
+            'tipo' => 'privado',
+            'nombre' => 'DM ' . min($userId1, $userId2) . '-' . max($userId1, $userId2),
+            'descripcion' => 'Mensaje directo con ' . ($otherUser ? $otherUser->name : 'Usuario'),
+        ]);
+
+        $canal->miembros()->createMany([
+            ['user_id' => $userId1],
+            ['user_id' => $userId2],
+        ]);
+
+        return $canal;
+    }
 }

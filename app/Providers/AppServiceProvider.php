@@ -3,12 +3,16 @@
 namespace App\Providers;
 
 use App\Models\AuthProvider;
+use App\Models\Chat\ChatCanal;
+use App\Models\Chat\ChatMensaje;
 use App\Models\Comercial\Cliente;
 use App\Models\Proyectos\Cotizacion;
 use App\Models\Proyectos\Proyecto;
 use App\Models\User;
 use App\Observers\ProyectoChatObserver;
 use App\Policies\AuthProviderPolicy;
+use App\Policies\ChatCanalPolicy;
+use App\Policies\ChatMensajePolicy;
 use App\Policies\ClientePolicy;
 use App\Policies\CotizacionPolicy;
 use App\Policies\ProyectoPolicy;
@@ -37,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Proyecto::class, ProyectoPolicy::class);
         Gate::policy(Cliente::class, ClientePolicy::class);
         Gate::policy(Cotizacion::class, CotizacionPolicy::class);
+        Gate::policy(ChatCanal::class, ChatCanalPolicy::class);
+        Gate::policy(ChatMensaje::class, ChatMensajePolicy::class);
 
         Proyecto::observe(ProyectoChatObserver::class);
     }

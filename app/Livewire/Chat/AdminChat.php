@@ -5,6 +5,7 @@ namespace App\Livewire\Chat;
 use App\Models\Chat\ChatCanal;
 use App\Models\Chat\ChatMensaje;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,6 +21,8 @@ class AdminChat extends Component
     public $channelTipo = 'departamento';
     public $channelUserId = null;
     public $selectedUserIds = [];
+    public $confirmingDeleteChannel = null;
+    public $confirmingDeleteMessage = null;
 
     protected $rules = [
         'channelName' => 'required|min:3',
@@ -40,7 +43,7 @@ class AdminChat extends Component
                 $q->where('nombre', 'like', "%{$this->search}%");
             })
             ->orderByDesc('updated_at')
-            ->get();
+            ->paginate(15);
     }
 
     public function getMensajesGlobalProperty()
@@ -51,9 +54,9 @@ class AdminChat extends Component
 
         return ChatMensaje::with(['user', 'canal'])
             ->where('contenido', 'like', "%{$this->searchMessages}%")
+            ->where('contenido', '!=', 'Este mensaje fue eliminado')
             ->latest()
-            ->take(50)
-            ->get();
+            ->paginate(25);
     }
 
     public function editChannel($id)
@@ -73,22 +76,23 @@ class AdminChat extends Component
 
         if ($this->editingChannel) {
             $canal = ChatCanal::find($this->editingChannel);
-            if ($canal) {
-                $canal->update([
-                    'nombre' => $this->channelName,
-                    'tipo' => $this->channelTipo,
-                ]);
-
-                // Sync members
-                $existingIds = $canal->miembros()->pluck('user_id')->toArray();
-                $toAdd = array_diff($this->selectedUserIds, $existingIds);
-                $toRemove = array_diff($existingIds, $this->selectedUserIds);
-
-                foreach ($toAdd as $uid) {
-                    $canal->miembros()->create(['user_id' => $uid]);
-                }
-                $canal->miembros()->whereIn('user_id', $toRemove)->delete();
+            if (! $canal || ! Gate::allows('update', $canal)) {
+                return;
             }
+
+            $canal->update([
+                'nombre' => $this->channelName,
+                'tipo' => $this->channelTipo,
+            ]);
+
+            $existingIds = $canal->miembros()->pluck('user_id')->toArray();
+            $toAdd = array_diff($this->selectedUserIds, $existingIds);
+            $toRemove = array_diff($existingIds, $this->selectedUserIds);
+
+            foreach ($toAdd as $uid) {
+                $canal->miembros()->create(['user_id' => $uid]);
+            }
+            $canal->miembros()->whereIn('user_id', $toRemove)->delete();
         } else {
             $canal = ChatCanal::create([
                 'nombre' => $this->channelName,
@@ -104,9 +108,45 @@ class AdminChat extends Component
         $this->resetForm();
     }
 
-    public function deleteChannel($id)
+    public function confirmDeleteChannel($id)
     {
-        ChatCanal::find($id)?->delete();
+        $canal = ChatCanal::find($id);
+        if (! $canal || ! Gate::allows('delete', $canal)) {
+            return;
+        }
+        $this->confirmingDeleteChannel = $id;
+    }
+
+    public function deleteChannel()
+    {
+        $canal = ChatCanal::find($this->confirmingDeleteChannel);
+        if (! $canal || ! Gate::allows('delete', $canal)) {
+            $this->confirmingDeleteChannel = null;
+            return;
+        }
+        $canal->mensajes()->delete();
+        $canal->miembros()->delete();
+        $canal->lecturas()->delete();
+        $canal->delete();
+        $this->confirmingDeleteChannel = null;
+    }
+
+    public function confirmDeleteMessage($id)
+    {
+        $msg = ChatMensaje::find($id);
+        if (! $msg) return;
+        $this->confirmingDeleteMessage = $id;
+    }
+
+    public function deleteMessage()
+    {
+        $msg = ChatMensaje::find($this->confirmingDeleteMessage);
+        if (! $msg) {
+            $this->confirmingDeleteMessage = null;
+            return;
+        }
+        $msg->update(['contenido' => 'Este mensaje fue eliminado', 'edited_at' => null]);
+        $this->confirmingDeleteMessage = null;
     }
 
     public function resetForm()

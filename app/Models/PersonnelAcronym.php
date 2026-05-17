@@ -13,7 +13,20 @@ class PersonnelAcronym extends Model
         'user_id',
         'acronym',
         'account_manager',
+        'status',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => 'boolean',
+        ];
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
+    }
 
     public function user(): BelongsTo
     {
