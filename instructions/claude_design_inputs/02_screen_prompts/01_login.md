@@ -26,7 +26,7 @@ Autenticarse al sistema. Tres caminos diferentes según el tipo de usuario.
 4. Divider con texto "o" centrado entre `border-slate-200`.
 5. **Formulario email/password** colapsado por default, expandible con link "Acceso para usuarios externos pre-registrados".
 6. Otra pequeña sección con 3 botones de iconos (Google, Microsoft, Apple) horizontales, cada uno cuadrado con su logo.
-7. Footer con link "¿Problemas para acceder? Contacta soporte" → `mailto:soporte@gptservices.com`.
+7. Footer con link "¿Problemas para acceder? Contacta soporte" → `mailto:sistemas@gptservices.com`.
 
 ## Datos de ejemplo
 N/A (pantalla previa al login).

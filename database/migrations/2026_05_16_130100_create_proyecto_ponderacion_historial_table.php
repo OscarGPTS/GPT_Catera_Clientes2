@@ -33,9 +33,12 @@ return new class extends Migration
         // Fallback: si la ponderación no coincide exactamente, usar la más cercana
         $defaultId = $pondMap[10] ?? DB::table('ponderaciones')->orderBy('porcentaje')->value('id');
 
+        // Note: the `tipo` column may not exist yet at this point in the migration
+        // sequence (it's added by a later migration). All existing records are
+        // effectively oportunidades, so no filter is needed here.
         $proyectos = DB::table('proyectos')
             ->whereNull('deleted_at')
-            ->where('tipo', 'oportunidad')
+            ->when(Schema::hasColumn('proyectos', 'tipo'), fn($q) => $q->where('tipo', 'oportunidad'))
             ->get(['id', 'ponderacion']);
 
         $rows = [];

@@ -88,7 +88,7 @@
 
             <p class="mt-8 text-center text-xs text-slate-400">
                 ¿Problemas para acceder?
-                <a href="mailto:soporte@gptservices.com" class="font-medium text-slate-600 hover:text-slate-900">soporte@gptservices.com</a>
+                <a href="mailto:sistemas@gptservices.com" class="font-medium text-slate-600 hover:text-slate-900">sistemas@gptservices.com </a>
             </p>
         </div>
     </section>
