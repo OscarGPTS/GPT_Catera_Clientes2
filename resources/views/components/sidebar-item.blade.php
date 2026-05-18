@@ -43,12 +43,12 @@ $isActive = $exactMatch || ($wildcardMatch && !$siblingExact);
     @endif
 
     {{-- Icon --}}
-    <span class="relative shrink-0 transition-colors duration-200 {{ $isActive ? 'text-gpt-400' : 'text-slate-500 group-hover:text-slate-300' }}">
+    <span class="relative shrink-0 transition-colors duration-200 ml-2 {{ $isActive ? 'text-gpt-400' : 'text-slate-500 group-hover:text-slate-300' }}">
         <x-dynamic-component :component="'svg-icon.' . $icon" class="h-[18px] w-[18px]" />
     </span>
 
     {{-- Label --}}
-    <span class="truncate leading-tight" :class="{ 'hidden': !sidebarOpen && !sidebarMobileOpen, 'inline': sidebarOpen || sidebarMobileOpen }">
+    <span class="truncate leading-tight p-2" :class="{ 'hidden': !sidebarOpen && !sidebarMobileOpen, 'inline': sidebarOpen || sidebarMobileOpen }">
         {{ $label }}
     </span>
 
