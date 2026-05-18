@@ -4,9 +4,14 @@
         {{-- Header --}}
         <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <h2 class="text-lg font-semibold text-slate-800">Chat</h2>
-            <button wire:click="$set('showNewDm', true)" class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-gpt-600 transition-colors" title="Nuevo mensaje">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            </button>
+            <div class="flex items-center gap-1">
+                <button wire:click="$set('showCreateGroup', true)" class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-gpt-600 transition-colors" title="Nuevo grupo">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 18V6a2 2 0 00-2-2H8a2 2 0 00-2 2v12m0 0h12M6 18H4a2 2 0 01-2-2v-2a2 2 0 012-2h2m12 0h2a2 2 0 012 2v2a2 2 0 01-2 2h-2"/></svg>
+                </button>
+                <button wire:click="$set('showNewDm', true)" class="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-gpt-600 transition-colors" title="Nuevo mensaje">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                </button>
+            </div>
         </div>
 
         {{-- Tabs: Conversations / Contacts --}}
@@ -63,6 +68,7 @@
                 @php
                     $tipos = [
                         'privado' => ['label' => 'Mensajes directos', 'icon' => 'user'],
+                        'grupo' => ['label' => 'Grupos', 'icon' => 'users'],
                         'proyecto' => ['label' => 'Proyectos', 'icon' => 'clipboard-document-list'],
                         'departamento' => ['label' => 'Departamentos', 'icon' => 'building-office'],
                         'direccion' => ['label' => 'Dirección', 'icon' => 'star'],
@@ -85,6 +91,10 @@
                                 @if($tipo === 'privado')
                                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {{ (int)$activeChannelId === (int)$canal['id'] ? 'bg-gpt-600 text-white' : 'bg-slate-200 text-slate-600' }} text-[12px] font-semibold">
                                     {{ strtoupper(substr($canal['nombre'], 0, 2)) }}
+                                </div>
+                                @elseif($tipo === 'grupo')
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {{ (int)$activeChannelId === (int)$canal['id'] ? 'bg-gpt-600 text-white' : 'bg-slate-100 text-slate-500' }}">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.787-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.635-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
                                 </div>
                                 @else
                                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {{ (int)$activeChannelId === (int)$canal['id'] ? 'bg-gpt-600 text-white' : 'bg-slate-100 text-slate-500' }} text-[12px] font-semibold">
@@ -154,6 +164,10 @@
                         @if($activeChannel['tipo'] === 'privado')
                         <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gpt-600 text-[12px] font-semibold text-white">
                             {{ strtoupper(substr($activeChannel['nombre'], 0, 2)) }}
+                        </div>
+                        @elseif($activeChannel['tipo'] === 'grupo')
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gpt-600 text-white">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.787-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.635-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
                         </div>
                         @else
                         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gpt-600 text-[12px] font-semibold text-white">#</span>
@@ -419,6 +433,66 @@
                     @if(strlen($dmSearch) >= 2 && empty($dmUsers))
                     <p class="py-3 text-center text-[12px] text-slate-400">Sin resultados</p>
                     @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Create Group modal --}}
+    @if($showCreateGroup)
+    <div class="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/50" wire:click.self="$set('showCreateGroup', false)">
+        <div class="w-96 rounded-xl bg-white shadow-2xl" wire:click.stop>
+            <div class="border-b border-slate-200 px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-slate-800">Nuevo grupo</h3>
+                    <button wire:click="$set('showCreateGroup', false)" class="text-slate-400 hover:text-slate-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                </div>
+            </div>
+            <div class="px-4 py-3 space-y-3">
+                <div>
+                    <label class="block text-[12px] font-medium text-slate-600 mb-1">Nombre del grupo *</label>
+                    <input wire:model.live="groupName" type="text" placeholder="Ej: Equipo de soporte" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
+                    @error('groupName') <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="block text-[12px] font-medium text-slate-600 mb-1">Descripción (opcional)</label>
+                    <input wire:model.live="groupDescription" type="text" placeholder="De qué trata este grupo..." class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[12px] font-medium text-slate-600 mb-1">Agregar miembros</label>
+                    <div class="relative mb-2">
+                        <svg class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input wire:model.live.debounce.300ms="groupSearch" wire:change="searchGroupMembers" type="text" placeholder="Buscar personas..." class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
+                    </div>
+                    @if(!empty($groupMemberIds))
+                    <div class="flex flex-wrap gap-1.5 mb-2">
+                        @foreach($groupMemberIds as $mid)
+                        @php $mUser = \App\Models\User::find($mid); @endphp
+                        @if($mUser)
+                        <span class="inline-flex items-center gap-1 rounded-full bg-gpt-50 border border-gpt-200 px-2 py-0.5 text-[11px] font-medium text-gpt-700">
+                            {{ $mUser->name }}
+                            <button wire:click="toggleGroupMember({{ $mid }})" class="text-gpt-500 hover:text-gpt-700"><svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                        </span>
+                        @endif
+                        @endforeach
+                    </div>
+                    @endif
+                    <div class="max-h-40 overflow-y-auto space-y-0.5">
+                        @foreach($groupSearchResults as $u)
+                        <button wire:click="toggleGroupMember({{ $u['id'] }})" class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left {{ in_array($u['id'], $groupMemberIds) ? 'bg-gpt-50 border border-gpt-200' : 'hover:bg-slate-50' }} transition-colors">
+                            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full {{ in_array($u['id'], $groupMemberIds) ? 'bg-gpt-600 text-white' : 'bg-slate-200 text-slate-600' }} text-[9px] font-semibold">{{ $u['avatar'] }}</span>
+                            <span class="text-[13px] font-medium {{ in_array($u['id'], $groupMemberIds) ? 'text-gpt-700' : 'text-slate-700' }}">{{ $u['name'] }}</span>
+                            @if(in_array($u['id'], $groupMemberIds))
+                            <svg class="ml-auto h-4 w-4 text-gpt-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </button>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+                    <button wire:click="$set('showCreateGroup', false)" class="rounded-lg border border-slate-200 px-4 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button wire:click="createGroup" class="rounded-lg bg-gpt-600 px-4 py-2 text-[13px] font-medium text-white hover:bg-gpt-700">Crear grupo</button>
                 </div>
             </div>
         </div>

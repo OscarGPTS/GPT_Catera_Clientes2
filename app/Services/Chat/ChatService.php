@@ -101,4 +101,28 @@ class ChatService
 
         return $canal;
     }
+
+    public function createGroup(string $nombre, ?string $descripcion, int $creadoPor, array $memberIds): ChatCanal
+    {
+        $canal = ChatCanal::create([
+            'tipo' => 'grupo',
+            'nombre' => $nombre,
+            'descripcion' => $descripcion,
+            'creado_por_id' => $creadoPor,
+        ]);
+
+        $canal->miembros()->create([
+            'user_id' => $creadoPor,
+            'rol_en_canal' => 'admin',
+        ]);
+
+        foreach (array_diff($memberIds, [$creadoPor]) as $userId) {
+            $canal->miembros()->create([
+                'user_id' => $userId,
+                'rol_en_canal' => 'miembro',
+            ]);
+        }
+
+        return $canal;
+    }
 }

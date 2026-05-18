@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Comercial\Cliente;
 use App\Models\CoreBusiness;
 use App\Models\Country;
-use App\Models\Customer;
 use App\Models\Lugar;
 use App\Models\PersonnelAcronym;
 use App\Models\Proyectos\Proyecto;
@@ -30,13 +29,6 @@ class CatalogosController extends Controller
      * display_headers:  cabeceras de esa tabla (fallback → headers sin nulls).
      */
     private const CATALOGOS = [
-        'customers' => [
-            'model'   => Customer::class,
-            'label'   => 'Customers',
-            'fields'  => ['customer', 'acronym'],
-            'unique'  => ['acronym'],
-            'headers' => ['Customer', 'Acronym'],
-        ],
         'core_businesses' => [
             'model'   => CoreBusiness::class,
             'label'   => 'Core Business',

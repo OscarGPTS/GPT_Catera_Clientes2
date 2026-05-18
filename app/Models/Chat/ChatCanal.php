@@ -71,4 +71,9 @@ class ChatCanal extends Model
     {
         return $query->where('tipo', 'direccion');
     }
+
+    public function scopeGrupo($query)
+    {
+        return $query->where('tipo', 'grupo');
+    }
 }

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Comercial\Cliente;
 use App\Models\CoreBusiness;
 use App\Models\Country;
-use App\Models\Customer;
 use App\Models\PersonnelAcronym;
 use App\Models\Ponderacion;
 use App\Models\Size;
@@ -36,10 +35,6 @@ class CatalogosCrudController extends Controller
             'model' => TechReference::class,
             'label' => 'Tech References',
         ],
-        'customers' => [
-            'model' => Customer::class,
-            'label' => 'Customers',
-        ],
         'core_businesses' => [
             'model' => CoreBusiness::class,
             'label' => 'Core Business',
@@ -62,34 +57,56 @@ class CatalogosCrudController extends Controller
         ],
     ];
 
-    public function index()
+    /** Registros por página por catálogo. */
+    private const PER_PAGE = [
+        'tech_references'    => 50,
+        'ponderaciones'      => 25,
+        'core_businesses'    => 50,
+        'personnel_acronyms' => 50,
+        'countries'          => 100,
+        'varios'             => 100,
+        'sizes'              => 100,
+    ];
+
+    public function index(Request $request)
     {
+        $activeTab = $request->query('tab', array_key_first(self::CATALOGOS));
+        abort_unless(isset(self::CATALOGOS[$activeTab]), 404);
+
         $catalogos = [];
 
         foreach (self::CATALOGOS as $slug => $config) {
             /** @var \Illuminate\Database\Eloquent\Model $modelClass */
             $modelClass = $config['model'];
+            $baseQuery  = $modelClass::where('status', true);
 
-            $records = $modelClass::where('status', true);
+            if ($slug === $activeTab) {
+                // Solo para el tab activo: cargar registros paginados
+                if ($slug === 'tech_references') {
+                    $baseQuery->with('cliente:id,alias,razon_social');
+                } elseif ($slug === 'personnel_acronyms') {
+                    $baseQuery->with('user:id,name,email');
+                }
 
-            // Eager-load para tech_references y personnel_acronyms
-            if ($slug === 'tech_references') {
-                $records = $records->with('cliente:id,alias,razon_social');
-            } elseif ($slug === 'personnel_acronyms') {
-                $records = $records->with('user:id,name,email');
+                $perPage = self::PER_PAGE[$slug] ?? 100;
+                $records = $baseQuery->orderBy('id')->paginate($perPage)->withQueryString();
+            } else {
+                // Para los demás tabs: solo el conteo (no cargar filas)
+                $records = null;
             }
 
             $catalogos[$slug] = [
-                'label'   => $config['label'],
-                'columns' => $this->columns($slug),
-                'form'    => $this->formSchema($slug),
-                'records' => $records->orderBy('id')->get(),
+                'label'      => $config['label'],
+                'columns'    => $this->columns($slug),
+                'form'       => $this->formSchema($slug),
+                'records'    => $records,
+                'total'      => $modelClass::where('status', true)->count(),
             ];
         }
 
         return view('catalogos.crud', [
             'catalogos' => $catalogos,
-            'tabs'      => array_map(fn($slug, $c) => ['slug' => $slug, 'label' => $c['label']], array_keys(self::CATALOGOS), self::CATALOGOS),
+            'activeTab' => $activeTab,
         ]);
     }
 
@@ -160,10 +177,6 @@ class CatalogosCrudController extends Controller
                 ['key' => 'amount_usd',              'label' => 'USD'],
                 ['key' => 'account_manager',         'label' => 'Acct Mgr'],
             ],
-            'customers' => [
-                ['key' => 'customer', 'label' => 'Customer'],
-                ['key' => 'acronym',  'label' => 'Acrónimo'],
-            ],
             'core_businesses' => [
                 ['key' => 'core_business', 'label' => 'Core Business'],
                 ['key' => 'acronym',       'label' => 'Acrónimo'],
@@ -220,10 +233,6 @@ class CatalogosCrudController extends Controller
                 ['name' => 'quotation_personnel',      'label' => 'Personnel',      'type' => 'text'],
                 ['name' => 'account_manager',          'label' => 'Account Manager','type' => 'text'],
             ],
-            'customers' => [
-                ['name' => 'customer', 'label' => 'Customer', 'type' => 'text', 'required' => true],
-                ['name' => 'acronym',  'label' => 'Acrónimo', 'type' => 'text'],
-            ],
             'core_businesses' => [
                 ['name' => 'core_business', 'label' => 'Core Business', 'type' => 'text', 'required' => true],
                 ['name' => 'acronym',       'label' => 'Acrónimo',      'type' => 'text'],
@@ -277,10 +286,6 @@ class CatalogosCrudController extends Controller
                 'amount_mxn'              => 'nullable|numeric',
                 'quotation_personnel'     => 'nullable|string|max:255',
                 'account_manager'         => 'nullable|string|max:255',
-            ],
-            'customers' => [
-                'customer' => 'required|string|max:255',
-                'acronym'  => ['nullable', 'string', 'max:50', Rule::unique('customers', 'acronym')->ignore($ignoreId)],
             ],
             'core_businesses' => [
                 'core_business' => 'required|string|max:255',

@@ -33,8 +33,14 @@ class ChatIndex extends Component
     public $showNewDm = false;
     public $dmSearch = '';
     public $dmUsers = [];
-    public $expandedSections = ['proyecto', 'departamento', 'direccion', 'privado'];
+    public $expandedSections = ['proyecto', 'departamento', 'direccion', 'privado', 'grupo'];
     public $tab = 'conversations';
+    public $showCreateGroup = false;
+    public $groupName = '';
+    public $groupDescription = '';
+    public $groupMemberIds = [];
+    public $groupSearch = '';
+    public $groupSearchResults = [];
 
     protected $listeners = [
         'echoMessageSent' => 'handleIncomingMessage',
@@ -304,6 +310,60 @@ class ChatIndex extends Component
 
     public function removeAttachment($index) { if (isset($this->attachments[$index])) { unset($this->attachments[$index]); $this->attachments = array_values($this->attachments); } }
     public function updatedAttachments() { $this->validate(['attachments.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,zip,rar']); }
+
+    public function searchGroupMembers()
+    {
+        if (strlen($this->groupSearch) < 2) {
+            $this->groupSearchResults = [];
+            return;
+        }
+        $this->groupSearchResults = User::where('status', 'active')
+            ->where('id', '!=', auth()->id())
+            ->where('name', 'like', "%{$this->groupSearch}%")
+            ->orderBy('name')
+            ->limit(12)
+            ->get()
+            ->map(fn ($u) => ['id' => $u->id, 'name' => $u->name, 'avatar' => strtoupper(substr($u->name ?? 'U', 0, 2)), 'selected' => in_array($u->id, $this->groupMemberIds)])
+            ->toArray();
+    }
+
+    public function toggleGroupMember($userId)
+    {
+        $userId = (int) $userId;
+        if (in_array($userId, $this->groupMemberIds)) {
+            $this->groupMemberIds = array_values(array_diff($this->groupMemberIds, [$userId]));
+        } else {
+            $this->groupMemberIds[] = $userId;
+        }
+        $this->searchGroupMembers();
+    }
+
+    public function createGroup()
+    {
+        $this->validate([
+            'groupName' => 'required|min:2|max:100',
+        ], [
+            'groupName.required' => 'El nombre del grupo es obligatorio.',
+            'groupName.min' => 'El nombre debe tener al menos 2 caracteres.',
+        ]);
+
+        $chatService = new ChatService();
+        $canal = $chatService->createGroup(
+            nombre: $this->groupName,
+            descripcion: $this->groupDescription ?: null,
+            creadoPor: auth()->id(),
+            memberIds: $this->groupMemberIds
+        );
+
+        $this->showCreateGroup = false;
+        $this->groupName = '';
+        $this->groupDescription = '';
+        $this->groupMemberIds = [];
+        $this->groupSearch = '';
+        $this->groupSearchResults = [];
+        $this->loadCanales();
+        $this->selectChannel($canal->id);
+    }
 
     public function render()
     {
