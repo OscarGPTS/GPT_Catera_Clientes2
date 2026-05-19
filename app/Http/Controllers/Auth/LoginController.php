@@ -64,16 +64,18 @@ class LoginController extends Controller
             ]);
         }
 
-        // Validación contra RH: bloquea si no está en RH activo, salvo
-        // que el email esté en email_allowlist o el User tenga status='invited'.
-        // Fail-open ante caída del servicio (registra log).
-        $rhResult = $this->rhGuard->check($email, $user);
-        if (! $rhResult->allowed) {
-            RateLimiter::hit($throttleKey);
-            throw ValidationException::withMessages([
-                'email' => $rhResult->message(),
-            ]);
-        }
+        // === Validación RH deshabilitada temporalmente ===
+        // Se comenta el check contra el servicio externo de RH para dejar
+        // limpia la autenticación. Reactivar cuando el servicio RH esté
+        // estabilizado.
+        //
+        // $rhResult = $this->rhGuard->check($email, $user);
+        // if (! $rhResult->allowed) {
+        //     RateLimiter::hit($throttleKey);
+        //     throw ValidationException::withMessages([
+        //         'email' => $rhResult->message(),
+        //     ]);
+        // }
 
         $provider = AuthProvider::where('user_id', $user->id)
             ->where('provider', 'email_password')

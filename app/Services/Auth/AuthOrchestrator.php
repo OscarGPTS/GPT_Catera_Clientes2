@@ -178,42 +178,44 @@ class AuthOrchestrator
         string $email,
         array $profileData,
     ): User {
-        $rhData = null;
-        $rhUnavailable = false;
-        try {
-            $rhClient = app(\App\Services\Rh\RhClientInterface::class);
-            $rhData = $rhClient->searchByEmail($email);
-        } catch (\App\Services\Rh\RhUnavailableException $e) {
-            Log::warning("RH API no disponible al provisionar {$email}: " . $e->getMessage());
-            $rhUnavailable = true;
-        } catch (\Throwable $e) {
-            Log::warning("RH API lookup failed for {$email}: " . $e->getMessage());
-            $rhUnavailable = true;
-        }
-
-        // Bloquea creación si RH respondió y el usuario no existe o está
-        // inactivo. Si RH no responde, fail-open (se crea el usuario y se
-        // valida en próximos logins).
-        if (! $rhUnavailable) {
-            if ($rhData === null) {
-                throw new \Illuminate\Auth\Access\AuthorizationException(
-                    "El email {$email} no está registrado en RH. Contacta al administrador."
-                );
-            }
-            if (! $rhData->activo) {
-                throw new \Illuminate\Auth\Access\AuthorizationException(
-                    "El usuario de RH {$email} se encuentra inactivo."
-                );
-            }
-        }
+        // === Validación RH deshabilitada temporalmente ===
+        // Se comenta la consulta y el bloqueo contra el servicio externo de RH
+        // para dejar limpia la autenticación con Auth0. Reactivar cuando el
+        // servicio RH esté estabilizado.
+        //
+        // $rhData = null;
+        // $rhUnavailable = false;
+        // try {
+        //     $rhClient = app(\App\Services\Rh\RhClientInterface::class);
+        //     $rhData = $rhClient->searchByEmail($email);
+        // } catch (\App\Services\Rh\RhUnavailableException $e) {
+        //     Log::warning("RH API no disponible al provisionar {$email}: " . $e->getMessage());
+        //     $rhUnavailable = true;
+        // } catch (\Throwable $e) {
+        //     Log::warning("RH API lookup failed for {$email}: " . $e->getMessage());
+        //     $rhUnavailable = true;
+        // }
+        //
+        // if (! $rhUnavailable) {
+        //     if ($rhData === null) {
+        //         throw new \Illuminate\Auth\Access\AuthorizationException(
+        //             "El email {$email} no está registrado en RH. Contacta al administrador."
+        //         );
+        //     }
+        //     if (! $rhData->activo) {
+        //         throw new \Illuminate\Auth\Access\AuthorizationException(
+        //             "El usuario de RH {$email} se encuentra inactivo."
+        //         );
+        //     }
+        // }
 
         $user = User::create([
-            'name' => $profileData['name'] ?? ($rhData?->name ?? explode('@', $email)[0]),
+            'name' => $profileData['name'] ?? explode('@', $email)[0],
             'email' => $email,
             'password' => Hash::make(\Illuminate\Support\Str::random(32)),
-            'departamento' => $profileData['departamento'] ?? ($rhData?->departamento ?? null),
-            'puesto' => $profileData['puesto'] ?? ($rhData?->puesto ?? null),
-            'employee_id' => $profileData['employee_id'] ?? ($rhData?->employeeId ?? null),
+            'departamento' => $profileData['departamento'] ?? null,
+            'puesto' => $profileData['puesto'] ?? null,
+            'employee_id' => $profileData['employee_id'] ?? null,
             'es_socio' => false,
             'status' => 'active',
         ]);

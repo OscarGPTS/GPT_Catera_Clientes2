@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"RhClient\" config/ app/Providers/ 2>nul)"
+    ],
+    "additionalDirectories": [
+      "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"
+    ]
+  }
+}
