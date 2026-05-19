@@ -105,12 +105,13 @@
                 </div>
                 @endif
 
-                {{-- Messages --}}
+                {{-- Messages (wire:poll only ticks while drawer is open + channel active, since this @if wrapper is gated upstream) --}}
                 <div
                     class="flex-1 overflow-y-auto px-3 py-2 space-y-1"
                     id="chat-messages-drawer"
                     x-data
                     x-init="$nextTick(() => { $el.scrollTop = $el.scrollHeight; })"
+                    @if($open && ! $showNewDm && ! $showNewChannel) wire:poll.5s="loadMensajes" @endif
                 >
                     {{-- Load more button --}}
                     @if($hasMoreMessages)
@@ -341,17 +342,6 @@
                         @endfor
                     </div>
 
-                    {{-- Typing indicator --}}
-                    @if(!empty($typingUsers))
-                    <div class="flex items-center gap-1.5 px-1 py-1 text-[11px] text-slate-400">
-                        <span class="flex gap-0.5">
-                            <span class="h-1 w-1 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 0ms"></span>
-                            <span class="h-1 w-1 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 150ms"></span>
-                            <span class="h-1 w-1 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 300ms"></span>
-                        </span>
-                        <span class="italic">{{ implode(', ', $typingUsers) }} escribiendo...</span>
-                    </div>
-                    @endif
                 </div>
 
                 {{-- Reply bar --}}

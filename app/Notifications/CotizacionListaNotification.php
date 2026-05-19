@@ -3,11 +3,9 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
-class CotizacionListaNotification extends Notification implements ShouldBroadcast
+class CotizacionListaNotification extends Notification
 {
     use Queueable;
 
@@ -19,13 +17,9 @@ class CotizacionListaNotification extends Notification implements ShouldBroadcas
 
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
-    public function toBroadcast(object $notifiable): BroadcastMessage
-    {
-        return new BroadcastMessage($this->toArray($notifiable));
-    }
 
     public function toArray(object $notifiable): array
     {

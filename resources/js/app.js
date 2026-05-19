@@ -1,5 +1,4 @@
 import './bootstrap';
-import './chat';
 
 import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm.js';
 import 'flowbite';

@@ -204,9 +204,13 @@ function initProjChart(idx) {
                                                                         $projProb = $p['probs'][$mIdx] ?? null;
                                                                         $projPond = $projProb !== null ? round($p['monto'] * ($projProb / 100), 2) : null;
                                                                     @endphp
-                                                                    <td class="px-2 py-1 text-center text-indigo-600 font-medium whitespace-nowrap text-[10px]">
+
+                                                                    {{--
+                                                                     <td class="px-2 py-1 text-center text-indigo-600 font-medium whitespace-nowrap text-[10px]">
                                                                         {{ $projPond !== null ? '$' . number_format($projPond, 2) . 'M' : '—' }}
-                                                                    </td>
+                                                                    </td> 
+                                                                    --}}
+                                                                    <br>
                                                                 @endforeach
                                                             </tr>
                                                         </tbody>

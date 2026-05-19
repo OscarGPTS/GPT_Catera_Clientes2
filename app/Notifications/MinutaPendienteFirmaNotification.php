@@ -3,11 +3,9 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
-class MinutaPendienteFirmaNotification extends Notification implements ShouldBroadcast
+class MinutaPendienteFirmaNotification extends Notification
 {
     use Queueable;
 
@@ -19,13 +17,9 @@ class MinutaPendienteFirmaNotification extends Notification implements ShouldBro
 
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
-    public function toBroadcast(object $notifiable): BroadcastMessage
-    {
-        return new BroadcastMessage($this->toArray($notifiable));
-    }
 
     public function toArray(object $notifiable): array
     {

@@ -2,9 +2,6 @@
 
 namespace App\Livewire\Chat;
 
-use App\Events\ChatMessageRead;
-use App\Events\ChatMessageSent;
-use App\Events\ChatTyping;
 use App\Models\Chat\ChatCanal;
 use App\Models\Chat\ChatLectura;
 use App\Models\Chat\ChatMensaje;
@@ -26,9 +23,7 @@ class ChatDrawer extends Component
     public $canales = [];
     public $mensajes = [];
     public $newMessage = '';
-    public $mode = 'drawer';
     public $search = '';
-    public $typingUsers = [];
     public $attachments = [];
     public $uploading = false;
     public $highlight = '';
@@ -55,10 +50,6 @@ class ChatDrawer extends Component
     public function mount()
     {
         $this->loadCanales();
-
-        if (request()->route() && request()->route()->getName() === 'chat.index') {
-            $this->mode = 'page';
-        }
     }
 
     public function openDrawer($channelId = null)
@@ -76,6 +67,9 @@ class ChatDrawer extends Component
         $canales = ChatCanal::query()
             ->whereHas('miembros', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
+            })
+            ->where(function ($q) {
+                $q->where('tipo', '!=', 'privado')->orWhereHas('mensajes');
             })
             ->with(['ultimoMensaje.user', 'miembros.user'])
             ->when($this->search, function ($q) {
@@ -128,7 +122,7 @@ class ChatDrawer extends Component
                     'id' => $m->user->id,
                     'name' => $m->user->name,
                     'avatar' => strtoupper(substr($m->user->name ?? 'U', 0, 2)),
-                ]),
+                ])->values()->toArray(),
             ];
         })->toArray();
     }
@@ -142,7 +136,6 @@ class ChatDrawer extends Component
         }
 
         $this->activeChannelId = (int) $channelId;
-        $this->typingUsers = [];
         $this->replyingTo = null;
         $this->highlight = '';
         $this->editingMessageId = null;
@@ -387,11 +380,6 @@ class ChatDrawer extends Component
                 ));
             });
 
-        try {
-            ChatMessageSent::dispatch($mensaje->load('user'));
-        } catch (\Exception $e) {
-        }
-
         $this->newMessage = '';
         $this->attachments = [];
         $this->replyingTo = null;
@@ -399,36 +387,6 @@ class ChatDrawer extends Component
         $this->loadCanales();
         $this->marcarLeido();
         $this->dispatch('scroll-chat-to-bottom');
-    }
-
-    public function typing()
-    {
-        if (! $this->activeChannelId) return;
-
-        try {
-            ChatTyping::dispatch(
-                $this->activeChannelId,
-                auth()->id(),
-                auth()->user()->name,
-                true
-            );
-        } catch (\Exception $e) {
-        }
-    }
-
-    public function stopTyping()
-    {
-        if (! $this->activeChannelId) return;
-
-        try {
-            ChatTyping::dispatch(
-                $this->activeChannelId,
-                auth()->id(),
-                auth()->user()->name,
-                false
-            );
-        } catch (\Exception $e) {
-        }
     }
 
     public function marcarLeido()
@@ -450,49 +408,7 @@ class ChatDrawer extends Component
             ->whereNull('leido_at')
             ->update(['leido_at' => now()]);
 
-        try {
-            ChatMessageRead::dispatch(
-                $this->activeChannelId,
-                auth()->id(),
-                auth()->user()->name,
-                $ultimo->id
-            );
-        } catch (\Exception $e) {
-        }
-
         $this->loadCanales();
-    }
-
-    public function handleIncomingMessage($data)
-    {
-        if (! isset($data['canal_id']) || ! $this->activeChannelId) return;
-
-        if ((int) $data['canal_id'] === (int) $this->activeChannelId) {
-            $this->loadMensajes();
-        }
-
-        $this->loadCanales();
-    }
-
-    public function handleReadReceipt($data)
-    {
-        if (! isset($data['canalId']) || (int) $data['canalId'] !== (int) $this->activeChannelId) return;
-        $this->loadCanales();
-    }
-
-    public function handleTyping($data)
-    {
-        if (! isset($data['canalId']) || (int) $data['canalId'] !== (int) $this->activeChannelId) return;
-        if ((int) $data['userId'] === auth()->id()) return;
-
-        $this->typingUsers[$data['userId']] = $data['userName'] ?? 'Alguien';
-    }
-
-    public function handleStopTyping($data)
-    {
-        if (isset($data['userId'])) {
-            unset($this->typingUsers[$data['userId']]);
-        }
     }
 
     public function editMessage($messageId)
@@ -585,11 +501,6 @@ class ChatDrawer extends Component
 
     public function render()
     {
-        if ($this->mode === 'page') {
-            return view('livewire.chat.chat-panel')
-                ->layout('components.layouts.app', ['fullWidth' => true]);
-        }
-
         return view('livewire.chat.chat-drawer');
     }
 }

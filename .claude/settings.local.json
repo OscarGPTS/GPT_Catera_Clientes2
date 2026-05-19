@@ -8,7 +8,21 @@
       "Bash(php -r ' *)",
       "Bash(php -l c:/xampp/htdocs/GPT_Catera_Clientes2/storage/app/_blade_debug.php)",
       "Bash(npm run *)",
-      "Bash(curl -s -L http://localhost:8765/)"
+      "Bash(curl -s -L http://localhost:8765/)",
+      "Bash(npm uninstall *)",
+      "Bash(grep -rn \"view\\('[a-z][^']*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\" app/ resources/views/)",
+      "Bash(grep -rEn \"view\\\\\\('[^']*\\\\\\\\\\\\\\\\[^']*'\" app/ resources/views/)",
+      "Bash(grep -rEn 'view\\\\\\(\"[^\"]*\\\\\\\\\\\\\\\\[^\"]*\"' app/ resources/views/)",
+      "Bash(grep -rn \"view\\('[^']*\\\\\\\\\\\\\\\\\" app/ resources/views/)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -rn \"@include\\('[^']*\\\\\\\\\\\\\\\\\\\\|@extends\\('[^']*\\\\\\\\\\\\\\\\\" resources/views/)",
+      "Bash(php -l storage/app/_t.php)",
+      "Bash(grep -n 'public $show' app/Livewire/Chat/ChatDrawer.php)",
+      "Bash(grep -rn 'handleIncomingMessage\\\\|handleReadReceipt\\\\|handleTyping\\\\|handleStopTyping\\\\|$typingUsers' app/ resources/views/livewire/)",
+      "Bash(grep -n '$mode\\\\b\\\\|->mode' app/Livewire/Chat/ChatDrawer.php resources/views/livewire/chat/chat-drawer.blade.php)",
+      "Bash(grep -n '$mode\\\\|->mode' app/Livewire/Chat/ChatDrawer.php)",
+      "Bash(php -l app/Livewire/Chat/ChatDrawer.php)",
+      "Bash(php -l app/Livewire/Chat/ChatIndex.php)"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"

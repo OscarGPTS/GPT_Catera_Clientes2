@@ -22,7 +22,6 @@ class ChatIndex extends Component
     public $newMessage = '';
     public $search = '';
     public $userSearch = '';
-    public $typingUsers = [];
     public $attachments = [];
     public $highlight = '';
     public $replyingTo = null;
@@ -59,6 +58,9 @@ class ChatIndex extends Component
 
         $canales = ChatCanal::query()
             ->whereHas('miembros', fn ($q) => $q->where('user_id', $user->id))
+            ->where(function ($q) {
+                $q->where('tipo', '!=', 'privado')->orWhereHas('mensajes');
+            })
             ->with(['ultimoMensaje.user', 'miembros.user'])
             ->when($this->search, fn ($q) => $q->where('nombre', 'like', "%{$this->search}%"))
             ->orderByDesc(ChatMensaje::select('created_at')->whereColumn('canal_id', 'chat_canales.id')->latest()->take(1))
@@ -96,7 +98,7 @@ class ChatIndex extends Component
                     'id' => $m->user->id,
                     'name' => $m->user->name,
                     'avatar' => strtoupper(substr($m->user->name ?? 'U', 0, 2)),
-                ]),
+                ])->values()->toArray(),
             ];
         })->toArray();
     }
@@ -109,7 +111,6 @@ class ChatIndex extends Component
             return;
         }
         $this->activeChannelId = (int) $channelId;
-        $this->typingUsers = [];
         $this->replyingTo = null;
         $this->highlight = '';
         $this->editingMessageId = null;
@@ -225,8 +226,6 @@ class ChatIndex extends Component
             $miembro->user->notify(new \App\Notifications\Chat\NewChatMessageNotification($canal->id, $canal->nombre, auth()->user()->name, $mensaje->id));
         });
 
-        try { \App\Events\ChatMessageSent::dispatch($mensaje->load('user')); } catch (\Exception $e) {}
-
         $this->newMessage = '';
         $this->attachments = [];
         $this->replyingTo = null;
@@ -266,22 +265,8 @@ class ChatIndex extends Component
         if (! $ultimo) return;
         ChatLectura::updateOrCreate(['canal_id' => $this->activeChannelId, 'user_id' => auth()->id()], ['ultimo_mensaje_leido_id' => $ultimo->id]);
         \App\Models\Chat\ChatMencion::where('user_id', auth()->id())->whereHas('mensaje', fn ($q) => $q->where('canal_id', $this->activeChannelId))->whereNull('leido_at')->update(['leido_at' => now()]);
-        try { \App\Events\ChatMessageRead::dispatch($this->activeChannelId, auth()->id(), auth()->user()->name, $ultimo->id); } catch (\Exception $e) {}
         $this->loadCanales();
     }
-
-    public function handleIncomingMessage($data) {
-        if (!isset($data['canal_id']) || !$this->activeChannelId) return;
-        if ((int)$data['canal_id'] === (int)$this->activeChannelId) { $this->loadMensajes(); }
-        $this->loadCanales();
-    }
-    public function handleReadReceipt($data) { if (isset($data['canalId'])) $this->loadCanales(); }
-    public function handleTyping($data) {
-        if (!isset($data['canalId']) || (int)$data['canalId'] !== (int)$this->activeChannelId) return;
-        if ((int)$data['userId'] === auth()->id()) return;
-        $this->typingUsers[$data['userId']] = $data['userName'] ?? 'Alguien';
-    }
-    public function handleStopTyping($data) { if (isset($data['userId'])) unset($this->typingUsers[$data['userId']]); }
 
     public function searchUsers()
     {
@@ -362,6 +347,6 @@ class ChatIndex extends Component
 
     public function render()
     {
-        return view('livewire\chat.chat-index')->layout('components.layouts.app', ['fullWidth' => true]);
+        return view('livewire.chat.chat-index')->layout('components.layouts.app', ['fullWidth' => true]);
     }
 }

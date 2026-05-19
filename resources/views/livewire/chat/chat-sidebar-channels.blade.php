@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.10s="loadCanales">
     {{-- Chat button --}}
     <div class="mb-1 px-1">
         <a

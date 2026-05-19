@@ -3,11 +3,9 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
-class CierreMensualGeneradoNotification extends Notification implements ShouldBroadcast
+class CierreMensualGeneradoNotification extends Notification
 {
     use Queueable;
 
@@ -20,13 +18,9 @@ class CierreMensualGeneradoNotification extends Notification implements ShouldBr
 
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
-    public function toBroadcast(object $notifiable): BroadcastMessage
-    {
-        return new BroadcastMessage($this->toArray($notifiable));
-    }
 
     public function toArray(object $notifiable): array
     {

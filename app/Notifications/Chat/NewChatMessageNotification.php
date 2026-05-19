@@ -3,11 +3,9 @@
 namespace App\Notifications\Chat;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
-class NewChatMessageNotification extends Notification implements ShouldBroadcast
+class NewChatMessageNotification extends Notification
 {
     use Queueable;
 
@@ -20,13 +18,9 @@ class NewChatMessageNotification extends Notification implements ShouldBroadcast
 
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
-    public function toBroadcast(object $notifiable): BroadcastMessage
-    {
-        return new BroadcastMessage($this->toArray($notifiable));
-    }
 
     public function toArray(object $notifiable): array
     {

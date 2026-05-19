@@ -1,4 +1,4 @@
-<div class="relative flex h-[calc(100vh-64px)]" x-data="{ newDm: false }">
+<div class="relative flex h-[calc(100vh-64px)]" x-data="{ newDm: false }" @if($activeChannelId && ! $showNewDm && ! $showCreateGroup) wire:poll.5s="loadMensajes" @endif>
     {{-- Left sidebar: contacts + conversations --}}
     <div class="flex w-80 shrink-0 flex-col border-r border-slate-200 bg-white max-md:absolute max-md:inset-0 max-md:z-10 max-md:w-full max-md:border-r-0 {{ $activeChannelId ? 'max-md:hidden' : '' }}">
         {{-- Header --}}
@@ -344,12 +344,6 @@
                 </div>
                 @endempty
 
-                @if(!empty($typingUsers))
-                <div class="flex items-center gap-2 px-1 py-2 text-[12px] text-slate-400">
-                    <span class="flex gap-0.5"><span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 0ms"></span><span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 150ms"></span><span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gpt-500" style="animation-delay: 300ms"></span></span>
-                    <span class="italic">{{ implode(', ', $typingUsers) }} escribiendo...</span>
-                </div>
-                @endif
             </div>
 
             {{-- Reply bar --}}
