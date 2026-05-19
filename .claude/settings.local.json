@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -rn \"RhClient\" config/ app/Providers/ 2>nul)"
+      "Bash(grep -rn \"RhClient\" config/ app/Providers/ 2>nul)",
+      "Bash(php -l c:/xampp/htdocs/GPT_Catera_Clientes2/storage/framework/views/*.php)",
+      "Bash(php artisan *)",
+      "Bash(awk 'END{print NR}' resources/views/livewire/proyectos/oportunidades-index.blade.php)",
+      "Bash(php -r ' *)",
+      "Bash(php -l c:/xampp/htdocs/GPT_Catera_Clientes2/storage/app/_blade_debug.php)",
+      "Bash(npm run *)"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"
