@@ -30,7 +30,7 @@ $sectionId = 'section-' . \Illuminate\Support\Str::slug($label);
     ></div>
 
     <div
-        class="space-y-0.5 px-2" style="margin-top:-12px;"
+        class="space-y-0.5 px-2" style="margin-top:-12px; margin-bottom: 4px;"
         @if($collapsible) x-show="open" x-collapse @endif
     >
         {{ $slot }}

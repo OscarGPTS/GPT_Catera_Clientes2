@@ -113,7 +113,7 @@ function initProjChart(idx) {
 <div>
       
     <div>
-        <h2 class="text-2xl font-medium text-slate-900">Hola, {{ $nombre_usuario }}</h2>
+        <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Hola, {{ $nombre_usuario }}</h2>
         <p class="mt-1 text-sm text-slate-500">Vista ejecutiva </p>
     </div>
 
@@ -121,7 +121,7 @@ function initProjChart(idx) {
         
         {{-- Data table: Status Ofertas 2026 --}}
         <div class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h4 class="text-sm font-semibold text-slate-800">Detalle de Ofertas {{ \Carbon\Carbon::now()->year }}</h4>
                    

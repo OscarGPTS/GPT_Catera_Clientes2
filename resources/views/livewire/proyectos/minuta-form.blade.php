@@ -8,8 +8,8 @@
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             <span class="font-medium text-slate-900">Minuta de Entrega</span>
         </nav>
-        <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-medium text-slate-900">Minuta de Entrega</h2>
+        <div class="flex flex-wrap items-center gap-3">
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Minuta de Entrega</h2>
             <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $minutaObligatoria ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
                 {{ $minutaObligatoria ? 'Obligatorio' : 'Opcional' }}
             </span>
@@ -77,7 +77,7 @@
                         <input type="date" wire:model="fecha_reunion" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-gpt-600">
                         @error('fecha_reunion') <span class="text-xs text-gpt-red-600">{{ $message }}</span> @enderror
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Hora inicio</label>
                             <input type="time" wire:model="hora_inicio" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-gpt-600">
@@ -119,7 +119,7 @@
         {{-- Step 2: Orden del día --}}
         @if($currentStep === 1)
             <div class="space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h3 class="text-lg font-medium text-slate-900">Orden del día</h3>
                     <button type="button" wire:click="agregarPunto" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
@@ -146,7 +146,7 @@
         {{-- Step 3: Acuerdos --}}
         @if($currentStep === 2)
             <div class="space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h3 class="text-lg font-medium text-slate-900">Acuerdos</h3>
                     <button type="button" wire:click="agregarAcuerdo" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>

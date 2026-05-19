@@ -1,9 +1,9 @@
 <div>
     @section('title', 'Cotización — ' . ($proyecto->cp_numero ?? 'CP'))
 
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <nav class="flex items-center gap-2 text-sm text-slate-500 mb-2" aria-label="Breadcrumb">
+            <nav class="flex items-center gap-2 text-sm text-slate-500 mb-2 overflow-x-auto" aria-label="Breadcrumb">
                 <a href="{{ route('oportunidades.index') }}" class="hover:text-slate-700 transition-colors">Oportunidades</a>
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                 <span class="font-medium text-slate-900">{{ $proyecto->cp_numero }}</span>
@@ -14,7 +14,7 @@
                     <span class="font-medium text-slate-900">Nueva cotización</span>
                 @endif
             </nav>
-            <h2 class="text-2xl font-medium text-slate-900">Cotización — {{ $proyecto->cliente->razon_social ?? '—' }}</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Cotización — {{ $proyecto->cliente->razon_social ?? '—' }}</h2>
             <p class="mt-1 text-sm text-slate-500">Editor de cotización con costeo de partidas, factores y condiciones comerciales</p>
         </div>
     </div>
@@ -45,7 +45,7 @@
             {{-- Section 1: Partidas --}}
             @if($activeSection === 'partidas')
                 <div class="rounded-lg border border-slate-200 bg-white p-6">
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
                         <h3 class="text-lg font-medium text-slate-900">Partidas</h3>
                         <span class="text-sm text-slate-500">{{ count($partidas) }} partidas</span>
                     </div>
@@ -171,7 +171,7 @@
 
                         <div class="border-t border-slate-100 pt-4 mt-6">
                             <h4 class="text-sm font-medium text-slate-700 mb-3">Vista previa del impacto</h4>
-                            <div class="grid grid-cols-4 gap-4 text-center">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
                                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
                                     <span class="block text-xs text-slate-500">Costo Directo</span>
                                     <span class="text-sm font-semibold text-slate-900">$ {{ number_format($this->costoDirecto, 2) }}</span>

@@ -1,7 +1,7 @@
 <div>
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h2 class="text-2xl font-medium text-slate-900">Roles y permisos</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Roles y permisos</h2>
             <p class="mt-1 text-sm text-slate-500">Roles del sistema con sus permisos asignados. Los permisos se modifican solo por código.</p>
         </div>
     </div>

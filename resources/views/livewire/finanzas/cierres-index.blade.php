@@ -4,7 +4,7 @@
     <div class="space-y-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-2xl font-medium text-slate-900">Cierres Mensuales</h2>
+                <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Cierres Mensuales</h2>
                 <p class="mt-1 text-sm text-slate-500">Comparativa SAT vs Gerencial · Cierre mensual D1</p>
             </div>
         </div>
@@ -64,10 +64,10 @@
 
         <div class="flex flex-col gap-6 lg:flex-row">
             <div class="flex-1 min-w-0 space-y-6">
-                <div class="flex border-b border-slate-200">
-                    <button wire:click="$set('tab', 'sat')" class="border-b-2 px-4 py-2.5 text-sm font-medium transition-colors {{ $tab === 'sat' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">Cierre SAT</button>
-                    <button wire:click="$set('tab', 'gerencial')" class="border-b-2 px-4 py-2.5 text-sm font-medium transition-colors {{ $tab === 'gerencial' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">Cierre Gerencial</button>
-                    <button wire:click="$set('tab', 'comparativa')" class="border-b-2 px-4 py-2.5 text-sm font-medium transition-colors {{ $tab === 'comparativa' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">Comparativa</button>
+                <div class="flex overflow-x-auto border-b border-slate-200">
+                    <button wire:click="$set('tab', 'sat')" class="whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition-colors {{ $tab === 'sat' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">Cierre SAT</button>
+                    <button wire:click="$set('tab', 'gerencial')" class="whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition-colors {{ $tab === 'gerencial' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">Cierre Gerencial</button>
+                    <button wire:click="$set('tab', 'comparativa')" class="whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition-colors {{ $tab === 'comparativa' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">Comparativa</button>
                 </div>
 
                 @if($tab === 'sat')

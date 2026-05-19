@@ -1,7 +1,7 @@
 <x-layouts.app>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-medium text-slate-900">Catálogos</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Catálogos</h2>
             <p class="mt-1 text-sm text-slate-500">Administración de tablas de referencia del sistema</p>
         </div>
     </x-slot>
@@ -70,7 +70,7 @@
             @php $cat = $catalogos[$activeTab]; @endphp
 
             {{-- Header --}}
-            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 px-5 py-3">
                 <div>
                     <h3 class="text-sm font-semibold text-slate-800">{{ $cat['label'] }}</h3>
                     <p class="text-[11px] text-slate-500">

@@ -2,7 +2,7 @@
     @section('title', 'Mi Asignación')
 
     <div class="mb-6">
-        <h2 class="text-2xl font-medium text-slate-900">Mi Asignación</h2>
+        <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Mi Asignación</h2>
         <p class="mt-1 text-sm text-slate-500">Proyectos y carga asignada actualmente</p>
     </div>
 
@@ -43,7 +43,7 @@
         @if($todosProyectos->isNotEmpty())
             <div class="divide-y divide-slate-100">
                 @foreach($todosProyectos as $proyecto)
-                    <div class="flex items-center justify-between px-6 py-4 hover:bg-slate-50">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-4 hover:bg-slate-50">
                         <div class="flex items-center gap-4">
                             <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gpt-100 text-sm font-medium text-gpt-700">
                                 {{ $proyecto->sublinea?->codigo ?? '—' }}

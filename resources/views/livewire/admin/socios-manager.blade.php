@@ -1,6 +1,6 @@
 <div>
-    <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-medium text-slate-900">Socios</h2>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Socios</h2>
         <x-button variant="primary" wire:click="openAddModal">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
             Agregar email
@@ -11,6 +11,7 @@
         <h3 class="text-lg font-medium text-slate-900">Usuarios con estatus de socio</h3>
 
         <div class="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-slate-50">
                     <tr>
@@ -48,6 +49,7 @@
                     @endif
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -56,6 +58,7 @@
         <p class="mt-1 text-sm text-slate-500">Emails que serán reconocidos como socios automáticamente (D2).</p>
 
         <div class="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-slate-50">
                     <tr>
@@ -84,6 +87,7 @@
                     @endif
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 

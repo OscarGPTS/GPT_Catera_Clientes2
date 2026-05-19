@@ -1,14 +1,14 @@
 <aside
-    class="relative flex flex-col bg-slate-900 shadow-lg shadow-slate-950/20 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-    style="will-change: width;"
+    class="fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-slate-900 shadow-lg shadow-slate-950/20 transition-[width,transform] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:static lg:inset-auto lg:z-auto lg:h-auto lg:shrink-0 lg:translate-x-0"
+    style="will-change: width, transform;"
     :class="{
-        'w-64': sidebarOpen && !sidebarMobileOpen,
-        'w-[68px]': !sidebarOpen && !sidebarMobileOpen,
-        'fixed inset-y-0 left-0 z-50 w-64': sidebarMobileOpen,
-        '-translate-x-full': !sidebarMobileOpen && window.innerWidth < 1024
+        '-translate-x-full': !sidebarMobileOpen,
+        'translate-x-0': sidebarMobileOpen,
+        'lg:w-64': sidebarOpen,
+        'lg:w-[68px]': !sidebarOpen
     }"
     @sidebar-toggle.window="sidebarOpen = !sidebarOpen; localStorage.setItem('sidebar_open', sidebarOpen)"
-    x-data="{ 
+    x-data="{
         activeGroup: null,
         toggleGroup(group) { this.activeGroup = this.activeGroup === group ? null : group }
     }"

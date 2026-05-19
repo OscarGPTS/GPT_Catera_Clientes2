@@ -1,11 +1,11 @@
 <div>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-2xl font-medium text-slate-900">Oportunidades</h2>
+                <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Oportunidades</h2>
                 <p class="mt-1 text-sm text-slate-500">Pipeline de nuevos proyectos y cotizaciones</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('oportunidades.exportar', array_filter(['anio' => $anio, 'search' => $search])) }}"
                    class="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-100 transition-colors">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
@@ -24,13 +24,13 @@
     </x-slot>
 
     {{-- Year tabs --}}
-    <div class="flex items-center gap-1 border-b border-slate-200 pb-0">
+    <div class="flex items-center gap-1 overflow-x-auto border-b border-slate-200 pb-0">
         @php
             $years = range(date('Y') - 2, date('Y') + 1);
         @endphp
         @foreach($years as $y)
             <button wire:click="$set('anio', '{{ $y }}')" wire:key="year-{{ $y }}"
-                    class="relative px-4 py-2.5 text-sm font-medium transition-colors {{ $anio == $y ? 'text-gpt-600' : 'text-slate-500 hover:text-slate-700' }}">
+                    class="relative whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors {{ $anio == $y ? 'text-gpt-600' : 'text-slate-500 hover:text-slate-700' }}">
                 {{ $y }}
                 @if($anio == $y)
                     <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-gpt-600"></span>
@@ -38,7 +38,7 @@
             </button>
         @endforeach
         <button wire:click="$set('anio', 'todos')"
-                class="relative px-4 py-2.5 text-sm font-medium transition-colors {{ $anio === 'todos' ? 'text-gpt-600' : 'text-slate-500 hover:text-slate-700' }}">
+                class="relative whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors {{ $anio === 'todos' ? 'text-gpt-600' : 'text-slate-500 hover:text-slate-700' }}">
             Todos
             @if($anio === 'todos')
                 <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-gpt-600"></span>
@@ -422,7 +422,7 @@
                                     </button>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
+                                <div class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
 
                                     {{-- Cliente --}}
                                     <div>

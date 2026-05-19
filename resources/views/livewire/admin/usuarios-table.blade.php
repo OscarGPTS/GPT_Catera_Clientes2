@@ -9,14 +9,14 @@
     detailTab: $wire.entangle('detailTab'),
 }" x-on:keydown.escape.window="drawerOpen = false">
 
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h2 class="text-2xl font-medium text-slate-900">Usuarios</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Usuarios</h2>
             <p class="mt-1 text-sm text-slate-500">
                 {{ $totalActivos }} activos &middot; {{ $totalInvitados }} invitados &middot; {{ $totalSuspendidos }} suspendidos
             </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <x-button variant="ghost" wire:click="syncRh" wire:loading.attr="disabled">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/></svg>
                 Sincronizar con RH
@@ -68,6 +68,7 @@
 
     {{-- Users Table --}}
     <div class="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
                 <tr>
@@ -119,6 +120,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
 
         <div class="border-t border-slate-200 bg-white px-4 py-3">
             {{ $usuarios->links() }}

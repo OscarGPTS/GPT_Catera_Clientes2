@@ -8,7 +8,7 @@
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                 <span class="font-medium text-slate-900">Adjudicar</span>
             </nav>
-            <h2 class="text-2xl font-medium text-slate-900">Adjudicar {{ $proyecto->cp_numero ?? $proyecto->tech_reference ?? 'Oportunidad' }}</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Adjudicar {{ $proyecto->cp_numero ?? $proyecto->tech_reference ?? 'Oportunidad' }}</h2>
             <p class="mt-1 text-sm text-slate-500">Registrar adjudicación del proyecto y asignar equipo para ejecución</p>
         </div>
     </x-slot>

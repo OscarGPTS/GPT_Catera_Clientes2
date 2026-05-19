@@ -1,7 +1,7 @@
 <x-layouts.app>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-medium text-slate-900">Catálogos</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Catálogos</h2>
             <p class="mt-1 text-sm text-slate-500">Tablas de referencia para importación y codificación de datos</p>
         </div>
     </x-slot>
@@ -174,7 +174,7 @@
                         </label>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Fila de inicio</label>
                             <input

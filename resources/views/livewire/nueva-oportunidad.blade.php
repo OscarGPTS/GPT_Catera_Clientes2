@@ -2,13 +2,13 @@
     @section('title', 'Nueva oportunidad')
 
     <div class="mb-6">
-        <h2 class="text-2xl font-medium text-slate-900">Nueva oportunidad</h2>
+        <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Nueva oportunidad</h2>
         <p class="mt-1 text-sm text-slate-500">Crea una nueva oportunidad comercial y asigna CP</p>
     </div>
 
     {{-- Stepper --}}
     <div class="mb-8">
-        <div class="flex items-center justify-center">
+        <div class="flex items-center justify-center overflow-x-auto">
             @foreach(['Datos básicos', 'Resumen ejecutivo', 'Asignación'] as $index => $label)
                 @php $stepNum = $index + 1; @endphp
                 <div class="flex items-center">

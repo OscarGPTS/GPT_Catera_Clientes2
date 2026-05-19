@@ -1,7 +1,7 @@
 <div>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-medium text-slate-900">Finanzas</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Finanzas</h2>
             <p class="mt-1 text-sm text-slate-500">Gestión financiera y control de cuentas</p>
         </div>
     </x-slot>

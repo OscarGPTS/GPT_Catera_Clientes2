@@ -2,7 +2,7 @@
     @section('title', 'Mi Perfil')
 
     <div class="mb-6">
-        <h2 class="text-2xl font-medium text-slate-900">Mi Perfil</h2>
+        <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Mi Perfil</h2>
         <p class="mt-1 text-sm text-slate-500">Información de tu cuenta y configuración personal</p>
     </div>
 

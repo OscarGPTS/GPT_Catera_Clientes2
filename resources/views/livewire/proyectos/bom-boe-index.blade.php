@@ -1,7 +1,7 @@
 <div>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-medium text-slate-900">BOM / BOE</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">BOM / BOE</h2>
             <p class="mt-1 text-sm text-slate-500">Bill of Materials / Equipment del proyecto</p>
         </div>
     </x-slot>
@@ -159,7 +159,7 @@
                         <input type="text" wire:model="descripcion" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:ring-gpt-600" placeholder="Descripción del material o equipo">
                         @error('descripcion') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Cantidad *</label>
                             <input type="number" wire:model="cantidad" step="0.01" min="0" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:ring-gpt-600">

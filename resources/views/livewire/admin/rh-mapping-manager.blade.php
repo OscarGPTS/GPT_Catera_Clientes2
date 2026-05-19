@@ -1,7 +1,7 @@
 <div>
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h2 class="text-2xl font-medium text-slate-900">Mapeo RH → Roles</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Mapeo RH → Roles</h2>
             <p class="mt-1 text-sm text-slate-500">Configura cómo los puestos del sistema RH se asignan a roles de la plataforma.</p>
         </div>
         <x-button variant="primary" wire:click="openCreateModal">
@@ -11,6 +11,7 @@
     </div>
 
     <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
                 <tr>
@@ -47,6 +48,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 
     {{-- Create/Edit Modal --}}

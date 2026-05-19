@@ -9,7 +9,7 @@
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             <span class="font-medium text-slate-900">Libro de Proyecto</span>
         </nav>
-        <h2 class="text-2xl font-medium text-slate-900">Libro de Proyecto — {{ $proyecto->cliente->razon_social ?? '—' }}</h2>
+        <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Libro de Proyecto — {{ $proyecto->cliente->razon_social ?? '—' }}</h2>
         <p class="mt-1 text-sm text-slate-500">Dossier ISO — Control documental de ejecución</p>
     </div>
 
@@ -19,7 +19,7 @@
 
     {{-- Header: project name, % avance global --}}
     <div class="mt-6 rounded-lg border border-slate-200 bg-white p-6 mb-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h3 class="text-sm font-medium text-slate-500">Avance global del dossier</h3>
                 <div class="flex items-baseline gap-2 mt-1">

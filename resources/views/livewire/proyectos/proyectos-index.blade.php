@@ -1,11 +1,11 @@
 <div>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-2xl font-medium text-slate-900">Proyectos</h2>
+                <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Proyectos</h2>
                 <p class="mt-1 text-sm text-slate-500">Proyectos en ejecución y seguimiento</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <a href="{{ route('oportunidades.index') }}" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
                     Pipeline
                 </a>

@@ -1,7 +1,7 @@
 <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-medium text-slate-800">Notificaciones</h1>
+            <h1 class="text-xl sm:text-2xl font-medium text-slate-800">Notificaciones</h1>
             <p class="text-sm text-slate-500">Historial completo de notificaciones del sistema.</p>
         </div>
         <button

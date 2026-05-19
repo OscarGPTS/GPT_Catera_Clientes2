@@ -4,8 +4,8 @@
     <div class="space-y-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-medium text-slate-900">Reporte de Asignación</h2>
+                <div class="flex flex-wrap items-center gap-3">
+                    <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Reporte de Asignación</h2>
                     <span class="rounded-full bg-gpt-100 px-2.5 py-0.5 text-xs font-medium text-gpt-800">Q{{ $trimestre }} {{ $anio }}</span>
                 </div>
                 <p class="mt-1 text-sm text-slate-500">FO-GPT-PYT-01-B · Distribución de carga por persona y mes</p>
@@ -207,14 +207,14 @@
                                 </div>
                             </div>
 
-                            <div class="flex border-b border-slate-200 mb-4">
-                                <button @click="tab = 'actual'" :class="tab === 'actual' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="border-b-2 px-4 py-2 text-sm font-medium transition-colors">Asignación actual</button>
-                                <button @click="tab = 'historico'" :class="tab === 'historico' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="border-b-2 px-4 py-2 text-sm font-medium transition-colors">Histórico</button>
-                                <button @click="tab = 'rh'" :class="tab === 'rh' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="border-b-2 px-4 py-2 text-sm font-medium transition-colors">Datos RH</button>
+                            <div class="flex overflow-x-auto border-b border-slate-200 mb-4">
+                                <button @click="tab = 'actual'" :class="tab === 'actual' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition-colors">Asignación actual</button>
+                                <button @click="tab = 'historico'" :class="tab === 'historico' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition-colors">Histórico</button>
+                                <button @click="tab = 'rh'" :class="tab === 'rh' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition-colors">Datos RH</button>
                             </div>
 
                             <div x-show="tab === 'actual'">
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
                                         <p class="text-xs text-slate-500">CP asignados</p>
                                         <p class="mt-1 text-lg font-semibold text-slate-900">{{ $drawerPersona['cp_asignados'] ?? 0 }}</p>

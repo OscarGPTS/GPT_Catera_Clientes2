@@ -1,7 +1,7 @@
 <div>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-medium text-slate-900">Configuración</h2>
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Configuración</h2>
             <p class="mt-1 text-sm text-slate-500">Ajustes del sistema</p>
         </div>
     </x-slot>
@@ -50,7 +50,7 @@
                     </div>
                 </label>
 
-                <div class="flex items-center justify-between rounded-md border border-slate-100 bg-slate-50 p-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-md border border-slate-100 bg-slate-50 p-4">
                     <div>
                         <p class="text-sm font-medium text-slate-900">Umbral de alerta de concentración por cliente</p>
                         <p class="text-xs text-slate-500">Porcentaje máximo de participación de un solo cliente en el pipeline</p>

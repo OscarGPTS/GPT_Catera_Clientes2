@@ -6,8 +6,8 @@
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             <span class="font-medium text-slate-900">{{ $proyecto->cp_numero ?? 'CP-?' }}</span>
         </nav>
-        <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-medium text-slate-900">{{ $proyecto->tech_reference ?? $proyecto->cp_numero ?? 'Oportunidad' }}</h2>
+        <div class="flex flex-wrap items-center gap-3">
+            <h2 class="text-xl sm:text-2xl font-medium text-slate-900">{{ $proyecto->tech_reference ?? $proyecto->cp_numero ?? 'Oportunidad' }}</h2>
             <x-badge :status="$proyecto->estado" />
         </div>
         <p class="mt-1 text-sm text-slate-500">{{ $proyecto->cliente->razon_social ?? '—' }}{{ $proyecto->usuario_final ? ' — ' . $proyecto->usuario_final : '' }}</p>
@@ -69,7 +69,7 @@
 
     {{-- Tabs --}}
     <div class="mb-6 border-b border-slate-200">
-        <nav class="flex gap-6 -mb-px" aria-label="Tabs">
+        <nav class="flex gap-6 -mb-px overflow-x-auto" aria-label="Tabs">
             @foreach(['info' => 'Información', 'equipo' => 'Equipo', 'cotizaciones' => 'Cotizaciones', 'solicitudes' => 'Solicitudes', 'eventos' => 'Historial'] as $key => $label)
                 <button wire:click="$set('activeTab', '{{ $key }}')"
                         class="whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors {{ $activeTab === $key ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700' }}">
@@ -264,7 +264,7 @@
     @if($activeTab === 'equipo')
         <div class="space-y-6">
             <div class="rounded-lg border border-slate-200 bg-white p-6">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                     <h3 class="text-base font-medium text-slate-900">Equipo del proyecto</h3>
                     @can('asignar cp')
                         <button type="button" wire:click="$set('showEquipoModal', true)" class="inline-flex items-center gap-1.5 rounded-lg bg-gpt-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gpt-700 transition-colors">
@@ -311,7 +311,7 @@
     @if($activeTab === 'cotizaciones')
         <div class="space-y-6">
             <div class="rounded-lg border border-slate-200 bg-white overflow-hidden">
-                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex items-center justify-between">
+                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h3 class="text-base font-medium text-slate-900">Cotizaciones</h3>
                         <p class="mt-0.5 text-sm text-slate-500">{{ $proyecto->cotizaciones->count() }} versión(es) registrada(s)</p>

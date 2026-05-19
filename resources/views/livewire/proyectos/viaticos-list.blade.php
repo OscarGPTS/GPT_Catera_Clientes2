@@ -2,9 +2,9 @@
     @section('title', 'Viáticos')
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-2xl font-medium text-slate-900">Viáticos</h2>
+                <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Viáticos</h2>
                 <p class="mt-1 text-sm text-slate-500">FO-GPT-SSGG-01-A &middot; Gastos de viaje y viáticos</p>
             </div>
             <button type="button" wire:click="openNewModal" class="inline-flex items-center gap-1.5 rounded-lg bg-gpt-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-gpt-700 transition-colors min-h-[48px]">
@@ -22,7 +22,7 @@
         @endif
 
         <div class="border-b border-slate-200">
-            <nav class="-mb-px flex space-x-6">
+            <nav class="-mb-px flex space-x-6 overflow-x-auto">
                 <button wire:click="$set('tab', 'pendientes')" class="whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors {{ $tab === 'pendientes' ? 'border-gpt-600 text-gpt-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' }}">
                     Pendientes
                     <span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{{ $this->pendientesCount }}</span>
@@ -168,7 +168,7 @@
                                     </select>
                                     @error('proyectoId') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
                                 </div>
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-slate-700">Fecha inicio</label>
                                         <input type="date" wire:model="fechaInicio" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-gpt-600">
@@ -365,7 +365,7 @@
                             <dt class="text-xs font-medium uppercase text-slate-500">Proyecto</dt>
                             <dd class="mt-1 text-sm text-slate-900">{{ $solicitud->proyecto->cliente->razon_social ?? '—' }}</dd>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <dt class="text-xs font-medium uppercase text-slate-500">Fecha inicio</dt>
                                 <dd class="mt-1 text-sm text-slate-900">{{ $solicitud->fecha_inicio ? \Carbon\Carbon::parse($solicitud->fecha_inicio)->format('d/m/Y') : '—' }}</dd>

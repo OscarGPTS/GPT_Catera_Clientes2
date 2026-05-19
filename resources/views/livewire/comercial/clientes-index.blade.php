@@ -2,9 +2,9 @@
     @section('title', 'Clientes')
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-2xl font-medium text-slate-900">Clientes</h2>
+                <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Clientes</h2>
                 <p class="mt-1 text-sm text-slate-500">Catálogo de clientes y sus contactos</p>
             </div>
             @can('create', App\Models\Comercial\Cliente::class)
@@ -111,7 +111,7 @@
                         <input type="text" wire:model="razon_social" id="razon_social" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-gpt-600 @error('razon_social') border-red-300 @enderror" placeholder="Nombre completo de la empresa">
                         @error('razon_social') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label for="alias" class="block text-sm font-medium text-slate-700 mb-1">Alias *</label>
                             <input type="text" wire:model="alias" id="alias" maxlength="30" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-gpt-600 uppercase @error('alias') border-red-300 @enderror" placeholder="EJ: IGASAMEX">
@@ -123,7 +123,7 @@
                             @error('rfc') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label for="nuevoSector" class="block text-sm font-medium text-slate-700 mb-1">Sector</label>
                             <select wire:model="nuevoSector" id="nuevoSector" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-gpt-600">

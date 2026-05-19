@@ -4,8 +4,8 @@
     <div class="space-y-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-medium text-slate-900">Bitácora Diaria</h2>
+                <div class="flex flex-wrap items-center gap-3">
+                    <h2 class="text-xl sm:text-2xl font-medium text-slate-900">Bitácora Diaria</h2>
                     <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">FO-GPT-PYT-01-D</span>
                 </div>
                 <p class="mt-1 text-sm text-slate-500">Registro diario de actividades en sitio</p>

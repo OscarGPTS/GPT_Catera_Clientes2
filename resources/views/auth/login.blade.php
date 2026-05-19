@@ -11,15 +11,15 @@
 </head>
 <body class="flex min-h-screen flex-col-reverse lg:flex-row font-sans">
 
-    <section class="relative flex w-full shrink-0 items-center justify-center px-8 py-12 lg:w-1/2 lg:py-0 overflow-hidden"
+    <section class="relative flex w-full shrink-0 items-center justify-center px-6 py-10 sm:px-8 sm:py-12 lg:w-1/2 lg:min-h-screen lg:py-0 overflow-hidden"
          style="background-image: url('{{ asset('img/bg1.png') }}'); background-size: cover; background-position: center;">
         <div class="absolute inset-0 bg-black/55"></div>
         <div class="relative z-10 mx-auto w-full max-w-sm text-center lg:text-left">
 
-            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-white/50 mb-3">GPT Services</p>
-            <h1 class="text-5xl font-bold leading-tight text-white">Cartera<br>de Clientes</h1>
-            <div class="mt-4 h-0.5 w-12 bg-white/30 lg:mx-0 mx-auto"></div>
-            <p class="mt-4 text-sm text-white/60">Tech Energy Control S.A. de C.V.</p>
+            <p class="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.25em] text-white/50 mb-2 sm:mb-3">GPT Services</p>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-white">Cartera<br>de Clientes</h1>
+            <div class="mt-3 sm:mt-4 h-0.5 w-12 bg-white/30 lg:mx-0 mx-auto"></div>
+            <p class="mt-3 sm:mt-4 text-sm text-white/60">Tech Energy Control S.A. de C.V.</p>
 
             {{-- <div class="mt-8 flex justify-center gap-2 lg:justify-start">
                 <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white/70">ISO 9001</span>
@@ -29,7 +29,7 @@
         </div>
     </section>
 
-    <section class="flex w-full items-center justify-center bg-white px-4 py-10 lg:w-1/2 lg:py-0">
+    <section class="flex w-full items-center justify-center bg-white px-4 py-8 sm:px-6 sm:py-10 lg:w-1/2 lg:py-0">
         <div class="w-full max-w-md">
 
             @if ($errors->any())
@@ -45,8 +45,8 @@
             @endif
 
             <div class="flex flex-col items-center mb-6">
-                <img src="{{ asset('img/logo_gpt.svg') }}" alt="GPT Services" class="h-16 w-auto mb-4">
-                <p class="text-center text-sm text-slate-500">Inicia sesión con tu cuenta corporativa para acceder a la plataforma</p>
+                <img src="{{ asset('img/logo_gpt.svg') }}" alt="GPT Services" class="h-12 sm:h-16 w-auto mb-3 sm:mb-4">
+                <p class="text-center text-sm text-slate-500 px-2">Inicia sesión con tu cuenta corporativa para acceder a la plataforma</p>
             </div>
 
             {{-- Email/password login deshabilitado temporalmente --}}

@@ -42,7 +42,7 @@
                 </nav>
 
                 {{-- Identity + Actions row --}}
-                <div class="flex items-start gap-4 justify-between">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div class="flex items-center gap-4 min-w-0">
                         {{-- Avatar --}}
                         <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gpt-600 text-white text-base font-semibold select-none shadow-sm">
@@ -52,7 +52,7 @@
                         <div class="min-w-0">
                             {{-- Name + badges --}}
                             <div class="flex flex-wrap items-center gap-2 mb-1">
-                                <h1 class="text-xl font-medium text-slate-900 truncate">{{ $cliente->razon_social }}</h1>
+                                <h1 class="text-lg sm:text-xl font-medium text-slate-900 truncate">{{ $cliente->razon_social }}</h1>
 
                                 @if($cliente->activo)
                                     <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 flex-shrink-0">
@@ -160,7 +160,7 @@
         <div x-show="tab === 'resumen'" x-cloak>
 
             {{-- KPI row --}}
-            <div class="grid grid-cols-2 gap-4 xl:grid-cols-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-4 mb-6">
                 <div class="rounded-lg bg-white border border-slate-200 p-5">
                     <p class="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Facturado total</p>
                     <p class="text-3xl font-medium text-slate-900">{{ $facturadoFmt }}</p>
@@ -189,7 +189,7 @@
                 {{-- Left: Proyectos históricos table --}}
                 <div class="lg:col-span-2">
                     <div class="rounded-lg bg-white border border-slate-200 overflow-hidden">
-                        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-slate-200">
                             <h3 class="text-sm font-medium text-slate-900">Proyectos históricos</h3>
                             <button type="button" @click="tab = 'proyectos'" class="text-sm font-medium text-gpt-600 hover:text-gpt-700 transition-colors">
                                 Ver todos →
@@ -310,7 +310,7 @@
                  }">
 
                 {{-- Header --}}
-                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-slate-200">
                     <div>
                         <h3 class="text-sm font-medium text-slate-900">Oportunidades comerciales</h3>
                         <p class="mt-0.5 text-xs text-slate-500">{{ $oportunidades->count() }} oportunidad(es) en pipeline</p>
@@ -557,7 +557,7 @@
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
+                                    <div class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
                                         <div>
                                             <dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Contacto</dt>
                                             <dd class="mt-0.5 text-sm text-slate-800 break-words">{{ $op->contacto ?? '—' }}</dd>
@@ -787,7 +787,7 @@
                         <input type="text" wire:model="contacto_puesto" id="contacto_puesto"
                             class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-1 focus:ring-gpt-600">
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label for="contacto_email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
                             <input type="email" wire:model="contacto_email" id="contacto_email"
@@ -834,7 +834,7 @@
                             class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-gpt-600 focus:ring-1 focus:ring-gpt-600 @error('edit_razon_social') border-red-300 @enderror">
                         @error('edit_razon_social') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label for="edit_alias" class="block text-sm font-medium text-slate-700 mb-1">Alias *</label>
                             <input type="text" wire:model="edit_alias" id="edit_alias" maxlength="30"
@@ -848,7 +848,7 @@
                             @error('edit_rfc') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label for="edit_sector" class="block text-sm font-medium text-slate-700 mb-1">Sector</label>
                             <select wire:model="edit_sector" id="edit_sector"
