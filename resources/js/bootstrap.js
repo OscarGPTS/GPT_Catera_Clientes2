@@ -8,12 +8,17 @@ import Pusher from 'pusher-js';
 
 window.Pusher = Pusher;
 
-window.Echo = new Echo({
-    broadcaster: 'reverb',
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
-    wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
-    enabledTransports: ['ws', 'wss'],
-});
+// Inicialización defensiva: si VITE_REVERB_APP_KEY no está definido en .env,
+// Pusher lanza "You must pass your app key" de forma síncrona y eso rompe
+// TODA la carga de Alpine/Livewire en cadena. Solo conectamos si hay key.
+if (import.meta.env.VITE_REVERB_APP_KEY) {
+    window.Echo = new Echo({
+        broadcaster: 'reverb',
+        key: import.meta.env.VITE_REVERB_APP_KEY,
+        wsHost: import.meta.env.VITE_REVERB_HOST,
+        wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
+        wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
+        forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+        enabledTransports: ['ws', 'wss'],
+    });
+}

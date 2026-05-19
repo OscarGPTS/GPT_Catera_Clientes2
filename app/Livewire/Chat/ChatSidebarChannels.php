@@ -14,7 +14,6 @@ class ChatSidebarChannels extends Component
 
     protected $listeners = [
         'refreshChat' => 'loadCanales',
-        'echoMessageSent' => 'handleNewMessage',
     ];
 
     public function mount()

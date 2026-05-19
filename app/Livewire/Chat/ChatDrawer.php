@@ -43,10 +43,6 @@ class ChatDrawer extends Component
         'openChatDrawer' => 'openDrawer',
         'selectChannel' => 'selectChannel',
         'refreshChat' => '$refresh',
-        'echoMessageSent' => 'handleIncomingMessage',
-        'echoMessageRead' => 'handleReadReceipt',
-        'echoTyping' => 'handleTyping',
-        'echoStopTyping' => 'handleStopTyping',
         'open-chat-with-channel' => 'openDrawerFromSidebar',
     ];
 

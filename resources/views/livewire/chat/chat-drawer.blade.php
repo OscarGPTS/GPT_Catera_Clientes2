@@ -42,10 +42,12 @@
     @endif
 
     {{-- Overlay backdrop --}}
+    @if($open)
     <div
-        class="fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 {{ $open ? 'bg-slate-900/40 opacity-100' : 'bg-slate-900/0 opacity-0 pointer-events-none' }}"
+        class="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300"
         wire:click="closeDrawer"
     ></div>
+    @endif
 
     {{-- Drawer panel --}}
     <div

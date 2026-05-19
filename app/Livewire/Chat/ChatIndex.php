@@ -42,12 +42,7 @@ class ChatIndex extends Component
     public $groupSearch = '';
     public $groupSearchResults = [];
 
-    protected $listeners = [
-        'echoMessageSent' => 'handleIncomingMessage',
-        'echoMessageRead' => 'handleReadReceipt',
-        'echoTyping' => 'handleTyping',
-        'echoStopTyping' => 'handleStopTyping',
-    ];
+    protected $listeners = [];
 
     public function mount()
     {

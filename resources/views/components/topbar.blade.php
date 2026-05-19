@@ -39,7 +39,7 @@
         </a>
 
         <div class="relative" x-data="{ open: false }" @@click.outside="open = false">
-            <button @@click="open = !open" class="flex items-center gap-2 rounded-md p-1 hover:bg-slate-100">
+            <button type="button" @@click="open = !open" class="flex items-center gap-2 rounded-md p-1 hover:bg-slate-100">
                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gpt-600 text-xs font-medium text-white">
                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
                 </div>
