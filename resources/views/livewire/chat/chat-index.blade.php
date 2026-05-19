@@ -258,8 +258,22 @@
                         <div class="flex items-start gap-2 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
                             <div class="max-w-[70%]">
                                 <div class="rounded-lg px-3 py-1.5 {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-white border border-slate-200 text-slate-700' }}">
+                                    @if(!empty($msg['contenido']))
                                     <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">{!! preg_replace('/@(\w+)/', '<span class="font-semibold '.($msg['is_mine'] ? 'text-gpt-200' : 'text-gpt-600').'">@$1</span>', e($msg['contenido'])) !!}</p>
+                                    @endif
                                     @if($msg['edited'])<span class="block text-[10px] {{ $msg['is_mine'] ? 'text-gpt-200' : 'text-slate-400' }}">(editado)</span>@endif
+                                    @if(!empty($msg['attachments']))
+                                    <div class="mt-1.5 flex flex-wrap gap-2">
+                                        @foreach($msg['attachments'] as $att)
+                                        @php $isImage = str_starts_with($att['type'] ?? '', 'image/'); @endphp
+                                        <a href="{{ $att['url'] ?? '#' }}" target="_blank" class="block">
+                                            @if($isImage)<img src="{{ $att['url'] }}" class="h-16 w-16 rounded-lg object-cover border {{ $msg['is_mine'] ? 'border-white/20' : 'border-slate-200' }}" alt="{{ $att['name'] }}">
+                                            @else<div class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 {{ $msg['is_mine'] ? 'bg-gpt-600/30 text-white' : 'bg-slate-100 text-slate-600' }} text-[11px]"><svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><span class="hover:underline">{{ $att['name'] ?? 'archivo' }}</span></div>
+                                            @endif
+                                        </a>
+                                        @endforeach
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -305,7 +319,9 @@
                                     <span class="text-[10px] text-slate-400">{{ $msg['created_at'] }}</span>
                                 </div>
                                 <div class="mt-1 rounded-lg px-3 py-2 {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-white border border-slate-200 text-slate-700' }}">
+                                    @if(!empty($msg['contenido']))
                                     <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">{!! preg_replace('/@(\w+)/', '<span class="font-semibold '.($msg['is_mine'] ? 'text-gpt-200' : 'text-gpt-600').'">@$1</span>', e($msg['contenido'])) !!}</p>
+                                    @endif
                                     @if($msg['edited'])<span class="block text-[10px] {{ $msg['is_mine'] ? 'text-gpt-200' : 'text-slate-400' }}">(editado)</span>@endif
                                     @if(!empty($msg['attachments']))
                                     <div class="mt-1.5 flex flex-wrap gap-2">
@@ -415,7 +431,7 @@
             <div class="px-4 py-3">
                 <div class="relative">
                     <svg class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input wire:model.live.debounce.300ms="dmSearch" wire:change="searchDmUsers" type="text" placeholder="Buscar persona..." class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none" autofocus>
+                    <input wire:model.live.debounce.300ms="dmSearch" type="search" autocomplete="off" name="dm-search" placeholder="Buscar persona..." class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none" autofocus>
                 </div>
                 <div class="mt-2 max-h-48 overflow-y-auto">
                     @foreach($dmUsers as $user)
@@ -443,21 +459,22 @@
                     <button wire:click="$set('showCreateGroup', false)" class="text-slate-400 hover:text-slate-600"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                 </div>
             </div>
-            <div class="px-4 py-3 space-y-3">
+            {{-- form con autocomplete=off para evitar el prompt de Chrome de guardar tarjeta/identidad --}}
+            <form autocomplete="off" onsubmit="return false;" class="px-4 py-3 space-y-3">
                 <div>
                     <label class="block text-[12px] font-medium text-slate-600 mb-1">Nombre del grupo *</label>
-                    <input wire:model.live="groupName" type="text" placeholder="Ej: Equipo de soporte" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
+                    <input wire:model.live="groupName" type="text" autocomplete="off" name="grp-name" placeholder="Ej: Equipo de soporte" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
                     @error('groupName') <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-[12px] font-medium text-slate-600 mb-1">Descripción (opcional)</label>
-                    <input wire:model.live="groupDescription" type="text" placeholder="De qué trata este grupo..." class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
+                    <input wire:model.live="groupDescription" type="text" autocomplete="off" name="grp-desc" placeholder="De qué trata este grupo..." class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-[12px] font-medium text-slate-600 mb-1">Agregar miembros</label>
                     <div class="relative mb-2">
                         <svg class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input wire:model.live.debounce.300ms="groupSearch" wire:change="searchGroupMembers" type="text" placeholder="Buscar personas..." class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
+                        <input wire:model.live.debounce.300ms="groupSearch" type="search" autocomplete="off" name="grp-search" placeholder="Buscar personas..." class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-gpt-600 focus:bg-white focus:outline-none">
                     </div>
                     @if(!empty($groupMemberIds))
                     <div class="flex flex-wrap gap-1.5 mb-2">
@@ -485,10 +502,10 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
-                    <button wire:click="$set('showCreateGroup', false)" class="rounded-lg border border-slate-200 px-4 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
-                    <button wire:click="createGroup" class="rounded-lg bg-gpt-600 px-4 py-2 text-[13px] font-medium text-white hover:bg-gpt-700">Crear grupo</button>
+                    <button type="button" wire:click="$set('showCreateGroup', false)" class="rounded-lg border border-slate-200 px-4 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="button" wire:click="createGroup" class="rounded-lg bg-gpt-600 px-4 py-2 text-[13px] font-medium text-white hover:bg-gpt-700">Crear grupo</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
     @endif

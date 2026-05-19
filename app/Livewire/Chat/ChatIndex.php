@@ -6,6 +6,7 @@ use App\Models\Chat\ChatCanal;
 use App\Models\Chat\ChatLectura;
 use App\Models\Chat\ChatMensaje;
 use App\Models\User;
+use App\Services\Chat\ChatAttachmentStorage;
 use App\Services\Chat\ChatService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -193,9 +194,11 @@ class ChatIndex extends Component
         if (! $canal || ! Gate::allows('view', $canal)) return;
 
         $attachmentData = [];
-        foreach ($this->attachments as $file) {
-            $path = $file->storeAs('chat-attachments', time() . '_' . $file->getClientOriginalName(), 'public');
-            $attachmentData[] = ['name' => $file->getClientOriginalName(), 'path' => $path, 'type' => $file->getMimeType(), 'size' => $file->getSize(), 'url' => Storage::disk('public')->url($path)];
+        if (! empty($this->attachments)) {
+            $storage = app(ChatAttachmentStorage::class);
+            foreach ($this->attachments as $file) {
+                $attachmentData[] = $storage->store($file);
+            }
         }
 
         $mensaje = ChatMensaje::create([
@@ -291,7 +294,23 @@ class ChatIndex extends Component
     public function removeAttachment($index) { if (isset($this->attachments[$index])) { unset($this->attachments[$index]); $this->attachments = array_values($this->attachments); } }
     public function updatedAttachments() { $this->validate(['attachments.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,zip,rar']); }
 
-    public function searchGroupMembers()
+    public function updatedDmSearch()
+    {
+        if (strlen($this->dmSearch) < 2) {
+            $this->dmUsers = [];
+            return;
+        }
+        $this->dmUsers = User::where('status', 'active')
+            ->where('id', '!=', auth()->id())
+            ->where('name', 'like', "%{$this->dmSearch}%")
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(fn ($u) => ['id' => $u->id, 'name' => $u->name, 'avatar' => strtoupper(substr($u->name ?? 'U', 0, 2))])
+            ->toArray();
+    }
+
+    public function updatedGroupSearch()
     {
         if (strlen($this->groupSearch) < 2) {
             $this->groupSearchResults = [];

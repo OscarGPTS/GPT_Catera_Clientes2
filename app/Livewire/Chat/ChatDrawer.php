@@ -8,6 +8,7 @@ use App\Models\Chat\ChatMensaje;
 use App\Notifications\Chat\NewChatMentionNotification;
 use App\Notifications\Chat\NewChatMessageNotification;
 use App\Notifications\Chat\NewChatReplyNotification;
+use App\Services\Chat\ChatAttachmentStorage;
 use App\Services\Chat\ChatService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -320,16 +321,11 @@ class ChatDrawer extends Component
         if (! $canal || ! Gate::allows('view', $canal)) return;
 
         $attachmentData = [];
-        foreach ($this->attachments as $file) {
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('chat-attachments', $filename, 'public');
-            $attachmentData[] = [
-                'name' => $file->getClientOriginalName(),
-                'path' => $path,
-                'type' => $file->getMimeType(),
-                'size' => $file->getSize(),
-                'url' => Storage::disk('public')->url($path),
-            ];
+        if (! empty($this->attachments)) {
+            $storage = app(ChatAttachmentStorage::class);
+            foreach ($this->attachments as $file) {
+                $attachmentData[] = $storage->store($file);
+            }
         }
 
         $mensaje = ChatMensaje::create([

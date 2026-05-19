@@ -173,6 +173,7 @@
                             <div class="flex items-start gap-2 {{ $msg['is_mine'] ? 'flex-row-reverse' : '' }}">
                                 <div class="max-w-[85%]">
                                     <div class="rounded-lg px-2.5 py-1 {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-slate-100 text-slate-700' }}">
+                                        @if(!empty($msg['contenido']))
                                         <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">
                                             @php
                                             $texto = e($msg['contenido']);
@@ -183,6 +184,7 @@
                                             echo $texto;
                                             @endphp
                                         </p>
+                                        @endif
                                         @if($msg['edited'])
                                         <span class="block text-[10px] {{ $msg['is_mine'] ? 'text-gpt-200' : 'text-slate-400' }}">(editado)</span>
                                         @endif
@@ -259,6 +261,7 @@
                                         <span class="text-[10px] text-slate-400">{{ $msg['created_at'] }}</span>
                                     </div>
                                     <div class="mt-0.5 rounded-lg px-2.5 py-1.5 {{ $msg['is_mine'] ? 'bg-gpt-500 text-white' : 'bg-slate-100 text-slate-700' }}">
+                                        @if(!empty($msg['contenido']))
                                         <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">
                                             @php
                                             $texto = e($msg['contenido']);
@@ -269,6 +272,7 @@
                                             echo $texto;
                                             @endphp
                                         </p>
+                                        @endif
                                         @if($msg['edited'])
                                         <span class="mt-0.5 block text-[10px] {{ $msg['is_mine'] ? 'text-gpt-200' : 'text-slate-400' }}">(editado)</span>
                                         @endif
