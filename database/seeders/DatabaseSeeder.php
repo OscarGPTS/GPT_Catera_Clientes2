@@ -3,8 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\AuthProvider;
-use App\Models\Comercial\Cliente;
-use App\Models\Proyectos\Proyecto;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -58,7 +56,13 @@ class DatabaseSeeder extends Seeder
             $created[$data['email']] = $user;
         }
 
-        // Poblar ofertas 2026 con datos completos del CSV
+        // Importar catálogo maestro (customers, core_businesses, personnel,
+        // countries, tech_references) desde Tech_Codification_2_0_clean.json.
+        // Debe ir ANTES de Ofertas2026Seeder porque agrega clientes y users
+        // adicionales que las ofertas pueden referenciar.
+        $this->call(TechCodificationSeeder::class);
+
+        // Poblar ofertas 2026 desde Status_ofertas_GPT_Services_2026.json
         $this->call(Ofertas2026Seeder::class);
     }
 }

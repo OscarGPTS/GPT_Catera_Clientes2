@@ -15,23 +15,26 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * Importa el catálogo maestro desde tech_codification_final.json.
+ * Importa el catálogo maestro desde Tech_Codification_2_0_clean.json.
  *
  * Secciones del JSON:
- *   - "Customer"               → clientes (upsert por alias/razon_social)
- *   - "Core Business"          → core_businesses + sizes (la hoja Excel mezcla ambos)
- *   - "GPT Services Personnel" → users (auto-crea si no existe) + personnel_acronyms
- *   - "Country"                → countries
- *   - "TECH REFERENCE"         → tech_references (skip null tech_reference)
+ *   - "customers"        → clientes (upsert por alias o razon_social)
+ *   - "core_businesses"  → core_businesses
+ *   - "personnel"        → users (auto-crea si no existe) + personnel_acronyms
+ *   - "countries"        → countries
+ *   - "tech_references"  → tech_references (skip null tech_reference)
+ *
+ * Sizes se derivan automáticamente de los valores únicos de pipe_in/branch_in
+ * en tech_references.
  *
  * Idempotente: corre con `php artisan db:seed --class=TechCodificationSeeder`
- * tantas veces como se necesite; usa firstOrCreate / updateOrCreate.
+ * tantas veces como se necesite; usa upsert por clave única.
  */
 class TechCodificationSeeder extends Seeder
 {
     public function run(): void
     {
-        $jsonPath = base_path('tech_codification_final.json');
+        $jsonPath = base_path('Tech_Codification_2_0_clean.json');
         if (!is_file($jsonPath)) {
             $this->command->error("No se encontró {$jsonPath}");
             return;
@@ -46,13 +49,13 @@ class TechCodificationSeeder extends Seeder
         $reporte = [];
 
         DB::transaction(function () use ($data, &$reporte) {
-            $reporte['clientes']           = $this->importarClientes($data['Customer'] ?? []);
-            [$cb, $sizes]                  = $this->importarCoreBusinessYSizes($data['Core Business'] ?? []);
-            $reporte['core_businesses']    = $cb;
-            $reporte['sizes']              = $sizes;
-            $reporte['personnel_acronyms'] = $this->importarPersonnel($data['GPT Services Personnel'] ?? []);
-            $reporte['countries']          = $this->importarCountries($data['Country'] ?? []);
-            $reporte['tech_references']    = $this->importarTechReferences($data['TECH REFERENCE'] ?? []);
+            // Orden importante: clientes primero (referenciados por tech_references)
+            $reporte['clientes']           = $this->importarClientes($data['customers'] ?? []);
+            $reporte['core_businesses']    = $this->importarCoreBusinesses($data['core_businesses'] ?? []);
+            $reporte['personnel_acronyms'] = $this->importarPersonnel($data['personnel'] ?? []);
+            $reporte['countries']          = $this->importarCountries($data['countries'] ?? []);
+            $reporte['tech_references']    = $this->importarTechReferences($data['tech_references'] ?? []);
+            $reporte['sizes']              = $this->importarSizes($data['tech_references'] ?? []);
         });
 
         $this->command->info('── Importación completada ──');
@@ -64,33 +67,38 @@ class TechCodificationSeeder extends Seeder
         }
     }
 
-    // ── Sección: Customer → clientes ─────────────────────────────────────────
+    // ── Sección: customers → clientes ────────────────────────────────────────
+    //
+    // Estrategia:
+    //   1) Match por alias (acronym del JSON). Si existe, no toca alias ni nombre
+    //      (preserva los valores curados de CatalogosBaseSeeder).
+    //   2) Si no hay match por alias, match por razon_social (case-insensitive).
+    //      Si existe, NO sobreescribe el alias curado; solo lo deja igual.
+    //   3) Si no hay match, inserta nuevo cliente con el alias del JSON.
+    //
+    // Esto evita conflictos cuando un mismo nombre tiene aliases distintos
+    // entre catálogos (ej.: PIFUSA = PIF curado vs PFA en JSON).
     private function importarClientes(array $rows): array
     {
         $insertados = 0; $actualizados = 0; $skipped = 0;
 
         foreach ($rows as $row) {
-            $nombre  = trim((string) ($row['Customer'] ?? ''));
-            $acronym = trim((string) ($row['Acronym']  ?? ''));
+            $nombre  = trim((string) ($row['customer_name'] ?? ''));
+            $acronym = trim((string) ($row['acronym']       ?? ''));
 
             if ($nombre === '' && $acronym === '') { $skipped++; continue; }
             if ($acronym === '') $acronym = $this->generarAlias($nombre);
 
-            // Cliente existente: por alias o por razón social
-            $existente = Cliente::where('alias', $acronym)
-                ->orWhereRaw('LOWER(razon_social) = ?', [mb_strtolower($nombre)])
-                ->first();
+            // 1) Match por alias
+            $existente = $acronym !== '' ? Cliente::where('alias', $acronym)->first() : null;
+
+            // 2) Match por razon_social
+            if (!$existente && $nombre !== '') {
+                $existente = Cliente::whereRaw('LOWER(razon_social) = ?', [mb_strtolower($nombre)])->first();
+            }
 
             if ($existente) {
-                if ($existente->razon_social !== $nombre || $existente->alias !== $acronym) {
-                    $existente->update([
-                        'razon_social' => $nombre ?: $existente->razon_social,
-                        'alias'        => $acronym,
-                    ]);
-                    $actualizados++;
-                } else {
-                    $skipped++;
-                }
+                $skipped++;   // preserva los datos curados (alias, sector, segmento)
             } else {
                 Cliente::create([
                     'razon_social' => $nombre ?: $acronym,
@@ -101,87 +109,61 @@ class TechCodificationSeeder extends Seeder
             }
         }
 
-        return ['insertados' => $insertados, 'actualizados' => $actualizados, 'omitidos' => $skipped];
+        return ['insertados' => $insertados, 'preservados' => $skipped, 'actualizados' => $actualizados];
     }
 
-    // ── Sección: Core Business (incluye Size + Size.1 como datos paralelos) ──
-    private function importarCoreBusinessYSizes(array $rows): array
+    // ── Sección: core_businesses ─────────────────────────────────────────────
+    private function importarCoreBusinesses(array $rows): array
     {
-        $cb = ['insertados' => 0, 'actualizados' => 0, 'omitidos' => 0];
-        $sizes = ['insertados' => 0, 'actualizados' => 0, 'omitidos' => 0];
+        $insertados = 0; $actualizados = 0; $omitidos = 0;
 
         foreach ($rows as $row) {
-            // — Core Business —
-            $name = $this->limpiarTexto($row['Core Business'] ?? null);
-            $acr  = $this->limpiarTexto($row['Acronym'] ?? null);
-            $desc = $this->limpiarTexto($row['Description'] ?? null);
+            $name = $this->limpiarTexto($row['core_business'] ?? null);
+            $acr  = $this->limpiarTexto($row['acronym']        ?? null);
+            $desc = $this->limpiarTexto($row['description']    ?? null);
 
-            if ($name !== null && $name !== '-') {
-                // Si acronym es '-' lo dejamos null para no chocar con el UNIQUE
-                $acrFinal = ($acr === null || $acr === '-') ? null : $acr;
+            if ($name === null) { $omitidos++; continue; }
 
-                if ($acrFinal !== null) {
-                    $modelo = CoreBusiness::where('acronym', $acrFinal)->first();
-                } else {
-                    $modelo = CoreBusiness::where('core_business', $name)->first();
-                }
+            $modelo = $acr !== null
+                ? CoreBusiness::where('acronym', $acr)->first()
+                : CoreBusiness::where('core_business', $name)->first();
 
-                if ($modelo) {
-                    $modelo->update(['core_business' => $name, 'description' => $desc, 'acronym' => $acrFinal]);
-                    $cb['actualizados']++;
-                } else {
-                    CoreBusiness::create([
-                        'core_business' => $name,
-                        'acronym'       => $acrFinal,
-                        'description'   => $desc,
-                    ]);
-                    $cb['insertados']++;
-                }
+            if ($modelo) {
+                $modelo->update([
+                    'core_business' => $name,
+                    'acronym'       => $acr,
+                    'description'   => $desc,
+                ]);
+                $actualizados++;
             } else {
-                $cb['omitidos']++;
-            }
-
-            // — Size (cada fila tiene Size principal y Size.1 como datos paralelos) —
-            $principal = $this->parseSizePrincipal($row['Size'] ?? null);
-            $secund    = $this->limpiarTexto($row['Size.1'] ?? null);
-            if ($secund === '-' || $secund === '') $secund = null;
-
-            if ($principal !== null) {
-                $existe = Size::where('size_principal', $principal)
-                    ->where(function ($q) use ($secund) {
-                        if ($secund === null) $q->whereNull('size_secundario');
-                        else $q->where('size_secundario', $secund);
-                    })
-                    ->first();
-                if (!$existe) {
-                    Size::create(['size_principal' => $principal, 'size_secundario' => $secund]);
-                    $sizes['insertados']++;
-                } else {
-                    $sizes['omitidos']++;
-                }
-            } else {
-                $sizes['omitidos']++;
+                CoreBusiness::create([
+                    'core_business' => $name,
+                    'acronym'       => $acr,
+                    'description'   => $desc,
+                ]);
+                $insertados++;
             }
         }
 
-        return [$cb, $sizes];
+        return ['insertados' => $insertados, 'actualizados' => $actualizados, 'omitidos' => $omitidos];
     }
 
-    // ── Sección: GPT Services Personnel ──────────────────────────────────────
+    // ── Sección: personnel ───────────────────────────────────────────────────
     // Match por users.name; si no existe, auto-crear usuario.
     private function importarPersonnel(array $rows): array
     {
         $insertados = 0; $actualizados = 0; $usersCreados = 0; $skipped = 0;
 
         foreach ($rows as $row) {
-            $nombre  = trim((string) ($row['Personnel'] ?? ''));
-            $acronym = trim((string) ($row['Acronym'] ?? ''));
-            $accMgr  = trim((string) ($row['Account Manager'] ?? ''));
+            $nombre  = trim((string) ($row['personnel_name']  ?? ''));
+            $acronym = trim((string) ($row['acronym']         ?? ''));
+            $accMgr  = trim((string) ($row['account_manager'] ?? ''));
 
             if ($acronym === '') { $skipped++; continue; }
 
-            // Match user por name (case-insensitive); si no existe lo creamos
-            $user = User::whereRaw('LOWER(name) = ?', [mb_strtolower($nombre)])->first();
+            $user = $nombre !== ''
+                ? User::whereRaw('LOWER(name) = ?', [mb_strtolower($nombre)])->first()
+                : null;
 
             if (!$user && $nombre !== '') {
                 $user = User::create([
@@ -213,15 +195,15 @@ class TechCodificationSeeder extends Seeder
         return ['insertados' => $insertados, 'actualizados' => $actualizados, 'users_creados' => $usersCreados, 'omitidos' => $skipped];
     }
 
-    // ── Sección: Country ─────────────────────────────────────────────────────
+    // ── Sección: countries ───────────────────────────────────────────────────
     private function importarCountries(array $rows): array
     {
         $insertados = 0; $actualizados = 0; $skipped = 0;
 
         foreach ($rows as $row) {
-            $state   = $this->limpiarTexto($row['State'] ?? null);
-            $zone    = $this->limpiarTexto($row['Zone'] ?? null);
-            $country = $this->limpiarTexto($row['Country'] ?? null) ?: 'MEX';
+            $state   = $this->limpiarTexto($row['state']   ?? null);
+            $zone    = $this->limpiarTexto($row['zone']    ?? null);
+            $country = $this->limpiarTexto($row['country'] ?? null) ?: 'MEX';
 
             if (!$state) { $skipped++; continue; }
 
@@ -238,46 +220,45 @@ class TechCodificationSeeder extends Seeder
         return ['insertados' => $insertados, 'actualizados' => $actualizados, 'omitidos' => $skipped];
     }
 
-    // ── Sección: TECH REFERENCE ──────────────────────────────────────────────
+    // ── Sección: tech_references ─────────────────────────────────────────────
     private function importarTechReferences(array $rows): array
     {
         $insertados = 0; $actualizados = 0; $skipNoRef = 0; $skipDup = 0;
 
         // Cache de clientes (alias y razon_social en lowercase → id)
-        $clientesPorAlias = Cliente::pluck('id', 'alias')->all();
+        $clientesPorAlias  = Cliente::pluck('id', 'alias')->all();
         $clientesPorNombre = [];
         foreach (Cliente::get(['id', 'razon_social']) as $c) {
             $clientesPorNombre[mb_strtolower($c->razon_social)] = $c->id;
         }
 
         foreach ($rows as $row) {
-            $techRef = trim((string) ($row['Tech Reference'] ?? ''));
+            $techRef = trim((string) ($row['tech_reference'] ?? ''));
             if ($techRef === '') { $skipNoRef++; continue; }
 
-            // Resolver cliente_id por nombre / acronym
-            $customer = trim((string) ($row['Customer'] ?? ''));
+            $customer  = trim((string) ($row['customer'] ?? ''));
             $clienteId = $clientesPorAlias[$customer]
                 ?? $clientesPorNombre[mb_strtolower($customer)]
                 ?? null;
 
             $payload = [
                 'cliente_id'              => $clienteId,
-                'fecha_referencia'        => $this->parseFechaYYMMDD($row['Date (YYMMDD)'] ?? null),
-                'cp_numero'               => $this->limpiarTexto($row['CP'] ?? null),
-                'revision'                => (int) ($row['Quote / CP Revision'] ?? 0),
-                'contacto'                => $this->limpiarTexto($row['Contact'] ?? null),
-                'estado_cliente'          => $this->limpiarTexto($row['State'] ?? null),
-                'pais'                    => $this->limpiarTexto($row['Country'] ?? null),
-                'zona'                    => $this->limpiarTexto($row['Zone'] ?? null),
-                'nombre_proyecto_cliente' => $this->limpiarTexto($row['Customer Project Name'] ?? null),
-                'core_business'           => $this->limpiarTexto($row['Core Business'] ?? null),
-                'pipe_in'                 => $this->parseNumerico($row['Pipe (in)'] ?? null),
-                'branch_in'               => $this->parseNumerico($row['Branch (in)'] ?? null),
-                'descripcion_larga'       => $this->limpiarTexto($row['Long Description'] ?? null),
-                'amount_usd'              => $this->parseNumerico($row['Amount  (USD)'] ?? null),
-                'amount_mxn'              => $this->parseNumerico($row['Amount  (MXN)'] ?? null),
-                'quotation_personnel'     => $this->limpiarTexto($row['Quotation Personnel'] ?? null),
-                'account_manager'         => $this->limpiarTexto($row['Account  Manager'] ?? null),
+                'fecha_referencia'        => $this->parseFechaYYMMDD($row['date'] ?? null),
+                'cp_numero'               => $this->limpiarTexto($row['cp'] ?? null),
+                'revision'                => (int) ($row['quote_cp_revision'] ?? 0),
+                'contacto'                => $this->limpiarTexto($row['contact'] ?? null),
+                'estado_cliente'          => $this->limpiarTexto($row['state'] ?? null),
+                'pais'                    => $this->limpiarTexto($row['country'] ?? null),
+                'zona'                    => $this->limpiarTexto($row['zone'] ?? null),
+                'nombre_proyecto_cliente' => $this->limpiarTexto($row['customer_project_name'] ?? null),
+                'core_business'           => $this->limpiarTexto($row['core_business'] ?? null),
+                'pipe_in'                 => $this->parseNumerico($row['pipe_in'] ?? null),
+                'branch_in'               => $this->parseNumerico($row['branch_in'] ?? null),
+                'descripcion_larga'       => $this->limpiarTexto($row['long_description'] ?? null),
+                'amount_usd'              => $this->parseNumerico($row['amount_usd'] ?? null),
+                'amount_mxn'              => $this->parseNumerico($row['amount_mxn'] ?? null),
+                'quotation_personnel'     => $this->limpiarTexto($row['quotation_personnel'] ?? null),
+                'account_manager'         => $this->limpiarTexto($row['account_manager'] ?? null),
             ];
 
             $existente = TechReference::where('tech_reference', $techRef)->first();
@@ -302,6 +283,31 @@ class TechCodificationSeeder extends Seeder
         ];
     }
 
+    // ── Sizes: deriva los tamaños únicos vistos en tech_references ───────────
+    private function importarSizes(array $rows): array
+    {
+        $insertados = 0; $omitidos = 0;
+        $vistos = [];
+
+        foreach ($rows as $row) {
+            foreach (['pipe_in', 'branch_in'] as $campo) {
+                $valor = $this->parseNumerico($row[$campo] ?? null);
+                if ($valor === null) continue;
+                $key = (string) $valor;
+                if (isset($vistos[$key])) continue;
+                $vistos[$key] = true;
+
+                $existe = Size::where('size_principal', $valor)->whereNull('size_secundario')->first();
+                if ($existe) { $omitidos++; continue; }
+
+                Size::create(['size_principal' => $valor, 'size_secundario' => null]);
+                $insertados++;
+            }
+        }
+
+        return ['insertados' => $insertados, 'omitidos' => $omitidos];
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private function limpiarTexto(mixed $v): ?string
@@ -316,18 +322,9 @@ class TechCodificationSeeder extends Seeder
     private function parseNumerico(mixed $v): ?float
     {
         if ($v === null || $v === '' || $v === '-') return null;
+        if (is_numeric($v)) return (float) $v;
         $s = preg_replace('/[^\d.\-]/', '', (string) $v);
         if ($s === '' || $s === '-' || $s === '.') return null;
-        return is_numeric($s) ? (float) $s : null;
-    }
-
-    /** Size principal: solo numéricos válidos para columna decimal(8,2). */
-    private function parseSizePrincipal(mixed $v): ?float
-    {
-        if ($v === null) return null;
-        $s = trim((string) $v);
-        if ($s === '' || $s === '-') return null;
-        // Algunos valores son strings tipo "30"
         return is_numeric($s) ? (float) $s : null;
     }
 
@@ -335,9 +332,8 @@ class TechCodificationSeeder extends Seeder
     private function parseFechaYYMMDD(mixed $v): ?string
     {
         if ($v === null || $v === '') return null;
-        $s = preg_replace('/\D/', '', (string) $v);   // quita decimales y separadores
+        $s = preg_replace('/\D/', '', (string) $v);
         if ($s === '') return null;
-        // El Excel a veces guarda 190603.0 → "1906030"; tomar primeros 6
         return substr($s, 0, 6);
     }
 
@@ -362,7 +358,6 @@ class TechCodificationSeeder extends Seeder
         if ($base === '') $base = 'personnel' . substr(md5($nombre), 0, 6);
         $email = "{$base}@gptservices.local";
 
-        // Garantiza unicidad
         $candidato = $email;
         $n = 1;
         while (User::where('email', $candidato)->exists()) {
