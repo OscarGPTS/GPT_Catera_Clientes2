@@ -18,6 +18,7 @@ use App\Policies\CotizacionPolicy;
 use App\Policies\ProyectoPolicy;
 use App\Policies\UserPolicy;
 use App\Services\Auth\AuthOrchestrator;
+use App\Services\Rh\RhClientHttp;
 use App\Services\Rh\RhClientInterface;
 use App\Services\Rh\RhClientMock;
 use Illuminate\Support\Facades\Gate;
@@ -29,6 +30,11 @@ class AppServiceProvider extends ServiceProvider
     {
         if (config('rh_api.use_mock', true)) {
             $this->app->singleton(RhClientInterface::class, RhClientMock::class);
+        } else {
+            $this->app->singleton(RhClientInterface::class, fn() => new RhClientHttp(
+                baseUrl: (string) config('rh_api.url'),
+                token:   (string) config('rh_api.token'),
+            ));
         }
 
         $this->app->singleton(AuthOrchestrator::class);

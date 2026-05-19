@@ -119,6 +119,15 @@ class AuthOrchestrator
         return $authProvider->delete();
     }
 
+    /**
+     * Invita a un usuario EXTERNO (no de nómina). Estos usuarios NO se validan
+     * contra RH porque por definición no existen ahí: son clientes, contratistas,
+     * proveedores o invitados puntuales con acceso limitado.
+     *
+     * El email queda registrado y al primer login pasa el check de RhAccessGuard
+     * vía la rama de email_allowlist (que esta función no agrega automáticamente:
+     * el admin debe agregarlo si quiere bypass permanente del check RH).
+     */
     public function inviteExternalUser(string $email, string $role, ?string $departamento = null, ?string $name = null): User
     {
         if (User::where('email', $email)->exists()) {
@@ -170,11 +179,32 @@ class AuthOrchestrator
         array $profileData,
     ): User {
         $rhData = null;
+        $rhUnavailable = false;
         try {
             $rhClient = app(\App\Services\Rh\RhClientInterface::class);
             $rhData = $rhClient->searchByEmail($email);
+        } catch (\App\Services\Rh\RhUnavailableException $e) {
+            Log::warning("RH API no disponible al provisionar {$email}: " . $e->getMessage());
+            $rhUnavailable = true;
         } catch (\Throwable $e) {
             Log::warning("RH API lookup failed for {$email}: " . $e->getMessage());
+            $rhUnavailable = true;
+        }
+
+        // Bloquea creación si RH respondió y el usuario no existe o está
+        // inactivo. Si RH no responde, fail-open (se crea el usuario y se
+        // valida en próximos logins).
+        if (! $rhUnavailable) {
+            if ($rhData === null) {
+                throw new \Illuminate\Auth\Access\AuthorizationException(
+                    "El email {$email} no está registrado en RH. Contacta al administrador."
+                );
+            }
+            if (! $rhData->activo) {
+                throw new \Illuminate\Auth\Access\AuthorizationException(
+                    "El usuario de RH {$email} se encuentra inactivo."
+                );
+            }
         }
 
         $user = User::create([

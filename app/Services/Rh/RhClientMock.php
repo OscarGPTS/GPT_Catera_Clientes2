@@ -15,6 +15,7 @@ class RhClientMock implements RhClientInterface
                 'id' => 'RH-001',
                 'name' => 'Fernando Basave Arce',
                 'email' => 'fernando.basave@gptservices.com',
+                'activo' => true,
                 'puesto' => 'Gerente de Proyectos',
                 'departamento' => 'Proyectos',
                 'employeeId' => 'EMP-001',
@@ -23,6 +24,7 @@ class RhClientMock implements RhClientInterface
                 'id' => 'RH-002',
                 'name' => 'Guillermo Gutierrez Melo',
                 'email' => 'guillermo.gutierrez@gptservices.com',
+                'activo' => true,
                 'puesto' => 'Director General',
                 'departamento' => 'Dirección',
                 'employeeId' => 'EMP-002',
@@ -31,6 +33,7 @@ class RhClientMock implements RhClientInterface
                 'id' => 'RH-003',
                 'name' => 'Denisse Ramirez',
                 'email' => 'denisse@gptservices.com',
+                'activo' => true,
                 'puesto' => 'CFO',
                 'departamento' => 'Finanzas',
                 'employeeId' => 'EMP-003',
@@ -39,6 +42,7 @@ class RhClientMock implements RhClientInterface
                 'id' => 'RH-004',
                 'name' => 'Erick Daniel Morales Llerena',
                 'email' => 'erick.morales@gptservices.com',
+                'activo' => true,
                 'puesto' => 'Coordinador QHSE',
                 'departamento' => 'QHSE',
                 'employeeId' => 'EMP-004',
@@ -50,17 +54,9 @@ class RhClientMock implements RhClientInterface
     {
         foreach ($this->users as $u) {
             if (strtolower($u['email']) === strtolower($email)) {
-                return new RhUser(
-                    id: $u['id'],
-                    name: $u['name'],
-                    email: $u['email'],
-                    puesto: $u['puesto'],
-                    departamento: $u['departamento'],
-                    employeeId: $u['employeeId'],
-                );
+                return $this->toDto($u);
             }
         }
-
         return null;
     }
 
@@ -68,34 +64,27 @@ class RhClientMock implements RhClientInterface
     {
         foreach ($this->users as $u) {
             if ($u['id'] === $userId) {
-                return new RhUser(
-                    id: $u['id'],
-                    name: $u['name'],
-                    email: $u['email'],
-                    puesto: $u['puesto'],
-                    departamento: $u['departamento'],
-                    employeeId: $u['employeeId'],
-                );
+                return $this->toDto($u);
             }
         }
-
         return null;
     }
 
     public function listAll(): Collection
     {
-        $result = [];
-        foreach ($this->users as $u) {
-            $result[] = new RhUser(
-                id: $u['id'],
-                name: $u['name'],
-                email: $u['email'],
-                puesto: $u['puesto'],
-                departamento: $u['departamento'],
-                employeeId: $u['employeeId'],
-            );
-        }
+        return collect($this->users)->map(fn($u) => $this->toDto($u));
+    }
 
-        return collect($result);
+    private function toDto(array $u): RhUser
+    {
+        return new RhUser(
+            id:           $u['id'],
+            name:         $u['name'],
+            email:        $u['email'],
+            activo:       $u['activo'] ?? true,
+            puesto:       $u['puesto'] ?? null,
+            departamento: $u['departamento'] ?? null,
+            employeeId:   $u['employeeId'] ?? null,
+        );
     }
 }

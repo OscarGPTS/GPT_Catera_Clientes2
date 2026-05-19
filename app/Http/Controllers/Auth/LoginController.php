@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\AuthProvider;
 use App\Services\Auth\AuthOrchestrator;
+use App\Services\Auth\RhAccessGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,7 @@ class LoginController extends Controller
 {
     public function __construct(
         private AuthOrchestrator $orchestrator,
+        private RhAccessGuard $rhGuard,
     ) {}
 
     public function show()
@@ -59,6 +61,17 @@ class LoginController extends Controller
         if ($user->status === 'suspended') {
             throw ValidationException::withMessages([
                 'email' => 'Esta cuenta está suspendida. Contacta al administrador.',
+            ]);
+        }
+
+        // Validación contra RH: bloquea si no está en RH activo, salvo
+        // que el email esté en email_allowlist o el User tenga status='invited'.
+        // Fail-open ante caída del servicio (registra log).
+        $rhResult = $this->rhGuard->check($email, $user);
+        if (! $rhResult->allowed) {
+            RateLimiter::hit($throttleKey);
+            throw ValidationException::withMessages([
+                'email' => $rhResult->message(),
             ]);
         }
 

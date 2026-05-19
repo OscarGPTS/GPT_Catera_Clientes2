@@ -47,17 +47,23 @@ class User extends Authenticatable
 
     public function proyectosComoDirectorDn()
     {
-        return $this->hasMany(\App\Models\Proyectos\Proyecto::class, 'director_dn_id');
+        return $this->belongsToMany(\App\Models\Proyectos\Proyecto::class, 'proyecto_miembros', 'user_id', 'proyecto_id')
+            ->wherePivot('rol', 'director_dn')
+            ->withTimestamps();
     }
 
     public function proyectosComoGerente()
     {
-        return $this->hasMany(\App\Models\Proyectos\Proyecto::class, 'gerente_proyectos_id');
+        return $this->belongsToMany(\App\Models\Proyectos\Proyecto::class, 'proyecto_miembros', 'user_id', 'proyecto_id')
+            ->wherePivot('rol', 'gerente_proyectos')
+            ->withTimestamps();
     }
 
     public function proyectosComoIngeniero()
     {
-        return $this->hasMany(\App\Models\Proyectos\Proyecto::class, 'ingeniero_proyectos_id');
+        return $this->belongsToMany(\App\Models\Proyectos\Proyecto::class, 'proyecto_miembros', 'user_id', 'proyecto_id')
+            ->wherePivot('rol', 'ingeniero_proyectos')
+            ->withTimestamps();
     }
 
     public function chatCanales()
