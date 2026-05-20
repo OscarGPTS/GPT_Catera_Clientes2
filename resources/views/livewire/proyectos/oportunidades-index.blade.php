@@ -201,8 +201,6 @@
                     <tr>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-0 z-20 bg-slate-50">CP</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[90px] z-20 bg-slate-50">Cliente</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[250px] z-20 bg-slate-50">Contacto</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[380px] z-20 bg-slate-50">Datos de Contacto</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[520px] z-20 bg-slate-50 border-r border-slate-300">Lugar</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Alcance</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Oferta</th>
@@ -213,7 +211,7 @@
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Responsable</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Arch. Oferta</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Concepto Adj.</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Resultado.</th>
                         <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">% Adj.</th>
                         <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">% Real</th>
                         <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Cartera Esp.</th>
@@ -271,17 +269,6 @@
                                     </span>
                                 @endif
                             </td>
-
-                            {{-- Contacto --}}
-                            <td class="px-3 py-3 text-sm text-slate-600 sticky left-[250px] z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
-                                <div class="truncate">{{ $op->contacto ?? '—' }}</div>
-                            </td>
-
-                            {{-- Datos de Contacto --}}
-                            <td class="px-3 py-3 text-sm text-slate-600 sticky left-[380px] z-10 bg-white group-hover:bg-slate-50/60 overflow-hidden">
-                                <div class="truncate">{{ $op->datos_contacto ?? '—' }}</div>
-                            </td>
-
                             {{-- Lugar --}}
                             <td class="px-3 py-3 text-sm text-slate-600 sticky left-[520px] z-10 bg-white group-hover:bg-slate-50/60 border-r border-slate-200 overflow-hidden">
                                 <div class="truncate">{{ $op->lugar?->nombre ?? '—' }}</div>
