@@ -115,24 +115,18 @@ class OportunidadesIndex extends Component
         }
 
         $pipeline = (clone $baseQuery)->count();
-        $pipelineItems = (clone $baseQuery)
-            ->withSum('cotizaciones as monto_total', 'precio_venta_final')
-            ->get();
-        $pipelineMonto = $pipelineItems->sum('monto_total');
-
-        $montoPonderado = $pipelineItems->sum(fn($p) => ($p->monto_total ?? 0) * ($p->ponderacion / 100));
+        $pipelineMonto = (float) (clone $baseQuery)->sum('monto_usd');
+        $montoPonderado = (float) (clone $baseQuery)
+            ->selectRaw('COALESCE(SUM(monto_usd * ponderacion / 100), 0) as ponderado')
+            ->value('ponderado');
         $ponderacionMedia = $pipeline > 0
-            ? round($pipelineItems->avg('ponderacion'))
+            ? (int) round((clone $baseQuery)->avg('ponderacion') ?? 0)
             : 0;
 
-        $adjudicadoMonto = (clone $baseQuery)
-            ->whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion'])
-            ->withSum('cotizaciones as monto_total', 'precio_venta_final')
-            ->get()
-            ->sum('monto_total');
-        $adjudicadoCount = (clone $baseQuery)
-            ->whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion'])
-            ->count();
+        $adjudicadoQuery = (clone $baseQuery)
+            ->whereIn('estado', ['adjudicado_pendiente', 'adjudicado_firmado', 'en_ejecucion']);
+        $adjudicadoMonto = (float) (clone $adjudicadoQuery)->sum('monto_usd');
+        $adjudicadoCount = (clone $adjudicadoQuery)->count();
 
         $enviadasCount = (clone $baseQuery)
             ->whereNotIn('estado', ['en_revision', 'cotizando'])
