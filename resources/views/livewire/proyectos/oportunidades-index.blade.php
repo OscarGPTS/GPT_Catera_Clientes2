@@ -171,16 +171,14 @@
          }">
         {{-- Top scrollbar mirror (synced with table) --}}
         <div x-ref="topBar" class="overflow-x-scroll border-b border-slate-100" style="height:10px">
-            <div style="min-width:2082px;height:1px"></div>
+            <div style="min-width:1812px;height:1px"></div>
         </div>
         <div x-ref="tableWrap" class="overflow-x-auto">
-            {{-- ── width budget: 90+160+130+140+110+210+170+100+100+120+140+120+100+110+150+90+70+120+52 = 2082px ── --}}
-            <table class="w-full table-fixed divide-y divide-slate-200" style="min-width:2082px">
+            {{-- ── width budget: 90+160+110+210+170+100+100+120+140+120+100+110+150+90+70+120+52 = 1812px ── --}}
+            <table class="w-full table-fixed divide-y divide-slate-200" style="min-width:1812px">
                 <colgroup>
                     <col style="width:90px">   {{-- CP --}}
                     <col style="width:160px">  {{-- Cliente --}}
-                    <col style="width:130px">  {{-- Contacto --}}
-                    <col style="width:140px">  {{-- Datos Contacto --}}
                     <col style="width:110px">  {{-- Lugar --}}
                     <col style="width:210px">  {{-- Alcance --}}
                     <col style="width:170px">  {{-- Oferta --}}
@@ -201,7 +199,7 @@
                     <tr>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-0 z-20 bg-slate-50">CP</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[90px] z-20 bg-slate-50">Cliente</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[520px] z-20 bg-slate-50 border-r border-slate-300">Lugar</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sticky left-[250px] z-20 bg-slate-50 border-r border-slate-300">Lugar</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Alcance</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Oferta</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Fecha Envío</th>
@@ -270,7 +268,7 @@
                                 @endif
                             </td>
                             {{-- Lugar --}}
-                            <td class="px-3 py-3 text-sm text-slate-600 sticky left-[520px] z-10 bg-white group-hover:bg-slate-50/60 border-r border-slate-200 overflow-hidden">
+                            <td class="px-3 py-3 text-sm text-slate-600 sticky left-[250px] z-10 bg-white group-hover:bg-slate-50/60 border-r border-slate-200 overflow-hidden">
                                 <div class="truncate">{{ $op->lugar?->nombre ?? '—' }}</div>
                             </td>
 
