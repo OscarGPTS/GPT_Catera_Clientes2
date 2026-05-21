@@ -21,7 +21,7 @@ use Illuminate\Database\Seeder;
  *   OFERTA   (técnica)     → tech_reference
  *   FECHA ENVÍO            → fecha_envio (normaliza fechas en español)
  *   FECHA MODIFICACION...  → fecha_modificacion_oferta
- *   OFERTAS EMITIDAS       → monto_usd (admite strings "$ 23,527.43")
+ *   MONTO USD              → monto_usd (admite strings "$ 23,527.43")
  *   HITOS DE PAGO          → hitos_pago
  *   RESPONSABLE            → elaboro_id (vía users.name)
  *   STATUS                 → estado ('ENVIADO' → 'presentado')
@@ -121,7 +121,7 @@ class Ofertas2026Seeder extends Seeder
                 'tech_reference'            => $this->limpiarTexto($row['OFERTA   '] ?? ($row['OFERTA'] ?? null)),
                 'fecha_envio'               => $fechaEnvio,
                 'fecha_modificacion_oferta' => $fechaModOferta,
-                'monto_usd'                 => $this->parseNumerico($row['OFERTAS EMITIDAS'] ?? null),
+                'monto_usd'                 => $this->parseNumerico($row['MONTO USD'] ?? $row['OFERTAS EMITIDAS'] ?? null),
                 'hitos_pago'                => $this->limpiarTexto($row['HITOS DE PAGO'] ?? null),
                 'elaboro_id'                => $this->resolverUser($row['RESPONSABLE'] ?? null),
                 'estado'                    => $this->mapearEstado($row['STATUS'] ?? null),
