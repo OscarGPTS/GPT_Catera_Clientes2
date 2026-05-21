@@ -1,6 +1,6 @@
-<div class="relative" x-data @click.away="$wire.$set('open', false)" wire:poll.10s="loadNotifications">
+<div class="relative" x-data="{ open: false }" @click.outside="open = false" wire:poll.10s="loadNotifications">
     <button
-        @click="$wire.toggleOpen()"
+        @click="open = !open"
         class="relative rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-600"
     >
         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13,8 +13,8 @@
         @endif
     </button>
 
-    @if($open)
-    <div class="absolute right-0 z-50 mt-2 w-[380px] rounded-lg border border-slate-200 bg-white shadow-sm">
+    <div x-show="open" x-cloak x-transition.opacity
+         class="absolute right-0 z-50 mt-2 w-[380px] rounded-lg border border-slate-200 bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <div class="flex items-center gap-2">
                 <h3 class="text-sm font-semibold text-slate-800">Notificaciones</h3>
@@ -65,5 +65,4 @@
             Ver todas las notificaciones
         </a>
     </div>
-    @endif
 </div>
