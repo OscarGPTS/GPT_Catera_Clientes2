@@ -1,4 +1,4 @@
-<div class="relative" x-data @click.away="$wire.close()" wire:poll.10s="loadNotifications">
+<div class="relative" x-data @click.away="$wire.$set('open', false)" wire:poll.10s="loadNotifications">
     <button
         @click="$wire.toggleOpen()"
         class="relative rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-600"
