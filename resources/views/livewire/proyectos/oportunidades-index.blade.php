@@ -171,11 +171,11 @@
          }">
         {{-- Top scrollbar mirror (synced with table) --}}
         <div x-ref="topBar" class="overflow-x-scroll border-b border-slate-100" style="height:10px">
-            <div style="min-width:1812px;height:1px"></div>
+            <div style="min-width:1742px;height:1px"></div>
         </div>
         <div x-ref="tableWrap" class="overflow-x-auto">
-            {{-- ── width budget: 90+160+110+210+170+100+100+120+140+120+100+110+150+90+70+120+52 = 1812px ── --}}
-            <table class="w-full table-fixed divide-y divide-slate-200" style="min-width:1812px">
+            {{-- ── width budget: 90+160+110+210+170+100+100+120+140+120+100+110+150+90+120+52 = 1742px ── --}}
+            <table class="w-full table-fixed divide-y divide-slate-200" style="min-width:1742px">
                 <colgroup>
                     <col style="width:90px">   {{-- CP --}}
                     <col style="width:160px">  {{-- Cliente --}}
@@ -191,7 +191,6 @@
                     <col style="width:110px">  {{-- Arch. Oferta --}}
                     <col style="width:150px">  {{-- Concepto Adj. --}}
                     <col style="width:90px">   {{-- % Adj. --}}
-                    <col style="width:70px">   {{-- % Real --}}
                     <col style="width:120px">  {{-- Cartera Esp. --}}
                     <col style="width:52px">   {{-- Actions --}}
                 </colgroup>
@@ -209,9 +208,8 @@
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Responsable</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Arch. Oferta</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Resultado.</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Resultado</th>
                         <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">% Adj.</th>
-                        <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">% Real</th>
                         <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Cartera Esp.</th>
                         <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"></th>
                     </tr>
@@ -337,11 +335,6 @@
                                     {{ $op->ponderacion }}%
                                 </span>
                                 <span class="block text-[10px] text-slate-400 text-center">{{ $ponderacionLabel }}</span>
-                            </td>
-
-                            {{-- % Real --}}
-                            <td class="px-3 py-3 text-right text-sm text-slate-700 overflow-hidden">
-                                <div class="truncate">{{ $op->porcentaje_adjudicacion ? number_format($op->porcentaje_adjudicacion, 1) . '%' : '—' }}</div>
                             </td>
 
                             {{-- Cartera Esperada --}}

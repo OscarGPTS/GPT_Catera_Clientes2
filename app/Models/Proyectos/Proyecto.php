@@ -171,6 +171,19 @@ class Proyecto extends Model
             : $this->getMiembroIdPorRol('trainee');
     }
 
+    /**
+     * cartera_esperada = monto_usd × ponderacion / 100.
+     * Se calcula en vivo para mantenerse sincronizada cuando cambia la
+     * ponderación (la columna en DB queda como respaldo / override manual).
+     */
+    public function getCarteraEsperadaAttribute($value): ?float
+    {
+        if ($this->monto_usd === null || $this->ponderacion === null) {
+            return $value !== null ? (float) $value : null;
+        }
+        return round((float) $this->monto_usd * (int) $this->ponderacion / 100, 2);
+    }
+
     public function eventos(): HasMany
     {
         return $this->hasMany(ProyectoEvento::class, 'proyecto_id');

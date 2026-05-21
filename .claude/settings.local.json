@@ -26,7 +26,9 @@
       "Bash(php -l app/Livewire/Chat/ChatTopbarBadge.php)",
       "Bash(php -r \"echo extension_loaded\\('gd'\\) ? 'GD: SI' : 'GD: NO'; echo PHP_EOL; echo extension_loaded\\('imagick'\\) ? 'Imagick: SI' : 'Imagick: NO';\")",
       "Bash(grep -n 'storeAs\\\\|$attachmentData\\\\|use App\\\\\\\\Services\\\\\\\\Chat\\\\|use Illuminate\\\\\\\\Support\\\\\\\\Facades\\\\\\\\Storage' app/Livewire/Chat/ChatDrawer.php)",
-      "Bash(php -l app/Services/Chat/ChatAttachmentStorage.php)"
+      "Bash(php -l app/Services/Chat/ChatAttachmentStorage.php)",
+      "Bash(php -l app/Models/Proyectos/Proyecto.php)",
+      "Bash(php -l database/seeders/Ofertas2026Seeder.php)"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"

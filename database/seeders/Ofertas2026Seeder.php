@@ -26,11 +26,12 @@ use Illuminate\Database\Seeder;
  *   RESPONSABLE            → elaboro_id (vía users.name)
  *   STATUS                 → estado ('ENVIADO' → 'presentado')
  *   OFERTA (PDF)           → archivo_oferta
+ *   CONCEPTO DE ADJUDICACIÓN → concepto_adjudicacion
  *   % DE ADJUDICACION      → ponderacion
  *
  * Notas: cp_numero duplicado en el JSON (016/26 aparece dos veces) se diferencia
- * con el sufijo '-B'. CONCEPTO DE ADJUDICACIÓN y Cartera Esperada son derivados
- * y no se persisten aquí.
+ * con el sufijo '-B'. cartera_esperada se calcula en vivo en el modelo
+ * (monto_usd × ponderacion / 100).
  */
 class Ofertas2026Seeder extends Seeder
 {
@@ -126,6 +127,7 @@ class Ofertas2026Seeder extends Seeder
                 'elaboro_id'                => $this->resolverUser($row['RESPONSABLE'] ?? null),
                 'estado'                    => $this->mapearEstado($row['STATUS'] ?? null),
                 'archivo_oferta'            => $this->limpiarTexto($row['OFERTA'] ?? null),
+                'concepto_adjudicacion'     => $this->limpiarTexto($row['CONCEPTO DE ADJUDICACIÓN'] ?? null),
                 'ponderacion'               => (int) ($row['% DE ADJUDICACION'] ?? 10),
                 'anio'                      => $fechaEnvio ? (int) substr($fechaEnvio, 0, 4) : (int) date('Y'),
             ]);
