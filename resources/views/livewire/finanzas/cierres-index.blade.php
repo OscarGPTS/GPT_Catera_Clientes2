@@ -43,10 +43,12 @@
                     <span class="rounded-full bg-white/20 px-1.5 py-0.5 text-xs">~5 segundos</span>
                 </button>
                 @endcan
+                @unlessrole('invitado')
                 <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     Exportar PDF
                 </button>
+                @endunlessrole
             </div>
 
             @if($generando)

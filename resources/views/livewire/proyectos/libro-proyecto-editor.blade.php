@@ -32,10 +32,12 @@
                     <div class="h-full rounded-full bg-gpt-600 transition-all duration-500" style="width: {{ $porcentajeGlobal }}%"></div>
                 </div>
                 @if($porcentajeGlobal >= 100)
+                    @unlessrole('invitado')
                     <button type="button" class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gpt-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gpt-700 transition-colors">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                         Generar PDF consolidado
                     </button>
+                    @endunlessrole
                 @endif
             </div>
         </div>

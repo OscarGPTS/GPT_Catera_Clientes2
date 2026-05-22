@@ -102,4 +102,9 @@ class User extends Authenticatable
     {
         return $this->hasRole(['super_admin', 'direccion_general']);
     }
+
+    public function esInvitado(): bool
+    {
+        return $this->hasRole('invitado');
+    }
 }

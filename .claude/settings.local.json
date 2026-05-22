@@ -28,7 +28,9 @@
       "Bash(grep -n 'storeAs\\\\|$attachmentData\\\\|use App\\\\\\\\Services\\\\\\\\Chat\\\\|use Illuminate\\\\\\\\Support\\\\\\\\Facades\\\\\\\\Storage' app/Livewire/Chat/ChatDrawer.php)",
       "Bash(php -l app/Services/Chat/ChatAttachmentStorage.php)",
       "Bash(php -l app/Models/Proyectos/Proyecto.php)",
-      "Bash(php -l database/seeders/Ofertas2026Seeder.php)"
+      "Bash(php -l database/seeders/Ofertas2026Seeder.php)",
+      "Bash(php -l app/Providers/AppServiceProvider.php)",
+      "Bash(php -l bootstrap/app.php)"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"

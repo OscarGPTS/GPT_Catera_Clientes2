@@ -22,6 +22,7 @@ use App\Services\Rh\RhClientHttp;
 use App\Services\Rh\RhClientInterface;
 use App\Services\Rh\RhClientMock;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -42,6 +43,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Cuando estamos detrás de un proxy HTTPS (prod), Laravel debe generar
+        // URLs con https:// — si no, Livewire hace requests http:// y el browser
+        // los bloquea por Mixed Content.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
+
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(AuthProvider::class, AuthProviderPolicy::class);
         Gate::policy(Proyecto::class, ProyectoPolicy::class);

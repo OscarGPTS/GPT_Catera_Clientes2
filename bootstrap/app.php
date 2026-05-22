@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Confiar en proxies (nginx, cloudflare, etc.) para que Laravel respete
+        // X-Forwarded-Proto y detecte HTTPS correctamente en producción.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'finanzas' => EnsureFinanzasAccess::class,
             'role' => EnsureRole::class,

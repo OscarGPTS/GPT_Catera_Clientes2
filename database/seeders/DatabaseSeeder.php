@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RolesPermissionsSeeder::class,
+            InvitadoRoleSeeder::class,
             RhRoleMappingSeeder::class,
             SystemSettingsSeeder::class,
             CatalogosBaseSeeder::class,
@@ -31,6 +32,8 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Sergio Ordaz',      'email' => 'sergio.ordaz@gptservices.com',       'role' => 'comercial',         'puesto' => 'Ejecutivo Comercial',           'departamento' => 'Comercial'],
             ['name' => 'Diego Renato',      'email' => 'diego.renato@gptservices.com',       'role' => 'comercial',         'puesto' => 'Ejecutivo Comercial',           'departamento' => 'Comercial'],
             ['name' => 'Guadalupe Osorio',  'email' => 'guadalupe.osorio@gptservices.com',   'role' => 'comercial',         'puesto' => 'Ejecutivo Comercial',           'departamento' => 'Comercial'],
+            // Usuario de prueba con rol de solo lectura (sin acciones de importar/exportar/crear/editar)
+            ['name' => 'Invitado Demo',     'email' => 'invitado@gptservices.com',           'role' => 'invitado',          'puesto' => 'Visitante',                     'departamento' => 'Externo'],
         ];
 
         $created = [];

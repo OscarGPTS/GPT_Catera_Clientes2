@@ -6,6 +6,7 @@
                 <p class="mt-1 text-sm text-slate-500">Pipeline de nuevos proyectos y cotizaciones</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+                @unlessrole('invitado')
                 <a href="{{ route('oportunidades.exportar', array_filter(['anio' => $anio, 'search' => $search])) }}"
                    class="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-100 transition-colors">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
@@ -19,6 +20,7 @@
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                     Nueva oportunidad
                 </a>
+                @endunlessrole
             </div>
         </div>
     </x-slot>
@@ -367,6 +369,7 @@
                                             Adjudicar
                                         </a>
                                         @endcan
+                                        @unlessrole('invitado')
                                         <hr class="my-1 border-slate-100">
                                         <form method="POST" action="{{ route('oportunidades.cambiar-estado', $op) }}" class="inline"
                                               onsubmit="return confirm('¿Cancelar esta oportunidad?')">
@@ -377,6 +380,7 @@
                                                 Cancelar
                                             </button>
                                         </form>
+                                        @endunlessrole
                                     </div>
                                 </div>
                             </td>
@@ -544,10 +548,12 @@
                                     <svg class="h-12 w-12 text-slate-300" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                                     <h3 class="mt-2 text-sm font-medium text-slate-900">Sin oportunidades</h3>
                                     <p class="mt-1 text-sm text-slate-500">No se encontraron oportunidades con los filtros seleccionados.</p>
+                                    @unlessrole('invitado')
                                     <a href="{{ route('oportunidades.create') }}" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-gpt-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gpt-700 transition-colors">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                         Nueva oportunidad
                                     </a>
+                                    @endunlessrole
                                 </div>
                             </td>
                         </tr>
