@@ -110,11 +110,16 @@
                         @endforeach
                     </td>
                     <td class="whitespace-nowrap px-4 py-3 text-right">
-                        @if($usuario->status === 'active')
-                            <x-button variant="ghost" size="sm" wire:click.stop="suspendUser({{ $usuario->id }})" class="text-gpt-red-600">Suspender</x-button>
-                        @else
-                            <x-button variant="ghost" size="sm" wire:click.stop="activateUser({{ $usuario->id }})" class="text-green-600">Activar</x-button>
-                        @endif
+                        <div class="flex items-center justify-end gap-2">
+                            @can('gestionar permisos')
+                                <x-button variant="ghost" size="sm" wire:click.stop="openRoleModal({{ $usuario->id }})" class="text-gpt-600">Cambiar rol</x-button>
+                            @endcan
+                            @if($usuario->status === 'active')
+                                <x-button variant="ghost" size="sm" wire:click.stop="suspendUser({{ $usuario->id }})" class="text-gpt-red-600">Suspender</x-button>
+                            @else
+                                <x-button variant="ghost" size="sm" wire:click.stop="activateUser({{ $usuario->id }})" class="text-green-600">Activar</x-button>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @endforeach
@@ -163,6 +168,50 @@
             <div class="mt-6 flex justify-end gap-3">
                 <x-button variant="ghost" wire:click="closeInviteModal">Cancelar</x-button>
                 <x-button variant="primary" wire:click="inviteUser" wire:loading.attr="disabled">Enviar invitación</x-button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Role Modal --}}
+    @if($showRoleModal)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60"
+         wire:click.self="closeRoleModal"
+         x-on:keydown.escape.window="$wire.closeRoleModal()">
+        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h3 class="text-lg font-medium text-slate-900">Cambiar rol</h3>
+            <p class="mt-1 text-sm text-slate-500">
+                Asignar un nuevo rol a <strong class="text-slate-900">{{ $roleModalUserName }}</strong>.
+            </p>
+
+            <div class="mt-4 space-y-4">
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                    <span class="text-slate-500">Rol actual:</span>
+                    @if($roleModalCurrentRole)
+                        <span class="ml-1 inline-flex items-center rounded-full bg-gpt-100 px-2.5 py-0.5 text-xs font-medium text-gpt-800">{{ $roleModalCurrentRole }}</span>
+                    @else
+                        <span class="ml-1 text-slate-400">Sin rol asignado</span>
+                    @endif
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Nuevo rol *</label>
+                    <select wire:model="roleModalSelectedRole"
+                        class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-gpt-600 focus:ring-gpt-200">
+                        <option value="">Seleccionar rol...</option>
+                        @foreach($allRoles as $role)
+                            <option value="{{ $role->name }}">{{ $role->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('roleModalSelectedRole') <p class="mt-1 text-xs text-gpt-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <p class="text-xs text-slate-500">El nuevo rol reemplaza por completo cualquier rol previo del usuario.</p>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <x-button variant="ghost" wire:click="closeRoleModal">Cancelar</x-button>
+                <x-button variant="primary" wire:click="updateRole" wire:loading.attr="disabled">Guardar cambios</x-button>
             </div>
         </div>
     </div>

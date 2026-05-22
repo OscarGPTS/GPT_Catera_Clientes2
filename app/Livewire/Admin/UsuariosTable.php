@@ -29,6 +29,12 @@ class UsuariosTable extends Component
 
     public string $detailTab = 'general';
 
+    public bool $showRoleModal = false;
+    public ?int $roleModalUserId = null;
+    public string $roleModalUserName = '';
+    public string $roleModalCurrentRole = '';
+    public string $roleModalSelectedRole = '';
+
     public function mount(): void
     {
         $this->search = request('buscar', '');
@@ -147,13 +153,45 @@ class UsuariosTable extends Component
         }
     }
 
-    public function updateRole(int $userId, string $role): void
+    public function openRoleModal(int $userId): void
     {
-        $user = User::findOrFail($userId);
+        $user = User::with('roles')->findOrFail($userId);
         $this->authorize('manageRoles', $user);
 
-        $user->syncRoles([$role]);
-        session()->flash('success', "Rol actualizado para {$user->name}.");
+        $this->roleModalUserId = $user->id;
+        $this->roleModalUserName = $user->name;
+        $this->roleModalCurrentRole = $user->roles->first()?->name ?? '';
+        $this->roleModalSelectedRole = $this->roleModalCurrentRole;
+        $this->resetErrorBag('roleModalSelectedRole');
+        $this->showRoleModal = true;
+    }
+
+    public function closeRoleModal(): void
+    {
+        $this->showRoleModal = false;
+        $this->roleModalUserId = null;
+        $this->roleModalUserName = '';
+        $this->roleModalCurrentRole = '';
+        $this->roleModalSelectedRole = '';
+    }
+
+    public function updateRole(): void
+    {
+        $this->validate([
+            'roleModalUserId' => 'required|exists:users,id',
+            'roleModalSelectedRole' => 'required|exists:roles,name',
+        ]);
+
+        $user = User::findOrFail($this->roleModalUserId);
+        $this->authorize('manageRoles', $user);
+
+        $user->syncRoles([$this->roleModalSelectedRole]);
+
+        $newRole = $this->roleModalSelectedRole;
+        $userName = $user->name;
+        $this->closeRoleModal();
+
+        session()->flash('success', "Rol actualizado a «{$newRole}» para {$userName}.");
     }
 
     public function suspendUser(int $userId): void
