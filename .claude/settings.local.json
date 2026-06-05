@@ -30,7 +30,20 @@
       "Bash(php -l app/Models/Proyectos/Proyecto.php)",
       "Bash(php -l database/seeders/Ofertas2026Seeder.php)",
       "Bash(php -l app/Providers/AppServiceProvider.php)",
-      "Bash(php -l bootstrap/app.php)"
+      "Bash(php -l bootstrap/app.php)",
+      "Read(//c/Users/LENOVO/Documents/Proyectos/langchain/docs/**)",
+      "Bash(dir \"C:\\\\Users\\\\LENOVO\\\\Documents\\\\Proyectos\\\\langchain\\\\docs\\\\API_CONSULTAS\")",
+      "Bash(cd \"C:/Users/LENOVO/Documents/Proyectos/langchain\" 2>/dev/null && grep -rl \"voz\" --include=*.html --include=*.py -i . 2>/dev/null | grep -i voz | head -30; echo \"===ROUTES===\"; grep -rn \"\\\\\"/voz\\\\\"\\\\|'/voz'\\\\|/voz\" --include=*.py . 2>/dev/null | head -20)",
+      "Read(//c/Users/LENOVO/Documents/Proyectos/langchain/**)",
+      "Bash(printf '\\\\n# API de Consultas a Datos \\(buscador inteligente del dashboard\\)\\\\nCONSULTAS_API_URL=http://localhost:8000\\\\nCONSULTAS_ORIGEN=cartera_db\\\\nCONSULTAS_API_TIMEOUT=120\\\\n')",
+      "Bash(printf '\\\\n# API de Consultas a Datos \\(buscador inteligente del dashboard\\)\\\\nCONSULTAS_API_URL=http://localhost:8000\\\\nCONSULTAS_ORIGEN=cartera_db\\\\nCONSULTAS_API_TIMEOUT=120\\\\n# CONSULTAS_CF_CLIENT_ID=\\\\n# CONSULTAS_CF_CLIENT_SECRET=\\\\n')",
+      "Bash(php -l app/Http/Controllers/ConsultaIaController.php)",
+      "Bash(php -l config/services.php)",
+      "Bash(php -l routes/web.php)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(sed -n '11,20p;240,265p' resources/views/components/buscador-inteligente.blade.php)",
+      "Bash(curl -s -m 5 http://localhost:8000/api/v1/consultas/health)",
+      "Bash(curl -s -m 12 https://bots.tech-energy.lat/api/v1/consultas/health)"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"

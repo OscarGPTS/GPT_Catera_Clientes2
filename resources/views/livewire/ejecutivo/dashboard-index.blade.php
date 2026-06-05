@@ -117,6 +117,9 @@ function initProjChart(idx) {
         <p class="mt-1 text-sm text-slate-500">Vista ejecutiva </p>
     </div>
 
+    {{-- Buscador inteligente: consultas en lenguaje natural (texto/voz) → tablas y gráficos dinámicos --}}
+    <x-buscador-inteligente origen="cartera_db" />
+
     <div class="mt-2">
         
         {{-- Data table: Status Ofertas 2026 --}}

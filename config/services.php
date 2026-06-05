@@ -60,4 +60,15 @@ return [
         'redirect' => env('APP_URL') . '/auth/apple/callback',
     ],
 
+    // API de Consultas a Datos (buscador inteligente del dashboard).
+    // Servicio externo NL→SQL/REST de solo lectura. Ver docs/API_CONSULTAS.md del proyecto langchain.
+    'consultas' => [
+        'url'              => rtrim(env('CONSULTAS_API_URL', 'http://localhost:8000'), '/'),
+        'origen'           => env('CONSULTAS_ORIGEN', 'cartera_db'),
+        'timeout'          => (int) env('CONSULTAS_API_TIMEOUT', 120),
+        // Cloudflare Access Service Token (opcional; vacío = no se envían headers).
+        'cf_client_id'     => env('CONSULTAS_CF_CLIENT_ID'),
+        'cf_client_secret' => env('CONSULTAS_CF_CLIENT_SECRET'),
+    ],
+
 ];

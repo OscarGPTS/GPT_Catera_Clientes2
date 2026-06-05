@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConsultaIaController;
 use App\Http\Controllers\Catalogos\CatalogosController;
 use App\Http\Controllers\Catalogos\CatalogosCrudController;
 use App\Http\Controllers\Comercial\ClienteController;
@@ -126,7 +127,12 @@ Route::middleware(['auth'])->group(function () {
     // Chat
     Route::get('/chat', ChatIndex::class)->middleware('auth')->name('chat.index');
 
-    
+    // Buscador inteligente (proxy a la API de Consultas a Datos)
+    Route::post('/consulta-ia', [ConsultaIaController::class, 'consultar'])->name('consulta-ia.texto');
+    Route::post('/consulta-ia/voz', [ConsultaIaController::class, 'voz'])->name('consulta-ia.voz');
+    Route::get('/consulta-ia/health', [ConsultaIaController::class, 'health'])->name('consulta-ia.health');
+
+
 });
 
 require __DIR__.'/admin.php';
