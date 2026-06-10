@@ -61,7 +61,13 @@
       "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e 'SELECT user, host FROM mysql.user WHERE user='\\\\''cartera_ro'\\\\'';')",
       "Bash(/c/xampp/mysql/bin/mysql.exe -u cartera_ro '-pgmn[\\(dRE[\\)h.ynhn' -e 'SELECT COUNT\\(*\\) AS clientes FROM cartera_clientes.clientes;')",
       "Bash(ls -1 /c/xampp/htdocs 2>/dev/null)",
-      "Read(//c/xampp/htdocs/**)"
+      "Read(//c/xampp/htdocs/**)",
+      "Bash(findstr /n \"oportunidad\" \"c:\\\\xampp\\\\htdocs\\\\GPT_Catera_Clientes2\\\\routes\\\\web.php\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\GPT_Catera_Clientes2\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(grep -n \"public \\\\$\" app/Livewire/Ejecutivo/DashboardIndex.php)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\LENOVO\\\\Documents\\\\Proyectos\\\\langchain\" -Directory | Where-Object { $_.Name -notmatch '^\\(\\\\.|__pycache__\\)' } | Select-Object -ExpandProperty Name)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\LENOVO\\\\Documents\\\\Proyectos\\\\langchain\" -Exclude \".venv\" -Directory | ForEach-Object { $_.Name; Get-ChildItem -Path $_.FullName -File | Select-Object -ExpandProperty Name })"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"

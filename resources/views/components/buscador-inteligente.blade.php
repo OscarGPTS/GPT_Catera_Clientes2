@@ -3,9 +3,32 @@
     // alias (nombre del sistema, tag o URL). Por defecto toma el configurado por env
     // (CONSULTAS_ORIGEN), que es la fuente única de verdad para toda la app.
     'origen' => null,
+    // Accesos rápidos: arreglo de ['label', 'icon', 'prompt', 'formato'] para
+    // personalizarlos por vista. null = defaults del dashboard (abajo).
+    'sugerencias' => null,
 ])
 
-@php($origen = $origen ?? config('services.consultas.origen'))
+@php
+    // OJO: mantener UN solo bloque PHP en este archivo y no mencionar directivas Blade
+    // (ni en comentarios): la extracción de bloques crudos casa el primer apertura con
+    // el primer cierre que encuentre y el código restante se imprime como texto.
+    $origen = $origen ?? config('services.consultas.origen');
+
+    // Defaults alineados a docs/CONTEXTO_GRAFICAS_DASHBOARD.md: mismo vocabulario que
+    // el glosario del RAG (bruto/esperado/eficiencia, bandas, adjudicado) y año
+    // explícito — "del año actual" es ambiguo para el generador SQL; "{$anio}" no.
+    $anio = now()->year;
+    $sugerencias = $sugerencias ?? [
+        ['label' => 'KPIs de la cartera',       'icon' => '💰', 'prompt' => "monto bruto, monto esperado y eficiencia ponderada de la cartera de oportunidades",                                              'formato' => 'texto'],
+        ['label' => 'Cartera por probabilidad', 'icon' => '📊', 'prompt' => "distribución de la cartera de oportunidades por banda de probabilidad: número de ofertas, monto bruto y monto ponderado",        'formato' => 'grafico'],
+        ['label' => "Ofertas {$anio}",          'icon' => '📋', 'prompt' => "oportunidades del año {$anio} con cliente, monto en usd, estado y ponderación, ordenadas por fecha de envío",                    'formato' => 'tabla'],
+        ['label' => "Adjudicado {$anio}",       'icon' => '🏆', 'prompt' => "monto y número de proyectos adjudicados en {$anio} (estado adjudicado pendiente, adjudicado firmado o en ejecución)",            'formato' => 'texto'],
+        ['label' => 'Pipeline por estado',      'icon' => '📈', 'prompt' => "monto y número de proyectos por estado en {$anio}, excluyendo cancelados, perdidos y archivados",                                'formato' => 'grafico'],
+        ['label' => 'Top proyectos',            'icon' => '🥇', 'prompt' => "top 10 proyectos de {$anio} por monto en usd con su cliente y estado",                                                            'formato' => 'tabla'],
+        ['label' => 'Clientes por sector',      'icon' => '👥', 'prompt' => 'número de clientes activos por sector',                                                                                           'formato' => 'grafico'],
+        ['label' => 'Evolución mensual',        'icon' => '📉', 'prompt' => 'evolución mensual de la cartera esperada: monto ponderado por mes según el historial de ponderación',                            'formato' => 'grafico'],
+    ];
+@endphp
 
 {{--
     Buscador inteligente del dashboard.
@@ -18,6 +41,7 @@
         origen: @js($origen),
         urlTexto: @js(route('consulta-ia.texto')),
         urlVoz: @js(route('consulta-ia.voz')),
+        sugerencias: @js($sugerencias),
     })"
     class="mt-4"
 >
@@ -205,16 +229,9 @@
         stream: null,
         chunks: [],
 
-        // Accesos rápidos: consultas predefinidas alineadas a las vistas mapeadas
-        // (dashboard de ofertas, oportunidades, clientes). `formato` fuerza el tipo de salida.
-        sugerencias: [
-            { label: 'Clientes por sector',    icon: '📊', prompt: 'cuántos clientes hay por sector',                                   formato: 'grafico' },
-            { label: 'Top proyectos por monto', icon: '🏆', prompt: 'top 5 proyectos por monto en usd',                                  formato: 'tabla' },
-            { label: 'Pipeline por estado',     icon: '📈', prompt: 'cuántos proyectos hay por estado',                                  formato: 'grafico' },
-            { label: 'Ofertas del año',         icon: '📋', prompt: 'lista de oportunidades del año actual con su monto y estado',       formato: 'tabla' },
-            { label: 'Clientes activos',        icon: '👥', prompt: 'cuántos clientes activos hay',                                       formato: 'texto' },
-            { label: 'Monto total cartera',     icon: '💰', prompt: 'monto total de la cartera de proyectos en usd',                     formato: 'texto' },
-        ],
+        // Accesos rápidos: vienen del PHP del componente (prop `sugerencias`), de modo
+        // que cada vista puede personalizarlos. `formato` fuerza el tipo de salida.
+        sugerencias: opts.sugerencias || [],
 
         usarSugerencia(s) {
             if (this.loading || this.recording) return;

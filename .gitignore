@@ -10,6 +10,8 @@
 /.nova
 /.phpunit.cache
 /.vscode
+/.claude/setting.local.json
+/.claude/settings.local.json
 /.zed
 /auth.json
 /node_modules
