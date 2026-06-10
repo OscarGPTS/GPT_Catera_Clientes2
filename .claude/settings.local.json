@@ -43,7 +43,25 @@
       "Bash(echo \"EXIT:$?\")",
       "Bash(sed -n '11,20p;240,265p' resources/views/components/buscador-inteligente.blade.php)",
       "Bash(curl -s -m 5 http://localhost:8000/api/v1/consultas/health)",
-      "Bash(curl -s -m 12 https://bots.tech-energy.lat/api/v1/consultas/health)"
+      "Bash(curl -s -m 12 https://bots.tech-energy.lat/api/v1/consultas/health)",
+      "Bash(grep -n 'function oportunidades\\\\|function scopeOportunidades\\\\|function historialPonderacion\\\\|function ponderacion\\\\|function gerenteProyectos\\\\|function elaboro\\\\|function cliente\\\\b\\\\|getPonderacionAttribute\\\\|protected $table' app/Models/Proyectos/Proyecto.php)",
+      "Bash(grep -n 'protected $table\\\\|function ponderacion\\\\|class ProyectoPonderacionHistorial\\\\|anio\\\\|mes\\\\|porcentaje' app/Models/Proyectos/ProyectoPonderacionHistorial.php)",
+      "Bash(grep -rn 'protected $table\\\\|porcentaje' app/Models/Comercial/Ponderacion.php app/Models/Proyectos/Ponderacion.php)",
+      "Bash(sed -n '36,45p' app/Models/Proyectos/ProyectoPonderacionHistorial.php)",
+      "Bash(grep -n 'protected $table\\\\|porcentaje\\\\|protected $fillable' app/Models/Ponderacion.php)",
+      "Bash(grep -rn 'protected $table' app/Models/User.php app/Models/Proyectos/ProyectoMiembro.php)",
+      "Bash(ls -d docs)",
+      "Bash(ls *.md)",
+      "Bash(grep -v '^$')",
+      "Bash(curl -s -m 60 -X POST \"http://localhost:8000/api/v1/consultas/\" -H \"Content-Type: application/json\" -d '{\"consulta\":\"cuántos clientes hay por sector\",\"origen\":\"cartera_clientes\"}')",
+      "Bash(curl -s -m 60 -X POST \"http://localhost:8000/api/v1/consultas/\" -H \"Content-Type: application/json\" -d '{\"consulta\":\"cuántos clientes activos hay\",\"origen\":\"cartera_db\"}')",
+      "Bash(curl -s -m 90 -X POST \"http://localhost:8000/api/v1/consultas/\" -H \"Content-Type: application/json\" --data @/tmp/cq.json)",
+      "Bash(grep -iA40 \"cartera_db\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e 'SHOW DATABASES LIKE '\\\\''cartera_clientes'\\\\'';')",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e 'SELECT user, host FROM mysql.user WHERE user='\\\\''cartera_ro'\\\\'';')",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u cartera_ro '-pgmn[\\(dRE[\\)h.ynhn' -e 'SELECT COUNT\\(*\\) AS clientes FROM cartera_clientes.clientes;')",
+      "Bash(ls -1 /c/xampp/htdocs 2>/dev/null)",
+      "Read(//c/xampp/htdocs/**)"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"

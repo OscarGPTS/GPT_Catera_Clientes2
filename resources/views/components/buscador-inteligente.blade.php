@@ -1,6 +1,11 @@
 @props([
-    'origen' => 'cartera_db',
+    // Identificador del origen para la API de Consultas: su clave canónica o cualquier
+    // alias (nombre del sistema, tag o URL). Por defecto toma el configurado por env
+    // (CONSULTAS_ORIGEN), que es la fuente única de verdad para toda la app.
+    'origen' => null,
 ])
+
+@php($origen = $origen ?? config('services.consultas.origen'))
 
 {{--
     Buscador inteligente del dashboard.
@@ -16,62 +21,90 @@
     })"
     class="mt-4"
 >
-    {{-- Barra de búsqueda --}}
-    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
+    {{-- Barra de búsqueda (tono ejecutivo + glow degradado difuminado) --}}
+    <div class="relative">
+        {{-- Glow degradado detrás de la barra --}}
+        <div aria-hidden="true" class="pointer-events-none absolute -inset-1 z-0 overflow-hidden rounded-[1.4rem]">
+            <div class="absolute right-3 top-1/2 h-20 w-48 -translate-y-1/2 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 opacity-20 blur-3xl"
+                 :class="(loading || recording) ? 'opacity-40 animate-pulse' : 'opacity-20'"></div>
+        </div>
 
-            <input
-                type="text"
-                x-model="query"
-                x-ref="input"
-                @keydown.enter.prevent="submitTexto()"
+        <div class="relative z-10 rounded-2xl border border-slate-200/70 bg-white/90 shadow-lg shadow-indigo-500/5 ring-1 ring-slate-900/5 backdrop-blur transition focus-within:border-indigo-300/80 focus-within:ring-indigo-200">
+            <div class="flex items-center gap-2.5 px-3 py-2.5 sm:px-4 sm:py-3">
+                {{-- Icono IA en cápsula con gradiente --}}
+                <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-600/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </span>
+
+                <input
+                    type="text"
+                    x-model="query"
+                    x-ref="input"
+                    @keydown.enter.prevent="submitTexto()"
+                    :disabled="loading || recording"
+                    placeholder="Pregúntale a la IA: «clientes por sector», «top 5 proyectos por monto»…"
+                    class="min-w-0 flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none disabled:opacity-60"
+                >
+
+                {{-- Micrófono / grabando --}}
+                <button
+                    type="button"
+                    @click="toggleMic()"
+                    :disabled="loading"
+                    :title="recording ? 'Detener y enviar' : 'Consultar por voz'"
+                    class="flex-shrink-0 rounded-xl p-2 transition-colors disabled:opacity-50"
+                    :class="recording ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:bg-slate-100 hover:text-indigo-600'"
+                >
+                    <svg x-show="!recording" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-14 0m7 7v3m0-3a4 4 0 01-4-4V6a4 4 0 118 0v5a4 4 0 01-4 4z"/>
+                    </svg>
+                    <svg x-show="recording" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="6" y="6" width="12" height="12" rx="2"/>
+                    </svg>
+                </button>
+
+                {{-- Enviar (gradiente) --}}
+                <button
+                    type="button"
+                    @click="submitTexto()"
+                    :disabled="loading || recording || query.trim().length < 3"
+                    class="relative flex-shrink-0 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm shadow-indigo-600/20 transition hover:from-indigo-700 hover:to-violet-700 hover:shadow-md hover:shadow-indigo-600/30 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none"
+                >
+                    <svg x-show="!loading" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                    <svg x-show="loading" x-cloak class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Estado / loading --}}
+            <div x-show="loading" x-cloak class="border-t border-slate-100 px-4 py-2 text-xs text-slate-500" x-text="loadingMsg"></div>
+            <div x-show="recording" x-cloak class="border-t border-slate-100 px-4 py-2 text-xs font-medium text-red-500">
+                🎙️ Grabando… toca el botón de stop para enviar tu pregunta.
+            </div>
+        </div>
+    </div>
+
+    {{-- Accesos rápidos: consultas predefinidas (se ocultan al mostrar un resultado) --}}
+    <div x-show="!result && !loading" x-cloak class="mt-2.5 flex flex-wrap items-center gap-1.5">
+        <span class="mr-0.5 text-[11px] font-medium uppercase tracking-wide text-slate-400">Accesos rápidos</span>
+        <template x-for="s in sugerencias" :key="s.label">
+            <button
+                type="button"
+                @click="usarSugerencia(s)"
                 :disabled="loading || recording"
-                placeholder="Pregúntale a la IA: «cuántos clientes hay por sector», «top 5 proyectos por monto»…"
-                class="min-w-0 flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none disabled:opacity-60"
+                :title="s.prompt"
+                class="group inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-2.5 py-1 text-xs text-slate-600 backdrop-blur transition hover:border-indigo-300 hover:bg-indigo-50/70 hover:text-indigo-700 disabled:opacity-50"
             >
-
-            {{-- Micrófono / grabando --}}
-            <button
-                type="button"
-                @click="toggleMic()"
-                :disabled="loading"
-                :title="recording ? 'Detener y enviar' : 'Consultar por voz'"
-                class="flex-shrink-0 rounded-lg p-2 transition-colors disabled:opacity-50"
-                :class="recording ? 'bg-red-500 text-white animate-pulse' : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600'"
-            >
-                <svg x-show="!recording" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-14 0m7 7v3m0-3a4 4 0 01-4-4V6a4 4 0 118 0v5a4 4 0 01-4 4z"/>
-                </svg>
-                <svg x-show="recording" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                    <rect x="6" y="6" width="12" height="12" rx="2"/>
-                </svg>
+                <span x-text="s.icon" class="text-[12px] leading-none"></span>
+                <span x-text="s.label"></span>
             </button>
-
-            {{-- Enviar --}}
-            <button
-                type="button"
-                @click="submitTexto()"
-                :disabled="loading || recording || query.trim().length < 3"
-                class="flex-shrink-0 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-                <svg x-show="!loading" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                </svg>
-                <svg x-show="loading" x-cloak class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-            </button>
-        </div>
-
-        {{-- Estado / loading --}}
-        <div x-show="loading" x-cloak class="border-t border-slate-100 px-4 py-2 text-xs text-slate-500" x-text="loadingMsg"></div>
-        <div x-show="recording" x-cloak class="border-t border-slate-100 px-4 py-2 text-xs font-medium text-red-500">
-            🎙️ Grabando… toca el botón de stop para enviar tu pregunta.
-        </div>
+        </template>
     </div>
 
     {{-- Resultado --}}
@@ -172,15 +205,32 @@
         stream: null,
         chunks: [],
 
+        // Accesos rápidos: consultas predefinidas alineadas a las vistas mapeadas
+        // (dashboard de ofertas, oportunidades, clientes). `formato` fuerza el tipo de salida.
+        sugerencias: [
+            { label: 'Clientes por sector',    icon: '📊', prompt: 'cuántos clientes hay por sector',                                   formato: 'grafico' },
+            { label: 'Top proyectos por monto', icon: '🏆', prompt: 'top 5 proyectos por monto en usd',                                  formato: 'tabla' },
+            { label: 'Pipeline por estado',     icon: '📈', prompt: 'cuántos proyectos hay por estado',                                  formato: 'grafico' },
+            { label: 'Ofertas del año',         icon: '📋', prompt: 'lista de oportunidades del año actual con su monto y estado',       formato: 'tabla' },
+            { label: 'Clientes activos',        icon: '👥', prompt: 'cuántos clientes activos hay',                                       formato: 'texto' },
+            { label: 'Monto total cartera',     icon: '💰', prompt: 'monto total de la cartera de proyectos en usd',                     formato: 'texto' },
+        ],
+
+        usarSugerencia(s) {
+            if (this.loading || this.recording) return;
+            this.query = s.prompt;
+            this.submitTexto(s.formato || null);
+        },
+
         // ── Consulta por texto ──
-        async submitTexto() {
+        async submitTexto(formato = null) {
             const q = this.query.trim();
             if (q.length < 3 || this.loading || this.recording) return;
             this.begin('Consultando…');
             try {
-                const { ok, data } = await this.post(this.urlTexto, {
-                    json: { consulta: q, origen: this.origen },
-                });
+                const payload = { consulta: q, origen: this.origen };
+                if (formato) payload.formato = formato;
+                const { ok, data } = await this.post(this.urlTexto, { json: payload });
                 this.finish(ok, data, null, null);
             } catch (e) {
                 this.fail('No se pudo completar la consulta.');

@@ -117,8 +117,9 @@ function initProjChart(idx) {
         <p class="mt-1 text-sm text-slate-500">Vista ejecutiva </p>
     </div>
 
-    {{-- Buscador inteligente: consultas en lenguaje natural (texto/voz) → tablas y gráficos dinámicos --}}
-    <x-buscador-inteligente origen="cartera_db" />
+    {{-- Buscador inteligente: consultas en lenguaje natural (texto/voz) → tablas y gráficos dinámicos.
+         El origen (clave o alias/URL) se toma de config('services.consultas.origen') = CONSULTAS_ORIGEN. --}}
+    <x-buscador-inteligente />
 
     <div class="mt-2">
         
