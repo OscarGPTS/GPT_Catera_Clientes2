@@ -186,10 +186,13 @@ class DashboardIndex extends Component
             }
 
             $nombreCliente = $o->cliente?->alias ?? $o->cliente?->razon_social ?? 'Sin cliente';
+            $empresa = $o->cliente?->razon_social ?? $o->cliente?->alias ?? 'Sin empresa';
             $nombreProyecto = trim($nombreCliente . ' ' . ($o->tech_reference ?? $o->cp_numero ?? '—'));
 
             $proyectos[] = [
                 'nombre'      => $nombreProyecto,
+                'empresa'     => $empresa,
+                'tech_ref'    => $o->tech_reference ?? '—',
                 'cp'          => $o->cp_numero ?? '—',
                 'monto'       => round(((float) $o->monto_usd) / 1_000_000, 6),
                 'probs'       => $probs,

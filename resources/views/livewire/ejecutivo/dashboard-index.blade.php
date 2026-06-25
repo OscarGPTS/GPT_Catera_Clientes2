@@ -161,9 +161,16 @@ function initProjChart(idx) {
                                 <tr class="cursor-pointer hover:bg-slate-50 transition-colors"
                                     @click="open = !open">
                                     <td class="px-2 py-2 font-medium text-slate-800 sticky left-0 bg-white z-10 whitespace-nowrap" style="border-right: 1px solid #e2e8f0;">
-                                        <span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5 flex-shrink-0 align-middle" style="background-color: {{ $p['borderColor'] }}"></span>
-                                        {{ $p['nombre'] }}
-                                        <span class="text-slate-400 ml-1">{{ $p['cp'] }}</span>
+                                        <div class="flex items-start gap-1.5">
+                                            <span class="inline-block w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style="background-color: {{ $p['borderColor'] }}"></span>
+                                            <div class="leading-tight">
+                                                <div>
+                                                    {{ $p['tech_ref'] }}
+                                                    <span class="text-slate-400 ml-1">{{ $p['cp'] }}</span>
+                                                </div>
+                                                <div class="text-[10px] font-normal text-slate-500">{{ $p['empresa'] }}</div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="px-2 py-2 text-right font-mono text-slate-700 whitespace-nowrap">${{ number_format($p['monto'] * 1000000, 0, '.', ',') }}</td>
                                     <td class="px-2 py-2 text-center">
