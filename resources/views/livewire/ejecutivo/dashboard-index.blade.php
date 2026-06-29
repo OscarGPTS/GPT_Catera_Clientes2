@@ -154,13 +154,15 @@ function initProjChart(idx) {
                                 $probLabel  = $currentProb >= 100 ? 'Contratada' : ($currentProb >= 75 ? 'Probable' : ($currentProb >= 25 ? 'Posible' : ($currentProb >= 10 ? 'Remoto' : 'Perdida')));
                             @endphp
                             {{-- One <tbody> per project = shared Alpine scope for both rows --}}
-                            <tbody x-data="{ open: false, chartInited: false }"
+                            <tbody x-data="{ open: false, chartInited: false, hl: false }"
                                 x-effect="if (open && !chartInited) { chartInited = true; $nextTick(() => initProjChart({{ $pIdx }})) }"
+                                @abrir-oferta.window="if ($event.detail.idx === {{ $pIdx }}) { open = true; hl = true; $nextTick(() => $el.scrollIntoView({ behavior: 'smooth', block: 'center' })); setTimeout(() => hl = false, 2500); }"
                                 class="border-b border-slate-100">
                                 {{-- Main row --}}
                                 <tr class="cursor-pointer hover:bg-slate-50 transition-colors"
+                                    :class="hl ? 'bg-indigo-50' : ''"
                                     @click="open = !open">
-                                    <td class="px-2 py-2 font-medium text-slate-800 sticky left-0 bg-white z-10 whitespace-nowrap" style="border-right: 1px solid #e2e8f0;">
+                                    <td class="px-2 py-2 font-medium text-slate-800 sticky left-0 z-10 whitespace-nowrap" :class="hl ? 'bg-indigo-50' : 'bg-white'" style="border-right: 1px solid #e2e8f0;">
                                         <div class="flex items-start gap-1.5">
                                             <span class="inline-block w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style="background-color: {{ $p['borderColor'] }}"></span>
                                             <div class="leading-tight">
@@ -280,70 +282,147 @@ function initProjChart(idx) {
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
             {{-- Chart (3/5) --}}
             <div class="xl:col-span-3 rounded-xl border border-slate-200 bg-white shadow-sm p-6">
-                <div class="relative h-96 w-full" x-data x-init="
-                    const evo = window._statusOfertas.carteraEvolucion;
-                    const ctx = $el.querySelector('canvas').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: evo.months,
-                            datasets: [
-                                { label: '100% Contratada', data: evo.series.p100, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(16,185,129)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
-                                { label: '75% Probable', data: evo.series.p75, borderColor: 'rgb(6,182,212)', backgroundColor: 'rgba(6,182,212,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(6,182,212)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
-                                { label: '25% Posible', data: evo.series.p25, borderColor: 'rgb(245,158,11)', backgroundColor: 'rgba(245,158,11,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(245,158,11)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
-                                { label: '10% Remoto', data: evo.series.p10, borderColor: 'rgb(248,113,113)', backgroundColor: 'rgba(248,113,113,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(248,113,113)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
-                                { label: '0% Perdida', data: evo.series.p0, borderColor: 'rgb(148,163,184)', backgroundColor: 'rgba(148,163,184,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(148,163,184)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
-                                { label: 'Cartera esperada (ponderada)', data: evo.ponderado, borderColor: 'rgb(139,92,246)', backgroundColor: 'rgba(139,92,246,0.06)', borderWidth: 3, pointRadius: 5, pointHoverRadius: 7, pointStyle: 'circle', pointBackgroundColor: 'rgb(139,92,246)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4, order: 0 },
-                            ]
+                <p class="text-[11px] text-slate-400 mb-2">Haz clic en un punto para ver los proyectos que lo componen.</p>
+                <div class="relative h-96 w-full"
+                    x-data="{
+                        chart: null,
+                        lista: [],
+                        titulo: '',
+                        abierto: false,
+                        bandas: [ {min:100,max:100}, {min:75,max:99}, {min:25,max:74}, {min:10,max:24}, {min:0,max:0} ],
+                        initChart(canvas) {
+                            const evo = window._statusOfertas.carteraEvolucion;
+                            const self = this;
+                            this.chart = new Chart(canvas.getContext('2d'), {
+                                type: 'line',
+                                data: {
+                                    labels: evo.months,
+                                    datasets: [
+                                        { label: '100% Contratada', data: evo.series.p100, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(16,185,129)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                        { label: '75% Probable', data: evo.series.p75, borderColor: 'rgb(6,182,212)', backgroundColor: 'rgba(6,182,212,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(6,182,212)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                        { label: '25% Posible', data: evo.series.p25, borderColor: 'rgb(245,158,11)', backgroundColor: 'rgba(245,158,11,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(245,158,11)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                        { label: '10% Remoto', data: evo.series.p10, borderColor: 'rgb(248,113,113)', backgroundColor: 'rgba(248,113,113,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(248,113,113)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                        { label: '0% Perdida', data: evo.series.p0, borderColor: 'rgb(148,163,184)', backgroundColor: 'rgba(148,163,184,0.08)', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, pointStyle: 'circle', pointBackgroundColor: 'rgb(148,163,184)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 },
+                                        { label: 'Cartera esperada (ponderada)', data: evo.ponderado, borderColor: 'rgb(139,92,246)', backgroundColor: 'rgba(139,92,246,0.06)', borderWidth: 3, pointRadius: 5, pointHoverRadius: 7, pointStyle: 'circle', pointBackgroundColor: 'rgb(139,92,246)', pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4, order: 0 },
+                                    ]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    interaction: { mode: 'index', intersect: false },
+                                    onHover: (e, els) => { if (e.native) e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+                                    onClick: (e, els, chart) => { const near = chart.getElementsAtEventForMode(e, 'nearest', { intersect: false }, true); self.onPunto(near); },
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'bottom',
+                                            labels: {
+                                                boxWidth: 12, boxHeight: 8,
+                                                font: { size: 10 }, color: '#64748b', padding: 10,
+                                                usePointStyle: true, pointStyle: 'circle',
+                                            },
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(c) {
+                                                    if (c.dataset.label.includes('ponderada')) return ' Esperada: $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) : '—') + 'M';
+                                                    return ' ' + c.dataset.label + ': $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) : '—') + 'M';
+                                                },
+                                                footer: function(items) {
+                                                    if (!items.length) return '';
+                                                    const v = evo.ponderado[items[0].dataIndex];
+                                                    return 'Cartera esperada: $' + (v != null ? v.toFixed(2) : '—') + 'M';
+                                                }
+                                            }
+                                        },
+                                    },
+                                    scales: {
+                                        x: {
+                                            grid: { color: 'rgba(148,163,184,0.12)' },
+                                            ticks: { font: { size: 12, weight: '500' }, color: '#374151' },
+                                        },
+                                        y: {
+                                            grid: { color: 'rgba(148,163,184,0.12)' },
+                                            ticks: {
+                                                font: { size: 11 }, color: '#94a3b8',
+                                                stepSize: 5,
+                                                callback: function(v) { return '$' + v + 'M'; }
+                                            },
+                                            title: {
+                                                display: true,
+                                                text: 'Millones USD',
+                                                font: { size: 12, weight: '500' },
+                                                color: '#64748b',
+                                            },
+                                            min: 0,
+                                        },
+                                    },
+                                },
+                            });
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: { mode: 'index', intersect: false },
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'bottom',
-                                    labels: {
-                                        boxWidth: 12, boxHeight: 8,
-                                        font: { size: 10 }, color: '#64748b', padding: 10,
-                                        usePointStyle: true, pointStyle: 'circle',
-                                    },
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(c) {
-                                            if (c.dataset.label.includes('ponderada')) return ' Esperada: $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) : '—') + 'M';
-                                            return ' ' + c.dataset.label + ': $' + (c.parsed.y !== null ? c.parsed.y.toFixed(2) : '—') + 'M';
-                                        }
-                                    }
-                                },
-                            },
-                            scales: {
-                                x: {
-                                    grid: { color: 'rgba(148,163,184,0.12)' },
-                                    ticks: { font: { size: 12, weight: '500' }, color: '#374151' },
-                                },
-                                y: {
-                                    grid: { color: 'rgba(148,163,184,0.12)' },
-                                    ticks: {
-                                        font: { size: 11 }, color: '#94a3b8',
-                                        stepSize: 5,
-                                        callback: function(v) { return '$' + v + 'M'; }
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'Millones USD',
-                                        font: { size: 12, weight: '500' },
-                                        color: '#64748b',
-                                    },
-                                    min: 0,
-                                },
-                            },
+                        onPunto(els) {
+                            if (!els || !els.length) { this.abierto = false; return; }
+                            const di = els[0].datasetIndex;
+                            const mi = els[0].index;
+                            const meses = window._statusOfertas.months;
+                            const proyectos = window._statusOfertas.proyectos;
+                            const esPonderada = di === 5;
+                            const enBanda = (prob) => {
+                                if (prob === null || prob <= 0) return false;
+                                if (esPonderada) return true;
+                                const b = this.bandas[di];
+                                return prob >= b.min && prob <= b.max;
+                            };
+                            const lista = [];
+                            proyectos.forEach((p, idx) => {
+                                const prob = p.probs[mi];
+                                if (enBanda(prob)) {
+                                    lista.push({
+                                        idx,
+                                        nombre: p.nombre,
+                                        empresa: p.empresa,
+                                        prob,
+                                        esperada: Math.round(p.monto * prob / 100 * 100) / 100,
+                                        color: p.borderColor,
+                                    });
+                                }
+                            });
+                            lista.sort((a, b) => b.esperada - a.esperada);
+                            this.lista = lista;
+                            this.titulo = (esPonderada ? 'Cartera esperada' : this.chart.data.datasets[di].label) + ' · ' + meses[mi];
+                            this.abierto = lista.length > 0;
                         },
-                    });
-                ">
-                    <canvas></canvas>
+                        seleccionar(idx) {
+                            window.dispatchEvent(new CustomEvent('abrir-oferta', { detail: { idx } }));
+                            this.abierto = false;
+                        }
+                    }"
+                    x-init="initChart($refs.cv)">
+                    <canvas x-ref="cv"></canvas>
+
+                    {{-- Panel: proyectos que componen el punto seleccionado --}}
+                    <div x-show="abierto" x-cloak x-transition.opacity
+                        @click.outside="abierto = false"
+                        class="absolute right-2 top-2 z-20 w-72 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                        <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-100 sticky top-0 bg-white">
+                            <span class="text-xs font-semibold text-slate-700 truncate" x-text="titulo"></span>
+                            <button type="button" @click="abierto = false" class="text-slate-400 hover:text-slate-600 leading-none text-base">&times;</button>
+                        </div>
+                        <ul class="divide-y divide-slate-50">
+                            <template x-for="item in lista" :key="item.idx">
+                                <li @click="seleccionar(item.idx)" class="px-3 py-2 cursor-pointer hover:bg-indigo-50 flex items-start gap-2">
+                                    <span class="mt-1 inline-block w-2 h-2 rounded-full flex-shrink-0" :style="`background-color:${item.color}`"></span>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-slate-800 truncate" x-text="item.nombre"></p>
+                                        <p class="text-[10px] text-slate-500 truncate" x-text="item.empresa"></p>
+                                        <p class="text-[10px] text-slate-400">
+                                            <span x-text="item.prob + '%'"></span> · Esperada: $<span x-text="item.esperada.toFixed(2)"></span>M
+                                        </p>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
