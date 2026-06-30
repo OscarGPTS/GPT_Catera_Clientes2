@@ -69,7 +69,8 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\LENOVO\\\\Documents\\\\Proyectos\\\\langchain\" -Directory | Where-Object { $_.Name -notmatch '^\\(\\\\.|__pycache__\\)' } | Select-Object -ExpandProperty Name)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\LENOVO\\\\Documents\\\\Proyectos\\\\langchain\" -Exclude \".venv\" -Directory | ForEach-Object { $_.Name; Get-ChildItem -Path $_.FullName -File | Select-Object -ExpandProperty Name })",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} en %{time_total}s\\\\n\" --max-time 5 http://localhost:8001)",
-      "Bash(php artisan tinker '--execute= *)"
+      "Bash(php artisan tinker '--execute= *)",
+      "Bash(composer show *)"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"

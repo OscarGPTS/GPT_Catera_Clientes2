@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Proxy del buscador inteligente del dashboard hacia la API de Consultas a Datos.
@@ -24,7 +25,7 @@ class ConsultaIaController extends Controller
         $data = $request->validate([
             'consulta' => ['required', 'string', 'min:3', 'max:1000'],
             'origen'   => ['nullable', 'string'],
-            'formato'  => ['nullable', 'in:texto,tabla,grafico'],
+            'formato'  => ['nullable', 'in:texto,tabla,grafico,informe'],
             'objetivo' => ['nullable', 'string'],
         ]);
 
@@ -53,7 +54,7 @@ class ConsultaIaController extends Controller
         $data = $request->validate([
             'file'     => ['required', 'file', 'max:25600'], // 25 MB
             'origen'   => ['nullable', 'string'],
-            'formato'  => ['nullable', 'in:texto,tabla,grafico'],
+            'formato'  => ['nullable', 'in:texto,tabla,grafico,informe'],
             'objetivo' => ['nullable', 'string'],
         ]);
 
@@ -128,7 +129,42 @@ class ConsultaIaController extends Controller
             );
         }
 
+        if (is_array($body)) {
+            $body = $this->renderInformeMarkdown($body);
+        }
+
         return response()->json($body, $resp->status());
+    }
+
+    /**
+     * Cuando la respuesta es un informe (`tipo === 'informe'`), el campo `texto`
+     * trae Markdown. Lo convertimos a HTML SANEADO server-side y lo agregamos como
+     * `texto_html`, para que el front lo pinte con x-html sin parsear Markdown en JS
+     * ni arriesgar XSS. Maneja la forma de texto (tipo en la raíz) y la de voz
+     * (el resultado viene anidado bajo `resultado`). Los demás tipos quedan intactos.
+     */
+    private function renderInformeMarkdown(array $body): array
+    {
+        if (($body['tipo'] ?? null) === 'informe' && ! empty($body['texto'])) {
+            $body['texto_html'] = $this->markdownToHtml($body['texto']);
+        }
+
+        if (isset($body['resultado']) && is_array($body['resultado'])
+            && ($body['resultado']['tipo'] ?? null) === 'informe'
+            && ! empty($body['resultado']['texto'])) {
+            $body['resultado']['texto_html'] = $this->markdownToHtml($body['resultado']['texto']);
+        }
+
+        return $body;
+    }
+
+    /** Markdown → HTML con el saneado de CommonMark (escapa HTML embebido, links seguros). */
+    private function markdownToHtml(string $md): string
+    {
+        return Str::markdown($md, [
+            'html_input'         => 'escape',
+            'allow_unsafe_links' => false,
+        ]);
     }
 
     private function connectionError(\Throwable $e): JsonResponse

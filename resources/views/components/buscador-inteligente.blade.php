@@ -27,6 +27,7 @@
         ['label' => 'Top proyectos',            'icon' => '🥇', 'prompt' => "top 10 proyectos de {$anio} por monto en usd con su cliente y estado",                                                            'formato' => 'tabla'],
         ['label' => 'Clientes por sector',      'icon' => '👥', 'prompt' => 'número de clientes activos por sector',                                                                                           'formato' => 'grafico'],
         ['label' => 'Evolución mensual',        'icon' => '📉', 'prompt' => 'evolución mensual de la cartera esperada: monto ponderado por mes según el historial de ponderación',                            'formato' => 'grafico'],
+        ['label' => 'Informe ejecutivo',        'icon' => '📑', 'prompt' => 'genérame un informe ejecutivo de la cartera de oportunidades',                                                                          'formato' => 'informe'],
     ];
 @endphp
 
@@ -162,38 +163,50 @@
         </div>
 
         <div class="px-4 py-4">
-            {{-- Texto (siempre que venga el resumen) --}}
-            <p x-show="result?.texto" x-cloak class="mb-3 text-sm text-slate-600" x-text="result?.texto"></p>
+            {{-- Informe ejecutivo: el backend manda Markdown ya saneado a HTML en texto_html --}}
+            <div x-show="result?.tipo === 'informe'" x-cloak class="informe-md mb-3" x-html="result?.texto_html"></div>
+
+            {{-- Texto plano (resumen corto) — NO para informe (ese va como Markdown arriba) --}}
+            <p x-show="result?.texto && result?.tipo !== 'informe'" x-cloak class="mb-3 text-sm text-slate-600" x-text="result?.texto"></p>
 
             {{-- Gráfico --}}
             <div x-show="result?.tipo === 'grafico'" x-cloak class="relative h-72 w-full">
                 <canvas x-ref="chartCanvas"></canvas>
             </div>
 
-            {{-- Tabla (también se muestra junto al gráfico si trae filas) --}}
-            <div x-show="hasTabla()" x-cloak class="mt-3 overflow-x-auto rounded-lg border border-slate-100">
-                <table class="min-w-full text-xs">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <template x-for="(col, i) in (result?.tabla?.columnas || [])" :key="i">
-                                <th class="whitespace-nowrap px-3 py-2 text-left font-semibold text-slate-600" x-text="col"></th>
-                            </template>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="(fila, r) in (result?.tabla?.filas || [])" :key="r">
-                            <tr class="border-t border-slate-100 hover:bg-slate-50">
-                                <template x-for="(celda, c) in fila" :key="c">
-                                    <td class="whitespace-nowrap px-3 py-1.5 text-slate-700" x-text="fmt(celda)"></td>
+            {{-- Tabla: visible directa para tabla/grafico; en informe va colapsada como "Ver datos"
+                 (el Markdown ya suele traer su propia tabla embebida). --}}
+            <details x-show="hasTabla()" x-cloak class="mt-3" :open="result?.tipo !== 'informe'">
+                <summary x-show="result?.tipo === 'informe'" class="cursor-pointer text-xs text-slate-400 hover:text-slate-600 mb-2">Ver datos</summary>
+                <div class="overflow-x-auto rounded-lg border border-slate-100">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <template x-for="(col, i) in (result?.tabla?.columnas || [])" :key="i">
+                                    <th class="whitespace-nowrap px-3 py-2 text-left font-semibold text-slate-600" x-text="col"></th>
                                 </template>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
-                <div x-show="result?.tabla?.truncado" x-cloak class="px-3 py-1.5 text-[11px] text-amber-600">
-                    Resultados truncados (<span x-text="result?.tabla?.total_filas"></span> filas en total).
+                        </thead>
+                        <tbody>
+                            <template x-for="(fila, r) in (result?.tabla?.filas || [])" :key="r">
+                                <tr class="border-t border-slate-100 hover:bg-slate-50">
+                                    <template x-for="(celda, c) in fila" :key="c">
+                                        <td class="whitespace-nowrap px-3 py-1.5 text-slate-700" x-text="fmt(celda)"></td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <div x-show="result?.tabla?.truncado" x-cloak class="px-3 py-1.5 text-[11px] text-amber-600">
+                        Resultados truncados (<span x-text="result?.tabla?.total_filas"></span> filas en total).
+                    </div>
                 </div>
-            </div>
+            </details>
+
+            {{-- Avisos no fatales del backend (p. ej. "se aplicó un fallback") --}}
+            <template x-for="(aviso, i) in (result?.meta?.advertencias || [])" :key="i">
+                <p class="mt-2 text-[11px] text-amber-600">⚠️ <span x-text="aviso"></span></p>
+            </template>
 
             {{-- Meta: SQL/endpoint ejecutado (auditoría) --}}
             <details x-show="result?.meta?.consulta_generada" x-cloak class="mt-3 text-xs">
@@ -205,6 +218,28 @@
 </div>
 
 @once
+<style>
+    /* Estilo del informe ejecutivo (Markdown→HTML). Sustituye a Tailwind Typography. */
+    .informe-md { font-size: .875rem; line-height: 1.6; color: #334155; }
+    .informe-md > :first-child { margin-top: 0; }
+    .informe-md h1, .informe-md h2, .informe-md h3, .informe-md h4 { font-weight: 600; color: #0f172a; line-height: 1.3; margin: 1rem 0 .5rem; }
+    .informe-md h1 { font-size: 1.25rem; }
+    .informe-md h2 { font-size: 1.1rem; }
+    .informe-md h3 { font-size: 1rem; }
+    .informe-md p { margin: .5rem 0; }
+    .informe-md ul, .informe-md ol { margin: .5rem 0; padding-left: 1.25rem; }
+    .informe-md ul { list-style: disc; }
+    .informe-md ol { list-style: decimal; }
+    .informe-md li { margin: .2rem 0; }
+    .informe-md strong { font-weight: 600; color: #0f172a; }
+    .informe-md a { color: #4f46e5; text-decoration: underline; }
+    .informe-md code { background: #f1f5f9; padding: .1rem .3rem; border-radius: .25rem; font-size: .8em; }
+    .informe-md blockquote { border-left: 3px solid #e2e8f0; padding-left: .75rem; color: #64748b; margin: .5rem 0; }
+    .informe-md table { width: 100%; border-collapse: collapse; margin: .75rem 0; font-size: .8rem; display: block; overflow-x: auto; }
+    .informe-md th, .informe-md td { border: 1px solid #e2e8f0; padding: .4rem .6rem; text-align: left; white-space: nowrap; }
+    .informe-md thead th { background: #f8fafc; font-weight: 600; color: #475569; }
+    .informe-md hr { border: 0; border-top: 1px solid #e2e8f0; margin: 1rem 0; }
+</style>
 <script>
 (function () {
     // Registra el componente tanto en la carga inicial (alpine:init) como tras una
@@ -243,7 +278,7 @@
         async submitTexto(formato = null) {
             const q = this.query.trim();
             if (q.length < 3 || this.loading || this.recording) return;
-            this.begin('Consultando…');
+            this.begin(formato === 'informe' ? 'Generando informe ejecutivo…' : 'Consultando…');
             try {
                 const payload = { consulta: q, origen: this.origen };
                 if (formato) payload.formato = formato;
