@@ -56,6 +56,7 @@ class OportunidadDetalle extends Component
         $snap = $this->proyecto->historialPonderacion()
             ->where('anio', $this->pond_anio)
             ->where('mes', $this->pond_mes)
+            ->orderByDesc('id')
             ->first();
         $this->pond_ponderacion_id = $snap?->ponderacion_id
             ?? Ponderacion::porPorcentaje((int) $this->proyecto->ponderacion)?->id;

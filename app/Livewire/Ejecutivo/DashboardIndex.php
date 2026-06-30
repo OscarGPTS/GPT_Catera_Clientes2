@@ -170,18 +170,33 @@ class DashboardIndex extends Component
         foreach ($oportunidades as $o) {
             $pondActual = (int) ($o->ponderacion ?? 0);
 
-            // Indexar el historial del proyecto por monthKey
-            $historialByKey = $o->historialPonderacion->keyBy(fn($h) => $h->anio * 100 + $h->mes);
+            // Indexar el historial del proyecto por monthKey. La tabla es un log de
+            // cambios (varias filas por mes posibles); ordenando por id ascendente y
+            // luego keyBy, queda el ÚLTIMO cambio de cada mes como valor del mes.
+            $historialByKey = $o->historialPonderacion
+                ->sortBy('id')
+                ->keyBy(fn($h) => $h->anio * 100 + $h->mes);
 
-            // Construir el array probs[] siguiendo los meses globales
+            // Construir el array probs[] siguiendo los meses globales.
+            // Regla: usa el snapshot del mes si existe; si no, arrastra el último
+            // snapshot conocido (carry-forward); y si la oferta todavía NO tiene
+            // ningún snapshot, cae al % actual (proyectos.ponderacion) para que
+            // SIEMPRE aporte su porcentaje aunque no lleve historial. Solo los
+            // meses anteriores al primer snapshot de una oferta que SÍ tiene
+            // historial quedan en null (no inventamos historia previa a su alta).
+            $tieneHistorial = $historialByKey->isNotEmpty();
             $probs = [];
+            $ultimoConocido = null;
             foreach ($monthKeys as $k) {
                 if ($k === null) {
                     $probs[] = $pondActual;
                 } elseif ($historialByKey->has($k)) {
-                    $probs[] = (int) $historialByKey[$k]->ponderacion?->porcentaje;
+                    $ultimoConocido = (int) $historialByKey[$k]->ponderacion?->porcentaje;
+                    $probs[] = $ultimoConocido;
+                } elseif ($ultimoConocido !== null) {
+                    $probs[] = $ultimoConocido;
                 } else {
-                    $probs[] = null;
+                    $probs[] = $tieneHistorial ? null : $pondActual;
                 }
             }
 

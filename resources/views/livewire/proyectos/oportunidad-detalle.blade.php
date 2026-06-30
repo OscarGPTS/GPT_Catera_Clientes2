@@ -187,6 +187,53 @@
                             </div>
                         @endif
                     </div>
+
+                    {{-- Ponderación + historial mensual de cambios --}}
+                    <div class="rounded-lg border border-slate-200 bg-white p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-semibold text-slate-900">Ponderación</h3>
+                            @unlessrole('invitado')
+                                <button type="button" wire:click="abrirPonderacionModal" class="text-xs font-medium text-gpt-600 hover:text-gpt-700 transition-colors">Actualizar</button>
+                            @endunlessrole
+                        </div>
+
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-semibold text-slate-900">{{ (int) $proyecto->ponderacion }}%</span>
+                            <span class="text-sm text-slate-500">probabilidad actual</span>
+                        </div>
+
+                        @php
+                            $mesesPanel = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                            $colorPanel = ['red' => '#ef4444', 'blue' => '#3b82f6', 'yellow' => '#eab308', 'green' => '#22c55e'];
+                            $histPanel = $proyecto->historialPonderacion->sortByDesc('id');
+                        @endphp
+
+                        @if($histPanel->isNotEmpty())
+                            <div class="mt-4 pt-3 border-t border-slate-100">
+                                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">Historial de cambios</p>
+                                <ul class="space-y-2 max-h-56 overflow-y-auto">
+                                    @foreach($histPanel as $h)
+                                        <li>
+                                            <div class="flex items-center justify-between gap-2 text-xs">
+                                                <span class="inline-flex items-center gap-2 text-slate-600">
+                                                    <span class="inline-block h-2 w-2 rounded-full" style="background: {{ $colorPanel[$h->ponderacion->color ?? ''] ?? '#94a3b8' }}"></span>
+                                                    {{ $mesesPanel[$h->mes - 1] ?? '?' }} {{ $h->anio }}
+                                                </span>
+                                                <span class="font-medium text-slate-800">{{ $h->ponderacion->concepto ?? '—' }} ({{ $h->ponderacion->porcentaje ?? '?' }}%)</span>
+                                            </div>
+                                            @if($h->notas)
+                                                <p class="mt-0.5 pl-4 text-[11px] text-slate-400">{{ $h->notas }}</p>
+                                            @endif
+                                            <p class="pl-4 text-[10px] text-slate-300">{{ $h->user?->name ?? 'Sistema' }}</p>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @else
+                            <p class="mt-3 text-xs text-slate-400">Sin snapshots de ponderación registrados.</p>
+                        @endif
+                    </div>
+
                     <div class="rounded-lg border border-slate-200 bg-white p-5">
                         <h3 class="text-sm font-semibold text-slate-900 mb-3">Equipo asignado</h3>
                         <dl class="space-y-3">
@@ -512,6 +559,63 @@
                     <div class="text-center py-8">
                         <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <p class="mt-2 text-sm text-slate-500">Sin eventos registrados</p>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Historial de ponderación (snapshot mensual del %) --}}
+            <div class="rounded-lg border border-slate-200 bg-white p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-medium text-slate-900">Historial de ponderación</h3>
+                    @unlessrole('invitado')
+                        <button type="button" wire:click="abrirPonderacionModal" class="text-sm font-medium text-gpt-600 hover:text-gpt-700 transition-colors">Actualizar</button>
+                    @endunlessrole
+                </div>
+                @php
+                    $mesesHist = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                    $colorHist = ['red' => '#ef4444', 'blue' => '#3b82f6', 'yellow' => '#eab308', 'green' => '#22c55e'];
+                    $histTab = $proyecto->historialPonderacion->sortByDesc('id');
+                @endphp
+                @if($histTab->isNotEmpty())
+                    <div class="flow-root">
+                        <ul class="-mb-8">
+                            @foreach($histTab as $h)
+                                <li>
+                                    <div class="relative pb-8">
+                                        @if(!$loop->last)
+                                            <span class="absolute left-4 top-4 -ml-px h-full w-0.5 bg-slate-200" aria-hidden="true"></span>
+                                        @endif
+                                        <div class="relative flex space-x-3">
+                                            <div>
+                                                <span class="flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white" style="background: {{ $colorHist[$h->ponderacion->color ?? ''] ?? '#94a3b8' }}">
+                                                    <span class="text-[10px] font-semibold text-white">{{ $h->ponderacion->porcentaje ?? '?' }}%</span>
+                                                </span>
+                                            </div>
+                                            <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                                                <div>
+                                                    <p class="text-sm text-slate-900">
+                                                        <span class="font-medium">{{ $h->ponderacion->concepto ?? '—' }} ({{ $h->ponderacion->porcentaje ?? '?' }}%)</span>
+                                                        <span class="text-slate-500"> — {{ $mesesHist[$h->mes - 1] ?? '?' }} {{ $h->anio }}</span>
+                                                    </p>
+                                                    @if($h->notas)
+                                                        <p class="mt-0.5 text-xs text-slate-500">{{ $h->notas }}</p>
+                                                    @endif
+                                                    <p class="mt-0.5 text-xs text-slate-500">Por {{ $h->user?->name ?? 'Sistema' }}</p>
+                                                </div>
+                                                <div class="whitespace-nowrap text-right text-xs text-slate-500">
+                                                    {{ $h->created_at?->format('d/m/Y H:i') ?? '' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @else
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z"/></svg>
+                        <p class="mt-2 text-sm text-slate-500">Sin snapshots de ponderación registrados</p>
                     </div>
                 @endif
             </div>

@@ -195,26 +195,40 @@ class Proyecto extends Model
     }
 
     /**
-     * Registra (o actualiza si ya existe) un snapshot de ponderación para el
-     * mes indicado. También sincroniza el cache `proyectos.ponderacion` cuando
-     * el snapshot corresponde al mes vigente (el "valor actual").
+     * Registra un CAMBIO de ponderación. La tabla es un log: cada cambio agrega
+     * una fila, conservando el historial completo en el tiempo. Para evitar ruido
+     * (p. ej. re-importar el mismo Excel, o guardar el mismo valor dos veces) NO
+     * crea una fila nueva si la ponderación coincide con el último registro de ese
+     * mes. También sincroniza el cache `proyectos.ponderacion` cuando el cambio
+     * corresponde al mes vigente (el "valor actual").
      */
     public function registrarPonderacion(int $ponderacionId, ?int $anio = null, ?int $mes = null, ?string $notas = null): ProyectoPonderacionHistorial
     {
         $anio ??= (int) now()->year;
         $mes  ??= (int) now()->month;
 
-        /** @var ProyectoPonderacionHistorial $snap */
-        $snap = $this->historialPonderacion()->updateOrCreate(
-            ['anio' => $anio, 'mes' => $mes],
-            [
+        // Último cambio registrado para ese mes (puede haber varios)
+        $ultimo = $this->historialPonderacion()
+            ->where('anio', $anio)
+            ->where('mes', $mes)
+            ->orderByDesc('id')
+            ->first();
+
+        // Solo registra un nuevo cambio si el valor difiere del último de ese mes
+        if ($ultimo && (int) $ultimo->ponderacion_id === $ponderacionId) {
+            $snap = $ultimo;
+        } else {
+            /** @var ProyectoPonderacionHistorial $snap */
+            $snap = $this->historialPonderacion()->create([
                 'ponderacion_id' => $ponderacionId,
+                'anio'           => $anio,
+                'mes'            => $mes,
                 'user_id'        => auth()->id(),
                 'notas'          => $notas,
-            ]
-        );
+            ]);
+        }
 
-        // Cache el porcentaje actual si el snapshot es del mes vigente
+        // Cache el porcentaje actual si el cambio es del mes vigente
         if ($anio === (int) now()->year && $mes === (int) now()->month) {
             $porcentaje = (int) \App\Models\Ponderacion::whereKey($ponderacionId)->value('porcentaje');
             $this->forceFill(['ponderacion' => $porcentaje])->save();

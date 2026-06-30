@@ -68,7 +68,8 @@
       "Bash(grep -n \"public \\\\$\" app/Livewire/Ejecutivo/DashboardIndex.php)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\LENOVO\\\\Documents\\\\Proyectos\\\\langchain\" -Directory | Where-Object { $_.Name -notmatch '^\\(\\\\.|__pycache__\\)' } | Select-Object -ExpandProperty Name)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\LENOVO\\\\Documents\\\\Proyectos\\\\langchain\" -Exclude \".venv\" -Directory | ForEach-Object { $_.Name; Get-ChildItem -Path $_.FullName -File | Select-Object -ExpandProperty Name })",
-      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} en %{time_total}s\\\\n\" --max-time 5 http://localhost:8001)"
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} en %{time_total}s\\\\n\" --max-time 5 http://localhost:8001)",
+      "Bash(php artisan tinker '--execute= *)"
     ],
     "additionalDirectories": [
       "c:\\xampp\\htdocs\\GPT_Catera_Clientes2"
